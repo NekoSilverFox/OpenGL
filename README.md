@@ -98,21 +98,21 @@ target_link_libraries(
 【重点】**示例：**
 
 ```cpp
-// 创建对象
-GLuint objectId = 0;				// 创建一个 ID（GLuint 是 OpenGL 自己的 int 类型）
-glGenObject(1, &objectId);	// 生成了一个对象（小助理），并给他了一个编号
+// 1. 创建对象
+GLuint objectId = 0;  // 创建一个 ID（GLuint 是 OpenGL 自己的 int 类型）
+glGenObject(1, &objectId);  // 生成了一个对象（小助理），并给他了一个编号
 
-// 绑定至上下文对象
-glBindObject(GL_WINDOW_TARGET, objectId);		// 让这个对象【记录】状态机中子集 GL_WINDOW_TARGET 的状态，也就是确定工作内容
+// 2. 绑定至上下文对象
+glBindObject(GL_WINDOW_TARGET, objectId);  // 让这个对象【记录】状态机中子集 GL_WINDOW_TARGET 的状态，也就是确定工作内容
 
-// 设置子集 GL_WINDOW_TARGET 的一些选项，以下两条的操作会被 objectId对象 记录
-glSetObjectOption(GL_WINDOW_TARGET, GL_OPTION_WINDOW_WIDTH, 800);			// 设置窗口宽度
-glSetObjectOption(GL_WINDOW_TARGET, GL_OPTION_WINDOW_HEIGHT, 600);		// 设置窗口高度
+// 3. 设置子集 GL_WINDOW_TARGET 的一些选项，以下两条的操作会被 objectId对象 记录
+glSetObjectOption(GL_WINDOW_TARGET, GL_OPTION_WINDOW_WIDTH, 800);  // 设置窗口宽度
+glSetObjectOption(GL_WINDOW_TARGET, GL_OPTION_WINDOW_HEIGHT, 600);  // 设置窗口高度
 
-// 将上下文的 GL_WINDOW_TARGET 设回默认
-glBindObject(GL_WINDOW_TARGET, 0);		// 将objectId对象与GL_WINDOW_TARGET解绑；但 objectId对象 已经记录了上面的两条内容。需要查看记录的时候再喊他过来就好
+// 4. 将上下文的 GL_WINDOW_TARGET 设回默认
+glBindObject(GL_WINDOW_TARGET, 0);  // 将objectId对象与GL_WINDOW_TARGET解绑；但 objectId对象 已经记录了上面的两条内容。需要查看记录的时候再喊他过来就好
 
-// 一旦重新绑定 objectId对象 到 GL_WINDOW_TARGET，这些选项会重新生效
+// 5. 一旦重新绑定 objectId对象 到 GL_WINDOW_TARGET，这些选项会重新生效
 ```
 
 
