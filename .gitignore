@@ -20,3 +20,4 @@
 include/divisible/*
 
 test/test_runner
+*build-*
