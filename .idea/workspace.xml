@@ -17,8 +17,8 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5cbc9df8-a0bb-4963-9456-5b3cc222e51c" name="变更" comment="增加 M1 Mac cmake 模板">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="5cbc9df8-a0bb-4963-9456-5b3cc222e51c" name="变更" comment="修改 .gitignore">
+      <change beforePath="$PROJECT_DIR$/001 - QtWeight - HelloWidget/001_HelloWidget/001_HelloWidget.pro.user" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -28,9 +28,9 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="HARD" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -97,7 +97,14 @@
       <option name="project" value="LOCAL" />
       <updated>1653401001838</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="修改 .gitignore">
+      <created>1659977323420</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1659977323420</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -116,6 +123,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="增加 M1 Mac cmake 模板" />
-    <option name="LAST_COMMIT_MESSAGE" value="增加 M1 Mac cmake 模板" />
+    <MESSAGE value="修改 .gitignore" />
+    <option name="LAST_COMMIT_MESSAGE" value="修改 .gitignore" />
   </component>
 </project>
