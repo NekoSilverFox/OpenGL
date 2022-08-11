@@ -117,6 +117,12 @@ glBindObject(GL_WINDOW_TARGET, 0);  // 将objectId对象与GL_WINDOW_TARGET解�
 
 ![image-20220808195151096](doc/pic/README/image-20220808195151096.png)
 
+- 在进行使用 QOpenGLWidget 时，要首先要在初始化函数`initializeGL()` 中调用 `QOpenGLFunctions_X_X_Core` 中的 init 将 Qt 里的函数指针指向显卡的函数（下图所示）
+
+
+
+
+
 ![image-20220808195106987](doc/pic/README/image-20220808195106987.png)
 
 
