@@ -117,9 +117,86 @@ glBindObject(GL_WINDOW_TARGET, 0);  // 将objectId对象与GL_WINDOW_TARGET解�
 
 ![image-20220808195151096](doc/pic/README/image-20220808195151096.png)
 
+- 在进行使用 QOpenGLWidget 时，要首先要在初始化函数`initializeGL()` 中调用 `QOpenGLFunctions_X_X_Core` 中的 init 将 Qt 里的函数指针指向显卡的函数（下图所示）
+
+
+
+
+
 ![image-20220808195106987](doc/pic/README/image-20220808195106987.png)
 
 
+
+# 你好，三角形
+
+<img src="doc/pic/README/image-20220812134100244.png" alt="image-20220812134100244" style="zoom:50%;" />
+
+顶点数据（`Vertex DATA[]`）的传递 -> 我们要将内存里的数据传递到显卡里
+
+1. **顶点着色器**（自己写）
+
+    - 它会在 GPU 上创建内存，用于储存我们的顶点数据（将数据从内存读取到显存，一个缓冲区一个缓冲区的填充）
+    - 通过**顶点缓冲对象 `Vertex Buffer Objects, VBO`**管理，顶点缓冲对象的缓冲类型是 `GL_ARRAY_BUFFER`
+    - 配置 OpenGL 如何解释这些内存：通过**顶点数组对象 `Vertex Array Objects, VAO`** 管理，**VAO 的数据类型是唯一的，数组里的每一个项都对应一个属性的解析（类似一个类 | 结构体）**。VAO 并不保存实际的数据，而是放顶点结构的定义
+    - OpenGL 允许我们同时绑定多个缓冲，只要它们是不同的缓冲类型
+
+    <img src="doc/pic/README/image-20220812155627459.png" alt="image-20220812155627459" style="zoom:50%;" />
+
+    ```c++
+    // 创建 VAO 和 VBO 对象并且赋予 ID
+    unsigned int VAO, VBO;
+    glGenVertexArrays(1, &VAO);  // Array 存放数据结构的定义
+    glGenBuffers(1, &VBO);  // Buffer 缓冲区才是真正存放顶点数据的
+    
+    // 绑定 VAO、VBO 对象
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    
+    
+    /* 为当前绑定到 target 的缓冲区对象创建一个新的数据存储（在 GPU 上创建对应的存储区域，并将内存中的数据发送过去）
+    	如果 data 不是 NULL，则使用来自此指针的数据初始化数据存储
+    	void glBufferData(GLenum target,  // 需要在 GPU 上创建的目标
+    										GLsizeipter size,  // 创建的显存大小
+    										const GLvoid* data,  // 数据
+    										GLenum usage)  // 创建在 GPU 上的哪一片区域（显存上的每个区域的性能是不一样的）https://registry.khronos.org/OpenGL-Refpages/es3.0/
+    */
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    
+    /* 告知显卡如何解析缓冲区里面的属性值
+    	void glVertexAttribPointer(
+    															GLuint index,  // VAO 中的第几个属性（VAO 属性的索引）
+    															GLint size,  // VAO 中的第几个属性中对应的位置放几份数据
+    															GLEnum type,  // 存放数据的数据类型
+    															GLboolean normalized,  // 是否标准化
+    															GLsizei stride,  // 步长
+    															const void* offset  // 偏移量
+    	)
+    */
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);  // 第一个属性，所以不需要偏移
+    
+    // 开始 VAO 管理的第一个属性值
+    glEnableVertexAttribArry(0);
+    
+    // 解绑 VAO 和 VBO
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    ```
+
+    
+
+2. 形状（图元）装配
+
+3. **几何着色器**（可以自己写也可以不写）
+
+4. 光栅化
+
+5. **片段着色器**（自己写）
+
+6. 测试与混合
+
+
+
+**标准化设备坐标**：(Normalized Device Coordinates, NDC) 顶点着色器中处理过后，就应该是标准化设备坐标了，x、y和Z的值在-1.0到1.0的一小段空间（立方体）。 落在范围外的坐标都会被裁剪，因为 GPU 没有必要再去消耗算力去进行计算
 
 
 
