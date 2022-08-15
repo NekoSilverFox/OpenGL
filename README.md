@@ -143,6 +143,13 @@ glBindObject(GL_WINDOW_TARGET, 0);  // 将objectId对象与GL_WINDOW_TARGET解�
     <img src="doc/pic/README/image-20220812155627459.png" alt="image-20220812155627459" style="zoom:50%;" />
 
     ```c++
+    // 顶点数据
+    float vertices[] = {
+      -0.5f, -0.5f, 0.0f,
+       0.5f, -0.5f, 0.0f,
+       0.0f,  0.5f, 0.0f
+    };
+    
     // 创建 VAO 和 VBO 对象并且赋予 ID
     unsigned int VAO, VBO;
     glGenVertexArrays(1, &VAO);  // Array 存放数据结构的定义
