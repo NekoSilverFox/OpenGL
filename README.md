@@ -135,19 +135,23 @@ glBindObject(GL_WINDOW_TARGET, 0);  // 将objectId对象与GL_WINDOW_TARGET解�
 
 
 
-
-
 ![image-20220808195106987](doc/pic/README/image-20220808195106987.png)
+
+
 
 
 
 # 你好，三角形
 
+<img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/b96de0784ceb4b7d8aee18e2096bba70~tplv-k3u1fbpfcp-watermark.awebp" alt="draw" style="zoom:50%;" />
+
+## VAO、VBO
+
 <img src="doc/pic/README/image-20220812134100244.png" alt="image-20220812134100244" style="zoom:50%;" />
 
 顶点数据（`Vertex DATA[]`）的传递 -> 我们要将内存里的数据传递到显卡里
 
-1. **顶点着色器**（自己写）
+1. **顶点着色器**（自己写在 `XXXOpenGLWedget::initializeGL()` 中）
 
     - 它会在 GPU 上创建内存，用于储存我们的顶点数据（将数据从内存读取到显存，一个缓冲区一个缓冲区的填充）
     - 通过**顶点缓冲对象 `Vertex Buffer Objects, VBO`**管理，顶点缓冲对象的缓冲类型是 `GL_ARRAY_BUFFER`
@@ -203,6 +207,14 @@ glBindObject(GL_WINDOW_TARGET, 0);  // 将objectId对象与GL_WINDOW_TARGET解�
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     ```
 
+    **编写完上述代码之后，如果要使用的话，需要在 `XXXOpenGLWedget::paintGL()` 中重新绑定 VAO 和 VBO：**
+
+    ```c++
+    glBindVertexArray(VAO);
+    ```
+
+    
+
     
 
 2. 形状（图元）装配
@@ -221,7 +233,164 @@ glBindObject(GL_WINDOW_TARGET, 0);  // 将objectId对象与GL_WINDOW_TARGET解�
 
 
 
+## 编译着色器
 
+> https://www.imgeek.org/article/825358359
+
+**渲染管线的作用是将3D模型转换为2维图像。**
+
+- **顶点着色器**
+
+    WebGL就是和GPU打交道，在GPU上运行的代码是一对着色器，一个是顶点着色器，另一个是片元着色器。每次调用着色程序都会先执行顶点着色器，再执行片元着色器。
+
+    一个顶点着色器的工作是生成裁剪空间坐标值，通常是以下的形式：
+
+    ```c++
+    const vertexShaderSource =
+    
+        attribute vec3 position; 
+    
+        void main() {
+    
+            gl_Position = vec4(position,1); 
+    
+        }
+    ```
+
+    
+
+    每个顶点调用一次（顶点）着色器，每次调用都需要设置一个特殊的全局变量 **gl_Position**。 该变量的值就是裁减空间坐标值。何为裁剪空间坐标？就是无论你的画布有多大，裁剪坐标的坐标范围永远是 -1 到 1 。
+
+    <img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/71c4328e45884accbf3138cbc9336d99~tplv-k3u1fbpfcp-watermark.awebp" alt="裁剪坐标系" style="zoom:30%;" />
+
+    如果运行一次顶点着色器， 那么gl_Position 就是 **（-0.5，-0.5，0，1）** 记住他永远是个 **Vec4**, 简单理解就是对应**x、y、z、w**。即使你没用其他的，也要设置默认值， 这就是所谓的 3维模型转换到我们屏幕中。
+
+    
+    
+    ---
+    
+    
+    
+    **顶点着色器的编写过程：**
+    
+    这个过程类似于 CPP 的（编写、编译、链接）过程；我们通过在 CPP 中编写、编译、链接面向 GPU 的代码
+    
+    1. **编写原码**（最好作为全局或成员变量）
+       
+        ```c++
+        // 【原码】顶点着色器就是把 xyz 原封不动的送出去
+        const char *vertexShaderSource = "#version 330 core\n"
+                                         "layout (location = 0) in vec3 aPos;\n"
+                                         "void main()\n"
+                                         "{\n"
+                                         "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+                                         "}\0";
+        ```
+        
+        
+        
+    1. **编译顶点着色器**（写在 `XXXOpenGLWedget::initializeGL()` 中）
+       
+        ```c++
+        unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);  // 创建顶点着色器（框架 | 对象）并给予编号
+        
+        /* 绑定至着色器原码
+        	void glShaderSource(
+        											GLuint shader,  着色器框架
+        											GLsize count,  着色器字符串的数量
+        											const CLchar** string,  着色器原码字符串
+        											const GLint* length  着色器原码的长度，如果是单个字符串可以填 NULL（代表原码字符串以 NULL 结尾）
+        	)
+        
+        */
+        glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);  // 绑定至着色器原码
+        
+        glCompileSharder(vertexShader);  // 编译着色器
+        
+        /* 因为可能出错，所以进行错误检查，也就是判断时候成功编译 */
+        int success;  // 是否成功的标志
+        char infolog[512];  // 错误日志（信息）
+        glGetShaderiv(vertexShader, GL_COMPILESTATUS, &success);
+        if(!success)
+        {
+          glGetShaderInfoLog(vertexShader, 512, NULL, infolog);
+          qDebug() << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infolog;
+        }
+        ```
+        
+        
+
+- **片段着色器**
+
+    1. **编写原码**
+    
+    ```c++
+    // 【原码】片段着色器就是给一个固定的颜色
+    const char *fragmentShaderSource = "#version 330 core\n"
+                                       "out vec4 FragColor;\n"
+                                       "void main()\n"
+                                       "{\n"
+                                       "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+                                       "}\n\0";
+    ```
+
+    
+
+    2. **编译片段着色器**（写在 `XXXOpenGLWedget::initializeGL()` 中）
+    
+    过程跟编译顶点着色器的框架是一样的，用的是同一套函数
+    
+    ```c++
+    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);  // 创建片段着色器（框架 | 对象）并给予编号
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);  // 绑定至着色器原码
+    glCompileShader(fragmentShader);  // 编译着色器
+    
+    /* 因为可能出错，所以进行错误检查，也就是判断时候成功编译 */
+    // int success;  // 是否成功的标志
+    // char infolog[512];  // 错误日志（信息）
+    glGetShaderiv(fragmentShader, GL_COMPILESTATUS, &success);
+    if(!success)
+    {
+      glGetShaderInfoLog(fragmentShader, 512, NULL, infolog);
+      qDebug() << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infolog;
+    }
+    ```
+    
+    
+
+## 链接着色器
+
+在进行完上面一节的着色器编写和编译后，需要**将顶点着色器和片段着色器进行链接*（就像 CPP 生成可执行文件的顺序那样：编写(.cpp) ->编译(.o) ->链接(.exe)）***
+
+```c++
+/* 链接顶点着色器和片段着色器，并生成最后的着色器程序 */
+unsigned int shaderProgram = glCreateProgram();
+glAttahcShader(shaderProgram, vertexShader);  // 加入顶点着色器
+glAttachShader(shaderProgram, fragmentShader);  // 加入片段着色器
+glLinkProgram(shaderProgram);  // 链接
+
+/* 因为可能出错，所以进行错误检查，也就是判断时候成功链接 */
+// int success;  // 是否成功的标志
+// char infolog[512];  // 错误日志（信息）
+glGetShaderiv(shaderProgram, GL_LINK_STATUS, &success);
+if(!success)
+{
+  glGetShaderInfoLog(shaderProgram, 512, NULL, infolog);
+  qDebug() << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infolog;
+}
+
+/* 删除已经不需要的编辑的结果 */
+glDeleteShader(vertexShader);
+glDeleteShader(fragmentShader);
+```
+
+
+
+之后需要在 `XXXOpenGLWedget::paintGL()` 中使用（开启）着色器：
+
+```c++
+glUseProgram(shaderProgram);
+```
 
 
 
