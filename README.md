@@ -24,7 +24,9 @@
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | [000 - Apple M1 配置测试](https://github.com/NekoSilverFox/OpenGL/tree/main/000 - Apple M1 配置测试) | 在 M1 Mac 下 OpenGL 的配置及运行（基于 Clang）               |
 | [001_OpenGLWidget_HelloWidget](https://github.com/NekoSilverFox/OpenGL/tree/main/001_OpenGLWidget_HelloWidget) | 如果在 Qt 的环境下，使用初始化 OpenGL 控件                   |
-| [002_Triangle_VAO_VBO](https://github.com/NekoSilverFox/OpenGL/tree/main/002_Triangle_VAO_VBO) | 在基于 `001` 的初始化控件后，增加使用 VAO、VBO 代码绘制三角形的代码 |
+| [002_Triangle_VAO_VBO](https://github.com/NekoSilverFox/OpenGL/tree/main/002_Triangle_VAO_VBO) | 基于 `001` 的初始化控件后，增加使用 VAO、VBO 代码绘制三角形的代码<br />顶点和片段着色器的编写、编译、链接和使用 |
+|                                                              |                                                              |
+|                                                              |                                                              |
 |                                                              |                                                              |
 |                                                              |                                                              |
 |                                                              |                                                              |
@@ -147,7 +149,41 @@ glBindObject(GL_WINDOW_TARGET, 0);  // 将objectId对象与GL_WINDOW_TARGET解�
 
 ## VAO、VBO
 
+> https://learnopengl-cn.github.io/01%20Getting%20started/04%20Hello%20Triangle/
+>
+> 在学习此节之前，建议将这三个单词先记下来：
+>
+> - 顶点数组对象：Vertex Array Object，VAO
+> - 顶点缓冲对象：Vertex Buffer Object，VBO
+> - 元素缓冲对象：Element Buffer Object，EBO 或 索引缓冲对象 Index Buffer Object，IBO
+
+在OpenGL中，任何事物都在3D空间中，而屏幕和窗口却是2D像素数组，这导致OpenGL的大部分工作都是关于把3D坐标转变为适应你屏幕的2D像素。3D坐标转为2D坐标的处理过程是由OpenGL的**图形渲染管线**（Graphics Pipeline，大多译为管线，实际上指的是一堆原始图形数据途经一个输送管道，期间经过各种变化处理最终出现在屏幕的过程）管理的。图形渲染管线可以被划分为两个主要部分：第一部分把你的3D坐标转换为2D坐标，第二部分是把2D坐标转变为实际的有颜色的像素。
+
+
+
+*2D坐标和像素也是不同的，2D坐标精确表示一个点在2D空间中的位置，而2D像素是这个点的近似值，2D像素受到你的屏幕/窗口分辨率的限制。*
+
+
+
+图形渲染管线接受一组3D坐标，然后把它们转变为你屏幕上的有色2D像素输出。图形渲染管线可以被划分为几个阶段，每个阶段将会把前一个阶段的输出作为输入。所有这些阶段都是高度专门化的（它们都有一个特定的函数），并且很容易并行执行。正是由于它们具有并行执行的特性，当今大多数显卡都有成千上万的小处理核心，它们在GPU上为每一个（渲染管线）阶段运行各自的小程序，从而在图形渲染管线中快速处理你的数据。这些小程序叫做**着色器(Shader)。**
+
+
+
+有些着色器可以由开发者配置，因为允许用自己写的着色器来代替默认的，所以能够更细致地控制图形渲染管线中的特定部分了。因为它们运行在GPU上，所以节省了宝贵的CPU时间。**OpenGL着色器是用OpenGL着色器语言(OpenGL Shading Language, GLSL)写成的**
+
+
+
+**下面，你会看到一个图形渲染管线的每个阶段的抽象展示。要注意蓝色部分代表的是我们可以注入自定义的着色器的部分。**
+
+
+
 <img src="doc/pic/README/image-20220812134100244.png" alt="image-20220812134100244" style="zoom:50%;" />
+
+首先，我们以数组的形式传递3个3D坐标作为图形渲染管线的输入，用来表示一个三角形，这个数组叫做**顶点数据(Vertex Data)；顶点数据是一系列顶点的集合。一个顶点(Vertex)是一个3D坐标的数据的集合。而顶点数据是用顶点属性(Vertex Attribute)表示的，它可以包含任何我们想用的数据**，但是简单起见，我们还是假定每个顶点只由一个3D位置(译注1)和一些颜色值组成的吧。
+
+
+
+
 
 顶点数据（`Vertex DATA[]`）的传递 -> 我们要将内存里的数据传递到显卡里
 
@@ -310,7 +346,7 @@ glBindObject(GL_WINDOW_TARGET, 0);  // 将objectId对象与GL_WINDOW_TARGET解�
         /* 因为可能出错，所以进行错误检查，也就是判断时候成功编译 */
         int success;  // 是否成功的标志
         char infolog[512];  // 错误日志（信息）
-        glGetShaderiv(vertexShader, GL_COMPILESTATUS, &success);
+        glGetShaderiv(vertexShader, GL_COMPILES_TATUS, &success);
         if(!success)
         {
           glGetShaderInfoLog(vertexShader, 512, NULL, infolog);
@@ -348,7 +384,7 @@ glBindObject(GL_WINDOW_TARGET, 0);  // 将objectId对象与GL_WINDOW_TARGET解�
     /* 因为可能出错，所以进行错误检查，也就是判断时候成功编译 */
     // int success;  // 是否成功的标志
     // char infolog[512];  // 错误日志（信息）
-    glGetShaderiv(fragmentShader, GL_COMPILESTATUS, &success);
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
     if(!success)
     {
       glGetShaderInfoLog(fragmentShader, 512, NULL, infolog);
@@ -364,7 +400,7 @@ glBindObject(GL_WINDOW_TARGET, 0);  // 将objectId对象与GL_WINDOW_TARGET解�
 
 ```c++
 /* 链接顶点着色器和片段着色器，并生成最后的着色器程序 */
-unsigned int shaderProgram = glCreateProgram();
+unsigned int shaderProgram = glCreateProgram();  // 注意，这里是 `glCreateProgram()`，因为链接之后生成的便是最后的程序
 glAttahcShader(shaderProgram, vertexShader);  // 加入顶点着色器
 glAttachShader(shaderProgram, fragmentShader);  // 加入片段着色器
 glLinkProgram(shaderProgram);  // 链接
@@ -379,7 +415,7 @@ if(!success)
   qDebug() << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infolog;
 }
 
-/* 删除已经不需要的编辑的结果 */
+/* 删除已经不需要的编译的结果 */
 glDeleteShader(vertexShader);
 glDeleteShader(fragmentShader);
 ```
