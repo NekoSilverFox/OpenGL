@@ -324,7 +324,7 @@ glBindObject(GL_WINDOW_TARGET, 0);  // 将objectId对象与GL_WINDOW_TARGET解�
     glGenBuffers(1, &VBO);  // Buffer 缓冲区才是真正存放顶点数据的
     
     // 绑定 VAO、VBO 对象
-    glBindVertexArray(VAO);
+    glBindVertexArray(VAO);  // 【重点】VAO会储存glBindBuffer的函数调用
     glBindBuffer(GL_ARRAY_BUFFER, VBO); // 新创建的缓冲绑定到GL_ARRAY_BUFFER目标上，顶点缓冲对象的缓冲类型是GL_ARRAY_BUFFER
     
     
@@ -356,7 +356,7 @@ glBindObject(GL_WINDOW_TARGET, 0);  // 将objectId对象与GL_WINDOW_TARGET解�
     // 开始 VAO 管理的第一个属性值
     glEnableVertexAttribArray(0);
     
-    // 解绑 VAO 和 VBO
+    // 解绑 VAO 和 VBO ???将两行反过来写，试试还能不能绘制???
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     ```
