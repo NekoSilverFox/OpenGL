@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>581</width>
-    <height>373</height>
+    <width>681</width>
+    <height>441</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,11 +25,11 @@ QMenuBar {
 }</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="AXBOpenGLWidget" name="openGLWidget">
+   <widget class="FoxOpenGLWidget" name="openGLWidget">
     <property name="geometry">
      <rect>
-      <x>140</x>
-      <y>60</y>
+      <x>170</x>
+      <y>100</y>
       <width>300</width>
       <height>200</height>
      </rect>
@@ -41,7 +41,7 @@ QMenuBar {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>581</width>
+     <width>681</width>
      <height>27</height>
     </rect>
    </property>
@@ -83,9 +83,9 @@ QMenuBar {
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>AXBOpenGLWidget</class>
+   <class>FoxOpenGLWidget</class>
    <extends>QOpenGLWidget</extends>
-   <header>axbopenglwidget.h</header>
+   <header location="global">foxopenglwidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
