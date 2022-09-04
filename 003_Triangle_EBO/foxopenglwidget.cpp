@@ -2,14 +2,37 @@
 #include "foxopenglwidget.h"
 
 // 顶点数据
+//float vertices[] = {
+//    // 第一个三角形
+//    0.5f, 0.5f, 0.0f,   // 右上角
+//    0.5f, -0.5f, 0.0f,  // 右下角
+//    -0.5f, 0.5f, 0.0f,  // 左上角
+//    // 第二个三角形
+//    0.5f, -0.5f, 0.0f,  // 右下角
+//    -0.5f, -0.5f, 0.0f, // 左下角
+//    -0.5f, 0.5f, 0.0f   // 左上角
+
 float vertices[] = {
-  -0.5f, -0.5f, 0.0f,
-   0.5f, -0.5f, 0.0f,
-   0.0f,  0.5f, 0.0f
+    0.5f, 0.5f, 0.0f,   // 右上角 0
+    0.5f, -0.5f, 0.0f,  // 右下角 1
+    -0.5f, -0.5f, 0.0f, // 左下角 2
+    -0.5f, 0.5f, 0.0f   // 左上角 3
+};
+
+unsigned int indices[] = {
+    // 注意索引从0开始!
+    // 此例的索引(0,1,2,3)就是顶点数组vertices的下标，
+    // 这样可以由下标代表顶点组合成矩形
+
+    0, 1, 3, // 第一个三角形
+    1, 2, 3  // 第二个三角形
 };
 
 // 创建 VAO 和 VBO 对象并且赋予 ID
 unsigned int VBO, VAO;
+
+// 创建 EBO 元素缓冲对象
+unsigned int EBO;
 
 // 顶点着色器的源代码，顶点着色器就是把 xyz 原封不动的送出去
 const char *vertexShaderSource = "#version 330 core\n"
@@ -83,10 +106,17 @@ void FoxOpenGLWidget::initializeGL()
     // 开始 VAO 管理的第一个属性值
     glEnableVertexAttribArray(0);
 
+    // ===================== EBO =====================
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);  // EBO/IBO 是储存顶点【索引】的
 
-    // 解绑 VAO 和 VBO
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
     glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);  // 注意 VAO 不参与管理 VBO
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 
 
     // ===================== 顶点着色器 =====================
@@ -145,11 +175,15 @@ void FoxOpenGLWidget::initializeGL()
     /* 删除已经不需要的编译的结果 */
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
+
+    /* 用线条填充，默认是 GL_FILL */
+//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
 
 void FoxOpenGLWidget::resizeGL(int w, int h)
 {
-
+    Q_UNUSED(w);
+    Q_UNUSED(h);
 }
 
 void FoxOpenGLWidget::paintGL()
@@ -162,7 +196,11 @@ void FoxOpenGLWidget::paintGL()
     glBindVertexArray(VAO);
 
     /* 绘制三角形 */
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+//    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);  // 6 代表6个点，因为一个矩形是2个三角形构成的，一个三角形有3个点
+//    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, &indices);  // 直接到索引数组里去绘制，如果VAO没有绑定EB的话
+
+
 
     /* 使用着色器 */
     glUseProgram(shaderProgram);
