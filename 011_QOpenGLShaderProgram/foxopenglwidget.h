@@ -3,6 +3,7 @@
 
 #include <QOpenGLWidget>  // 相当于GLFW
 #include <QOpenGLFunctions_4_5_Core>  // 相当于 GLAD
+#include <QOpenGLShaderProgram>
 
 class FoxOpenGLWidget : public QOpenGLWidget, QOpenGLFunctions_4_5_Core
 {
@@ -35,6 +36,7 @@ public slots:
 
 private:
     Shape current_shape_;  // 记录当前绘制的图形
+    QOpenGLShaderProgram shader_program_;  // 【重点】使用 Qt 提供的对象进行编译和链接
 };
 
 #endif // FOXOPENGLWIDGET_H
