@@ -112,7 +112,6 @@ void FoxOpenGLWidget::initializeGL()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 
-    bool success;
     // ===================== 顶点着色器 =====================
 //    this->shader_program_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource);  // 通过字符串对象添加
     this->shader_program_.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/source.vert");  // 通过资源文件
@@ -122,7 +121,7 @@ void FoxOpenGLWidget::initializeGL()
     this->shader_program_.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/source.frag");
 
     // ===================== 链接着色器 =====================
-    success = this->shader_program_.link();
+    bool success = this->shader_program_.link();
 
     if (!success)
     {
