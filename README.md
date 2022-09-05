@@ -122,7 +122,7 @@ target_link_libraries(
 | 顶点属性                        | Vertex Attribute              | 顶点的数据是用顶点属性表示的，它可以包含任何我们想用的数据   |
 | VAO 顶点数组对象                | Vertex Array Object           | 使用 VAO 配置 OpenGL 如何解释显存，VAO 的数据类型是唯一的，并不保存实际的数据，而是**放顶点结构的定义** |
 | VBO 顶点缓冲对象                | Vertex Buffer Object          | VBO 顶点缓冲对象**管理着**顶点着色器（Vertex Shader），VBO的**类型是**`GL_ARRAY_BUFFER`；它会在 GPU 上创建内存，用于储存我们的大量顶点数据 |
-| EBO/IBO 元素/索引缓冲对象       | Element/Index Buffer Object   |                                                              |
+| EBO/IBO 元素/索引缓冲对象       | Element/Index Buffer Object   | EBO是一个缓冲区，就像一个顶点缓冲区对象一样，它**存储 OpenGL 要绘制顶点的==索引==** |
 | 着色器程序对象                  | Shader Program Object         | 多个着色器链接（Link）合并之后并最终链接完成的版本，在渲染对象时使用`glUseProgram(shaderProgram)`激活这个着色器程序 |
 
 
@@ -626,7 +626,7 @@ float vertices[] = {
 
 可以看到，有几个顶点叠加了。我们指定了`右下角`和`左上角`两次！一个矩形只有4个而不是6个顶点，这样就产生50%的额外开销。当我们有包括上千个三角形的模型之后这个问题会更糟糕，这会产生一大堆浪费。更好的解决方案是只储存不同的顶点，并设定绘制这些顶点的顺序。这样子我们只要储存4个顶点就能绘制矩形了，之后只要指定绘制的顺序就行了。如果OpenGL提供这个功能就好了，对吧？
 
-值得庆幸的是，元素缓冲区对象的工作方式正是如此。 **EBO是一个缓冲区，就像一个顶点缓冲区对象一样，它存储 OpenGL 用来决定要绘制哪些顶点的==索引==**。这种所谓的**索引绘制(Indexed Drawing)**正是我们问题的解决方案。首先，我们先要定义（不重复的）顶点，和绘制出矩形所需的索引：
+值得庆幸的是，元素缓冲区对象的工作方式正是如此。 **EBO是一个缓冲区，就像一个顶点缓冲区对象一样，它存储 OpenGL 要绘制顶点的==索引==**。这种所谓的**索引绘制(Indexed Drawing)**正是我们问题的解决方案。首先，我们先要定义（不重复的）顶点，和绘制出矩形所需的索引：
 
 ```c++
 float vertices[] = {
@@ -713,3 +713,124 @@ glBindVertexArray(0);
 
 
 
+# Qt 交互
+
+- 如果需要从 `paintGL()` 以外的位置触发重新绘制（比如使用计时器设置场景动画），则应调用 widget 的 `update()` 函数来安排更新
+- 调用 `paintGL()`、`resizeGL()` 或 `initializeGL()` 时，widget 的 OpenGL 呈现上下文将变为当前。如果需要从其他位置（例如：在 widget 的构造函数或自己的绘制函数中）调用标准 OpenGL API 函数，则必须首先调用 `makeCurrent()`
+
+
+
+> **在 `paintGL()` 以外的地方调用绘制函数，没有意义。绘制图形最终将会被 `paintGL()` 覆盖**
+>
+> 我们在写自己函数的时候，可以采用一下结构：
+>
+> 【注意】只在 `paintGL()` 外部，且**中间是代码调用了 OpenGL 功能时**才这么写
+>
+> ```c++
+> ...
+>   makeCurrent();
+> 
+> 	... 自己写的调用了 OpenGL 功能的代码 ...
+>     
+>     
+>   doneCurrent();
+> 	update();  执行重绘，这条语句会重新执行 paintGL()
+> ...
+> ```
+>
+> **`update();`  会执行重绘，也就是这条语句会==重新调用== `paintGL()`**
+
+
+
+## QOpenGLShaderProgram
+
+可以通过 Qt 提供的 `QOpenGLShaderProgram` 对象进行 GLSL 源码（着色器）的编译和链接
+
+在同名的头文件 `#include <QOpenGLShaderProgram>`中，提供的方法有：
+
+- **添加（顶点 | 片段）着色器原码：**
+
+    - 通过**源码GLSL字符串**添加：
+
+        `QOpenGLShaderProgram.addShaderFromSourceCode(QOpenGLShader::源码类型, 源码);`
+
+        
+
+    - 通过**包含有GLSL源码的资源文件**添加：
+
+        `QOpenGLShaderProgram.addShaderFromSourceFile(QOpenGLShader::源码类型, ":/路径");`
+
+        **顶点着色器的文件名后缀应该是 `.vert`，片段着色器为 `.frag`**
+
+        *可以通过右键文件，拷贝文件路径*
+
+        <img src="doc/pic/README/image-20220905200249305.png" alt="image-20220905200249305" style="zoom: 67%;" />
+
+        
+
+- **需要传入的第一个参数类型可以为：**
+
+    - `QOpenGLShader::Vertex` - 顶点着色器
+    - `QOpenGLShader::Fragment` - 片段着色器
+
+```c++
+#include <QOpenGLShaderProgram>
+
+class FoxOpenGLWidget : public QOpenGLWidget, QOpenGLFunctions_X_X_Core
+{
+  
+  ...
+    
+    
+private:
+  ...
+  QOpenGLShaderProgram shader_program_;
+}
+
+/**
+* 可以通过 Qt 提供的 `QOpenGLShaderProgram` 对象进行 GLSL 源码（着色器）的编译和链接，可以使代码量大幅度减少
+*/
+void FoxOpenGLWidget::initializeGL()
+{
+    initializeOpenGLFunctions();  // 【重点】初始化OpenGL函数，将 Qt 里的函数指针指向显卡的函数（头文件 QOpenGLFunctions_X_X_Core）
+
+
+    // ===================== VAO | VBO =====================
+    ...
+
+    // ===================== EBO =====================
+    ...
+
+
+    bool success;
+    // ===================== 顶点着色器 =====================
+    this->shader_program_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource);
+
+    // ===================== 片段着色器 =====================
+    this->shader_program_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource);
+
+    // ===================== 链接着色器 =====================
+    success = this->shader_program_.link();
+
+    if (!success)
+    {
+        qDebug << "ERROR: " << this->shader_program_.log();
+    }
+		
+  ...
+}
+```
+
+
+
+**通过 Qt 资源文件的形式将 GLSL 源码传入：**
+
+![image-20220905184211935](doc/pic/README/image-20220905184211935.png)
+
+![image-20220905184318358](doc/pic/README/image-20220905184318358.png)
+
+![image-20220905184413706](doc/pic/README/image-20220905184413706.png)
+
+![image-20220905184728533](doc/pic/README/image-20220905184728533.png)
+
+![image-20220905184859891](doc/pic/README/image-20220905184859891.png)
