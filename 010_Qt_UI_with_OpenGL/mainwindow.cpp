@@ -13,3 +13,18 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+void MainWindow::on_actionDrawRect_triggered()
+{
+    ui->openGLWidget->drawShape(FoxOpenGLWidget::Shape::Rect);
+}
+
+void MainWindow::on_actionWireframe_triggered()
+{
+    ui->openGLWidget->setWirefame(ui->actionWireframe->isChecked());  // 如果按下就是线框模式
+}
+
+void MainWindow::on_actionClear_triggered()
+{
+    ui->openGLWidget->drawShape(FoxOpenGLWidget::Shape::None);
+}

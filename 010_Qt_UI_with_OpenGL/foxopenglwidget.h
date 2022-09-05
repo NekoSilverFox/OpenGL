@@ -8,8 +8,19 @@ class FoxOpenGLWidget : public QOpenGLWidget, QOpenGLFunctions_4_5_Core
 {
     Q_OBJECT
 public:
+    enum Shape
+    {
+        None,
+        Rect,
+        Circle,
+        Triangle
+    };
+
     explicit FoxOpenGLWidget(QWidget *parent = nullptr);
+    void drawShape(Shape shape);
+    void setWirefame(bool wirefame);
     ~FoxOpenGLWidget();
+
 
 protected:
     /* 需要重载的 QOpenGLWidget 中的三个函数 */
@@ -20,6 +31,9 @@ protected:
 signals:
 
 public slots:
+
+private:
+    Shape current_shape_;  // 记录当前绘制的图形
 };
 
 #endif // FOXOPENGLWIDGET_H

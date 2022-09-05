@@ -208,13 +208,55 @@ void FoxOpenGLWidget::paintGL()
     /* 重新绑定 VAO */
     glBindVertexArray(VAO);
 
-    /* 绘制三角形 */
-//    glDrawArrays(GL_TRIANGLES, 0, 6);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);  // 6 代表6个点，因为一个矩形是2个三角形构成的，一个三角形有3个点
-//    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, &indices);  // 直接到索引数组里去绘制，如果VAO没有绑定EBO的话
-
-
-
     /* 使用着色器 */
     glUseProgram(shaderProgram);
+
+    /* 绘制三角形 */
+//    glDrawArrays(GL_TRIANGLES, 0, 6);
+//    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);  // 6 代表6个点，因为一个矩形是2个三角形构成的，一个三角形有3个点
+//    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, &indices);  // 直接到索引数组里去绘制，如果VAO没有绑定EBO的话
+
+    // 通过 this->current_shape_ 确定当前需要绘制的图形
+    switch (this->current_shape_)
+    {
+    case Shape::None:
+        break;
+
+    case Shape::Rect:
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        break;
+
+    case Shape::Circle:
+        break;
+
+    case Shape::Triangle:
+        break;
+
+    default:
+        break;
+
+    }
+}
+
+void FoxOpenGLWidget::drawShape(FoxOpenGLWidget::Shape shape)
+{
+    this->current_shape_ = shape;
+    update();  // 【重点】注意使用 update() 进行重绘，也就是这条语句会重新调用 paintGL()
+}
+
+void FoxOpenGLWidget::setWirefame(bool wirefame)
+{
+    makeCurrent();
+
+    if (true == wirefame)
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
+    else
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+
+    doneCurrent();
+    update();  // 【重点】注意使用 update() 进行重绘，也就是这条语句会重新调用 paintGL()
 }

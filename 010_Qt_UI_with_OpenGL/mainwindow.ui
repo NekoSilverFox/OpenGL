@@ -22,6 +22,9 @@
 QMenuBar {
 	background-color:rgb(200, 200, 200);
 	color:rgb(60, 60, 60);
+}
+QWidget:checked {
+	background-color:rgb(150, 150, 150);
 }</string>
   </property>
   <widget class="QWidget" name="centralWidget">
@@ -88,8 +91,11 @@ QMenuBar {
    </property>
   </action>
   <action name="actionWireframe">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
-    <string>线框模式</string>
+    <string>线框渲染</string>
    </property>
   </action>
   <action name="actionClear">
