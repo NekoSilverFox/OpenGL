@@ -27,7 +27,7 @@
 | [002_Triangle_VAO_VBO](https://github.com/NekoSilverFox/OpenGL/tree/main/002_Triangle_VAO_VBO) | 基于 `001` 的初始化控件后，增加使用 VAO、VBO 代码绘制三角形的代码<br />顶点和片段着色器的编写、编译、链接和使用 |
 | [003_Triangle_EBO](https://github.com/NekoSilverFox/OpenGL/tree/main/003_Triangle_EBO) | 通过 EBO（元素/索引缓冲对象）进行了 2 个三角形的绘制（绘制为 1 个矩形） |
 | [005_Two_triangle_exercise](https://github.com/NekoSilverFox/OpenGL/tree/main/005_Two_triangle_exercise) | 小练习：使用 VAO 和 VBO 数组进行对不同三角形的绘制；使用 2 个片段着色器进行分别着色 |
-| [010_Qt_UI_with_OpenGL](https://github.com/NekoSilverFox/OpenGL/tree/main/010_Qt_UI_with_OpenGL) | 通过 QOpenGLWidget 上的按钮实现三角形的绘制、清除、是否开启线框模式 |
+| [010_Qt_UI_with_OpenGL](https://github.com/NekoSilverFox/OpenGL/tree/main/010_Qt_UI_with_OpenGL) | Qt UI 调用 OpenGL 功能：通过 QOpenGLWidget 上的按钮实现三角形的绘制、清除、是否开启线框模式<br />Qt`update()` 函数的注意事项及使用 |
 | [011_QOpenGLShaderProgram](https://github.com/NekoSilverFox/OpenGL/tree/main/011_QOpenGLShaderProgram) | 使用 Qt 提供的 QOpenGLShaderProgram 类，进行顶点和片段着色器的编译链接和使用。并且将 GLSL 代码以 Qt 资源文件的方式传入和使用 |
 |                                                              |                                                              |
 |                                                              |                                                              |
@@ -834,3 +834,24 @@ void FoxOpenGLWidget::initializeGL()
 ![image-20220905184728533](doc/pic/README/image-20220905184728533.png)
 
 ![image-20220905184859891](doc/pic/README/image-20220905184859891.png)
+
+
+
+# GLSL
+
+**GLSL** - Open**GL** Shading **L**anguage 的缩写，是一种类 C 语言，一般拥有以下结构：
+
+```glsl
+#version VERSION_NUMBER
+in TYPE IN_VARIABLE_NAME;  // `in` 代表在流水线上的来自其他模块的输入
+in TYPE IN_VARIABLE_NAME;
+out TYPE OUT_VARIABLE_NAME;  // `out` 代表本模块的输出，要输入到下一个模块的东西
+uniform TYPE UNIFORM_NAME;
+
+void main() {
+  OUR_VARIABLE_NAME = WEIRD_STUFF_WE_PROCESSED;
+}
+```
+
+
+
