@@ -42,7 +42,7 @@ const char *fragmentShaderSource = "#version 330 core\n"
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
-
+    this->current_shape_ = Shape::None;
 }
 
 FoxOpenGLWidget::~FoxOpenGLWidget()
@@ -65,6 +65,22 @@ void FoxOpenGLWidget::initializeGL()
     initializeOpenGLFunctions();  // 【重点】初始化OpenGL函数，将 Qt 里的函数指针指向显卡的函数（头文件 QOpenGLFunctions_X_X_Core）
 
 
+    // ===================== 顶点着色器 =====================
+//    this->shader_program_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource);  // 通过字符串对象添加
+    this->shader_program_.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/source.vert");  // 通过资源文件
+
+    // ===================== 片段着色器 =====================
+//    this->shader_program_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource);
+    this->shader_program_.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/source.frag");
+
+    // ===================== 链接着色器 =====================
+    bool success = this->shader_program_.link();
+
+    if (!success)
+    {
+        qDebug() << "ERROR: " << this->shader_program_.log();
+    }
+
     // ===================== VAO | VBO =====================
     // VAO 和 VBO 对象赋予 ID
     glGenVertexArrays(1, &VAO);
@@ -83,7 +99,7 @@ void FoxOpenGLWidget::initializeGL()
     */
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-
+#if 1
     /* 告知显卡如何解析缓冲区里面的属性值
         void glVertexAttribPointer(
                                     GLuint index,  // VAO 中的第几个属性（VAO 属性的索引）
@@ -94,11 +110,21 @@ void FoxOpenGLWidget::initializeGL()
                                     const void* offset  // 偏移量
         )
     */
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);  // 第一个属性，所以不需要偏移
+    this->shader_program_.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
+    GLint aPosLocation = this->shader_program_.attributeLocation("aPos");  // 获取顶点着色器中顶点属性 aPos 的位置
+    glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);  // 手动传入第几个属性
+    glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
+#endif
 
+#if 0
+    /* 当我们在顶点着色器中没有写 layout 时，也可以在此处代码根据名字手动指定某个顶点属性的位置 */
+    this->shader_program_.bind();
+    GLint aPosLocation = 2;
+    this->shader_program_.bindAttributeLocation("aPos", aPosLocation);
+    glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(aPosLocation);
 
-    // 开始 VAO 管理的第一个属性值
-    glEnableVertexAttribArray(0);
+#endif
 
     // ===================== EBO =====================
     glGenBuffers(1, &EBO);
@@ -111,22 +137,6 @@ void FoxOpenGLWidget::initializeGL()
     glBindBuffer(GL_ARRAY_BUFFER, 0);  // 注意 VAO 不参与管理 VBO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-
-    // ===================== 顶点着色器 =====================
-//    this->shader_program_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource);  // 通过字符串对象添加
-    this->shader_program_.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/source.vert");  // 通过资源文件
-
-    // ===================== 片段着色器 =====================
-//    this->shader_program_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource);
-    this->shader_program_.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/source.frag");
-
-    // ===================== 链接着色器 =====================
-    bool success = this->shader_program_.link();
-
-    if (!success)
-    {
-        qDebug() << "ERROR: " << this->shader_program_.log();
-    }
 
     /* 用线条填充，默认是 GL_FILL */
 //    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
