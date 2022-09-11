@@ -3,10 +3,12 @@
  <h1 align="center">OpenGL</h1>
  <p align="center"><b>计算机图形</b></p>
 </p>
+
 > “绝不能恐惧，恐惧是思维杀手。恐惧是引向毁灭的死神。我将正视恐惧，任由它穿过我的躯体。当恐惧逝去，我会洞悉它的轨迹。恐惧所过之处，万物无存，唯我独立。”
 
 
 <div align=center>
+
 
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-brightgreen)](LICENSE)
@@ -16,6 +18,7 @@
 <div align=left>
 <!-- 顶部至此截止 -->
 [toc]
+
 
 
 # 目录说明
@@ -218,7 +221,7 @@ glBindObject(GL_WINDOW_TARGET, 0);  // 将objectId对象与GL_WINDOW_TARGET解�
 
 
 4. 几何着色器的输出会被传入**==光栅化阶段(Rasterization Stage)==**，**这里它会把图元映射为最终屏幕上相应的像素，生成供片段着色器(Fragment Shader)使用的片段(Fragment | OpenGL中的一个片段是OpenGL渲染一个像素所需的所有数据)。在片段着色器运行之前会执行裁切(Clipping)。裁切会丢弃超出你的视图以外的所有像素，用来提升执行效率。**
-   
+
 5. **==片段着色器==的主要目的是计算一个像素的最终颜色**，这也是所有OpenGL高级效果产生的地方。通常，片段着色器包含3D场景的数据（比如光照、阴影、光的颜色等等），这些数据可以被用来计算最终像素的颜色。
 
 
@@ -257,11 +260,11 @@ glBindObject(GL_WINDOW_TARGET, 0);  // 将objectId对象与GL_WINDOW_TARGET解�
 
     - 通过**顶点缓冲对象 `Vertex Buffer Objects, VBO`**管理，顶点缓冲对象的缓冲**类型是** `GL_ARRAY_BUFFER`。它会在 GPU 上创建内存，用于储存我们的大量顶点数据（将数据从内存读取到显存，一个缓冲区一个缓冲区的填充）。使用这些缓冲对象的好处是我们可以一次性的发送一大批数据到显卡上，而不是每个顶点发送一次。从CPU把数据发送到显卡相对较慢，所以只要可能我们都要尝试尽量一次性发送尽可能多的数据。当数据发送至显卡的内存中后，顶点着色器几乎能立即访问顶点，这是个非常快的过程。
 
-        
+      ​    
 
     - OpenGL 允许我们同时绑定多个缓冲，只要它们是不同的缓冲类型
 
-        
+      ​    
 
     - 配置 OpenGL 如何解释这些内存：通过**顶点数组对象 `Vertex Array Objects, VAO`** 管理，**VAO 的数据类型是唯一的，数组里的每一个项都对应一个属性的解析（类似一个类 | 结构体）**。的
 
@@ -279,7 +282,7 @@ glBindObject(GL_WINDOW_TARGET, 0);  // 将objectId对象与GL_WINDOW_TARGET解�
 
         - 通过`glVertexAttribPointer`调用与顶点属性关联的顶点缓冲对象
 
-            
+          ​    
 
         要想使用VAO，要做的只是使用`glBindVertexArray`绑定VAO。从绑定之后起，我们应该绑定和配置对应的VBO和属性指针，之后解绑VAO供之后使用。当我们打算绘制一个物体的时候，我们只要在绘制物体前简单地把VAO绑定到希望使用的设定上就行了。这段代码应该看起来像这样：
 
@@ -453,9 +456,9 @@ glBindObject(GL_WINDOW_TARGET, 0);  // 将objectId对象与GL_WINDOW_TARGET解�
         ```
 
         为了能够让OpenGL使用它，我们必须在**运行时动态编译它的GLSL源代码**。
-        
+
     1. **编译顶点着色器**（写在 `XXXOpenGLWedget::initializeGL()` 中）
-    
+
         ```c++
         unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);  // 创建顶点着色器（框架 | 对象）并给予编号，由于我们正在创建一个【顶点】着色器，传递的参数是GL_VERTEX_SHADER。
         
@@ -482,21 +485,21 @@ glBindObject(GL_WINDOW_TARGET, 0);  // 将objectId对象与GL_WINDOW_TARGET解�
           qDebug() << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infolog;
         }
         ```
-    
+
         
-    
+
 - **片段着色器**
 
     片段着色器(Fragment Shader)是第二个也是最后一个我们打算创建的用于渲染三角形的着色器。片段着色器所做的是计算像素最后的颜色输出。
-    
+
     > 在计算机图形中颜色被表示为有4个元素的数组：红色、绿色、蓝色和alpha(透明度)分量，通常缩写为RGBA。当在OpenGL或GLSL中定义一个颜色的时候，我们把颜色每个分量的强度设置在0.0到1.0之间。比如说我们设置红为1.0f，绿为1.0f，我们会得到两个颜色的混合色，即黄色。这三种颜色分量的不同调配可以生成超过1600万种不同的颜色！
+
     
-    
-    
+
     1. **编写源码**
-    
+
         片段着色器只需要一个输出变量，这个变量是一个4分量向量，它表示的是最终的输出颜色，我们应该自己将其计算出来。声明输出变量可以使用`out`关键字，这里我们命名为`FragColor`。下面，我们将一个Alpha值为1.0(1.0代表完全不透明)的橘黄色的`vec4`赋值给颜色输出。
-    
+
     ```c++
     // 【原码】片段着色器就是给一个固定的颜色
     const char *fragmentShaderSource = "#version 330 core\n"
@@ -506,13 +509,13 @@ glBindObject(GL_WINDOW_TARGET, 0);  // 将objectId对象与GL_WINDOW_TARGET解�
                                        "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
                                        "}\n\0";
     ```
+
     
-    
-    
+
     2. **编译片段着色器**（写在 `XXXOpenGLWedget::initializeGL()` 中）
-    
+
     过程跟编译顶点着色器的框架是一样的，用的是同一套函数
-    
+
     ```c++
     unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);  // 创建片段着色器（框架 | 对象）并给予编号
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);  // 绑定至着色器原码
@@ -528,7 +531,7 @@ glBindObject(GL_WINDOW_TARGET, 0);  // 将objectId对象与GL_WINDOW_TARGET解�
       qDebug() << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infolog;
     }
     ```
-    
+
     两个着色器现在都**编译**了，剩下的事情是把两个着色器对象**==链接==**到一个用来渲染的**着色器程序(Shader Program)**中。
 
 
@@ -728,12 +731,12 @@ glBindVertexArray(0);
 >
 > ```c++
 > ...
->   makeCurrent();
+> makeCurrent();
 > 
 > 	... 自己写的调用了 OpenGL 功能的代码 ...
->     
->     
->   doneCurrent();
+> 
+> 
+> doneCurrent();
 > 	update();  执行重绘，这条语句会重新执行 paintGL()
 > ...
 > ```
@@ -856,7 +859,7 @@ void main() {
 }
 ```
 
-当我们特别谈论到顶点着色器的时候，每个输入变量也叫**顶点属性(Vertex Attribute)**。我们能声明的顶点属性是有上限的，它一般由硬件来决定。OpenGL确保至少有16个包含4分量的顶点属性可用，但是有些硬件或许允许更多的顶点属性，你可以查询GL_MAX_VERTEX_ATTRIBS来获取具体的上限：
+当我们特别谈论到顶点着色器的时候，每个输入变量也叫**顶点属性(Vertex Attribute)**，也就是我们写在 GLSL `layout (location = ?)`那里的。我们能声明的顶点属性是有上限的，它一般由硬件来决定。OpenGL确保至少有16个包含4分量的顶点属性可用，但是有些硬件或许允许更多的顶点属性，你可以查询GL_MAX_VERTEX_ATTRIBS来获取具体的上限：
 
 ```
 int nrAttributes;
@@ -921,18 +924,6 @@ vec4 otherResult = vec4(result.xyz, 1.0);
 
 
 
-### layout
-
-**顶点着色器应该接收的是一种特殊形式的输入，否则就会效率低下。**顶点着色器的输入特殊在，它从顶点数据中直接接收输入。为了定义顶点数据该如何管理，我们使用`location`这一元数据指定输入变量，这样我们才可以在CPU上配置顶点属性。我们已经在前面的教程看过这个了，`layout (location = 0)`。顶点着色器需要为它的输入提供一个额外的`layout`标识，这样我们才能把它**链接到顶点数据**。
-
-你也可以忽略`layout (location = 0)`标识符，通过在OpenGL代码中使用`glGetAttribLocation`查询属性位置值(Location)，但是我更喜欢在着色器中设置它们，这样会更容易理解而且节省你（和OpenGL）的工作量。
-
-
-
-另一个例外是**片段着色器，它需要一个`vec4`颜色输出变量，因为片段着色器需要生成一个最终输出的颜色。**如果你在片段着色器没有定义输出颜色，OpenGL会把你的物体渲染为黑色（或白色）。
-
-
-
 **顶点着色器**
 
 ```glsl
@@ -965,3 +956,70 @@ void main()
 你可以看到我们在顶点着色器中声明了一个vertexColor变量作为`vec4`输出，并在片段着色器中声明了一个类似的vertexColor。由于它们名字相同且类型相同，片段着色器中的vertexColor就和顶点着色器中的vertexColor链接了。由于我们在顶点着色器中将颜色设置为深红色，最终的片段也是深红色的。下面的图片展示了输出结果：
 
 ![img](https://learnopengl-cn.github.io/img/01/05/shaders.png)
+
+
+
+### layout
+
+**顶点着色器应该接收的是一种特殊形式的输入，否则就会效率低下。**顶点着色器的输入特殊在，它从顶点数据中直接接收输入。**数据是来自于 CPU 端**
+
+
+
+为了定义顶点数据该如何管理，我们使用`location`这一元数据指定输入变量，这样我们才可以在CPU上配置顶点属性。我们已经在前面的教程看过这个了，`layout (location = 0)`。顶点着色器需要为它的输入提供一个额外的`layout`标识，这样我们才能把它**链接到顶点数据**。
+
+你也可以忽略`layout (location = 0)`标识符，通过在OpenGL代码中使用`glGetAttribLocation`查询属性位置值(Location) 再使用 `glBindAttribLocation()` 设置位置值，但是我更喜欢在着色器中设置它们，这样会更容易理解而且节省你（和OpenGL）的工作量。
+
+
+
+另一个例外是**片段着色器，它需要一个`vec4`颜色输出变量，因为片段着色器需要生成一个最终输出的颜色。**如果你在片段着色器没有定义输出颜色，OpenGL会把你的物体渲染为黑色（或白色）。
+
+> 如果使用 QOpenGLShaderProgram，则在**绑定着色器原码之后**可以通过其提供的：
+>
+> - `QOpenGLShaderProgram.attributeLocation("aPos");` 方法手动找到顶点属性的位置
+> - 如果顶点着色器里没写 `layout`，则可以用`QOpenGLShaderProgram.bindAttributeLocation("aPos", LOCATION_NUMBER);` 手动指定顶点属性位置
+>
+> **但是注意，使用 QOpenGLShaderProgram 前最好先 `.bind()` 一下，避免出错**
+
+```c++
+    // ===================== 顶点着色器 =====================
+//    this->shader_program_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource);  // 通过字符串对象添加
+    this->shader_program_.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/source.vert");  // 通过资源文件
+
+    // ===================== 片段着色器 =====================
+//    this->shader_program_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource);
+    this->shader_program_.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/source.frag");
+
+    // ===================== 链接着色器 =====================
+    bool success = this->shader_program_.link();
+
+    if (!success)
+    {
+        qDebug() << "ERROR: " << this->shader_program_.log();
+    }
+
+#if 0
+    /* 告知显卡如何解析缓冲区里面的属性值
+        void glVertexAttribPointer(
+                                    GLuint index,  // VAO 中的第几个属性（VAO 属性的索引）
+                                    GLint size,  // VAO 中的第几个属性中对应的位置放几份数据
+                                    GLEnum type,  // 存放数据的数据类型
+                                    GLboolean normalized,  // 是否标准化
+                                    GLsizei stride,  // 步长
+                                    const void* offset  // 偏移量
+        )
+    */
+    this->shader_program_.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
+    GLint aPosLocation = this->shader_program_.attributeLocation("aPos");  // 获取顶点着色器中顶点属性 aPos 的位置
+    glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);  // 手动传入第几个属性
+    glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
+#endif
+
+#if 1
+    /* 当我们在顶点着色器中没有写 layout 时，也可以在此处代码根据名字手动指定某个顶点属性的位置 */
+    this->shader_program_.bind();
+    GLint aPosLocation = 2;
+    this->shader_program_.bindAttributeLocation("aPos", aPosLocation);
+    glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(aPosLocation);
+#endif
+```
