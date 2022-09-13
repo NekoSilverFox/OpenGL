@@ -1023,3 +1023,53 @@ void main()
     glEnableVertexAttribArray(aPosLocation);
 #endif
 ```
+
+
+
+## uniform
+
+**Uniform 是一种从CPU中的应用向GPU中的着色器发送数据的方式**，但uniform和顶点属性有些不同。
+
+- 首先，**uniform是全局的(Global)**。全局意味着uniform变量必须在每个着色器程序对象中都是独一无二的，而且**它可以被着色器程序的任意着色器在任意阶段访问**。
+- 第二，无论你把uniform值设置成什么，uniform 会一直保存它们的数据，直到它们被重置或更新。
+
+我们可以在一个着色器中添加`uniform`关键字至类型和变量名前来声明一个GLSL的uniform。从此处开始我们就可以在着色器中使用新声明的uniform了。我们来看看这次是否能通过uniform设置三角形的颜色：
+
+```glsl
+#version 330 core
+out vec4 FragColor;
+
+uniform vec4 ourColor; // 在OpenGL程序代码中设定这个变量
+
+void main()
+{
+    FragColor = ourColor;
+}
+```
+
+我们在片段着色器中声明了一个uniform `vec4`的ourColor，并把片段着色器的输出颜色设置为uniform值的内容。因为uniform是全局变量，我们可以在任何着色器中定义它们，而无需通过顶点着色器作为中介。顶点着色器中不需要这个uniform，所以我们不用在那里定义它。
+
+*如果你声明了一个uniform却在GLSL代码中没用过，编译器会静默移除这个变量，导致最后编译出的版本中并不会包含它，这可能导致几个非常麻烦的错误，记住这点！*
+
+这个uniform现在还是空的；我们还没有给它添加任何数据，所以下面我们就做这件事。我们**首先需要找到着色器中uniform属性的索引/位置值。当我们得到uniform的索引/位置值后，我们就可以更新它的值了**。这次我们不去给像素传递单独一个颜色，而是让它随着时间改变颜色：
+
+```c++
+int timeValue = QTime::currentTime().second();
+float greenValue = (sin(timeValue)/2.0f) + 0.5f;
+shaderProgram.setUniformValue("ourColor", 0.0f, greenValue, 0.0f, 1.0f);
+```
+
+以上部分其实是 QShaderProgram 进行了封装，**源代码**应该为：
+
+```c++
+int vertexColorLocation = glGetUniformLocation(shaderProgram, "outColor");
+glUseProgram(shaderProgram);
+glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 0.0f);
+```
+
+
+
+OpenGL在其核心是一个C库， 所以它不支持类型重载，在函数参数类型不同的时候就要为其定义新的函数； glUniform是一个典型例子。 这个函数有一个特定的后缀，标识设定的uniform的类型。可能的后缀有：
+
+![image-20220912113006689](doc/pic/README/image-20220912113006689.png)
+
