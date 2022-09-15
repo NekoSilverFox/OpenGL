@@ -4,6 +4,7 @@
 #include <QOpenGLWidget>  // 相当于GLFW
 #include <QOpenGLFunctions_4_5_Core>  // 相当于 GLAD
 #include <QOpenGLShaderProgram>
+#include <QTimer>
 
 class FoxOpenGLWidget : public QOpenGLWidget, QOpenGLFunctions_4_5_Core
 {
@@ -33,10 +34,12 @@ protected:
 signals:
 
 public slots:
+    void changeColorWithTime();
 
 private:
     Shape current_shape_;  // 记录当前绘制的图形
     QOpenGLShaderProgram shader_program_;  // 【重点】使用 Qt 提供的对象进行编译和链接
+    QTimer timer_;
 };
 
 #endif // FOXOPENGLWIDGET_H

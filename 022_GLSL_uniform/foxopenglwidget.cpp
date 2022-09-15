@@ -1,4 +1,5 @@
 #include <QDebug>
+#include <QTime>
 #include "foxopenglwidget.h"
 
 // 顶点数据
@@ -43,10 +44,18 @@ const char *fragmentShaderSource = "#version 330 core\n"
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
     this->current_shape_ = Shape::None;
+
+    /* 每隔1ms取一次时间（发送一次信号） */
+    this->timer_.start(1);
+    connect(&this->timer_, SIGNAL(timeout()),
+            this, SLOT(changeColorWithTime()));
+
 }
 
 FoxOpenGLWidget::~FoxOpenGLWidget()
 {
+    if (!isValid()) return;  // 如果 paintGL 没有执行，下面的代码不存在（着色器 VAO VBO之类的），所以避免出错。如果他们没有执行就直接 return
+
     makeCurrent();
 
     /* 对象的回收 */
@@ -208,4 +217,18 @@ void FoxOpenGLWidget::setWirefame(bool wirefame)
 
     doneCurrent();
     update();  // 【重点】注意使用 update() 进行重绘，也就是这条语句会重新调用 paintGL()
+}
+
+void FoxOpenGLWidget::changeColorWithTime()
+{
+    if (this->current_shape_ == Shape::None) return;
+
+    makeCurrent();
+
+    int current_sec = QTime::currentTime().second();  // 取到秒
+    float greenValue = sin(current_sec);
+    this->shader_program_.setUniformValue("ourColor", 0.0f, greenValue, 0.0f, 1.0f);
+
+    doneCurrent();
+    update();
 }
