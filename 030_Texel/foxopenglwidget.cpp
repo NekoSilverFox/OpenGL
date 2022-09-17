@@ -4,10 +4,11 @@
 
 // 顶点数据
 float vertices[] = {
-     0.5f,  0.5f, 0.0f,    1.0f, 0.0f, 0.0f,   // 右上角 0
-     0.5f, -0.5f, 0.0f,    0.0f, 1.0f, 0.0f,  // 右下角 1
-    -0.5f, -0.5f, 0.0f,    0.0f, 0.0f, 1.0f, // 左下角 2
-    -0.5f,  0.5f, 0.0f,    0.5f, 0.5f, 0.5f   // 左上角 3
+    // 最后是纹理的st坐标
+     0.5f,  0.5f, 0.0f,    1.0f, 0.0f, 0.0f,    1.0f, 1.0f,   // 右上角 0
+     0.5f, -0.5f, 0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f,  // 右下角 1
+    -0.5f, -0.5f, 0.0f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f, // 左下角 2
+    -0.5f,  0.5f, 0.0f,    0.5f, 0.5f, 0.5f,    0.0f, 1.0f,   // 左上角 3
 };
 
 unsigned int indices[] = {
@@ -24,22 +25,6 @@ unsigned int VBO, VAO;
 // 创建 EBO 元素缓冲对象
 unsigned int EBO;
 
-// 顶点着色器的源代码，顶点着色器就是把 xyz 原封不动的送出去
-const char *vertexShaderSource = "#version 330 core\n"
-                                 "layout (location = 0) in vec3 aPos;\n"
-                                 "void main()\n"
-                                 "{\n"
-                                 "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-                                 "}\0";
-
-
-// 片段着色器的源代码，片段着色器就是给一个固定的颜色
-const char *fragmentShaderSource = "#version 330 core\n"
-                                   "out vec4 FragColor;\n"
-                                   "void main()\n"
-                                   "{\n"
-                                   "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-                                   "}\n\0";
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
@@ -75,16 +60,13 @@ void FoxOpenGLWidget::initializeGL()
 
 
     // ===================== 顶点着色器 =====================
-//    this->shader_program_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource);  // 通过字符串对象添加
     this->shader_program_.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/source.vert");  // 通过资源文件
 
     // ===================== 片段着色器 =====================
-//    this->shader_program_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource);
     this->shader_program_.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/source.frag");
 
     // ===================== 链接着色器 =====================
     bool success = this->shader_program_.link();
-
     if (!success)
     {
         qDebug() << "ERROR: " << this->shader_program_.log();
@@ -122,13 +104,19 @@ void FoxOpenGLWidget::initializeGL()
     */
     this->shader_program_.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
     GLint aPosLocation = this->shader_program_.attributeLocation("aPos");  // 获取顶点着色器中顶点属性 aPos 的位置
-    glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);  // 手动传入第几个属性
+    glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);  // 手动传入第几个属性
     glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
 
     this->shader_program_.bind();
     GLint aColorLocation = this->shader_program_.attributeLocation("aColor");
-    glVertexAttribPointer(aColorLocation, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(aColorLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(aColorLocation);
+
+    this->shader_program_.bind();
+    GLint aTexelLocation = this->shader_program_.attributeLocation("aTexel");
+    glVertexAttribPointer(aTexelLocation, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(aTexelLocation);
+
 #endif
 
 #if 0
@@ -147,15 +135,15 @@ void FoxOpenGLWidget::initializeGL()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);  // EBO/IBO 是储存顶点【索引】的
 
+    // ===================== 纹理 =====================
+    this->texture_wall_ = new QOpenGLTexture(QImage(":/Pictures/wall.jpg").mirrored());  // 因为QOpenGL的y轴是反的（镜像），所以需要mirrored翻转一下
 
+
+    // ===================== 解绑 =====================
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);  // 注意 VAO 不参与管理 VBO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-
-    /* 用线条填充，默认是 GL_FILL */
-//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
 
 void FoxOpenGLWidget::resizeGL(int w, int h)
@@ -188,6 +176,7 @@ void FoxOpenGLWidget::paintGL()
         break;
 
     case Shape::Rect:
+        this->texture_wall_->bind(0);  // 绑定纹理单元0的数据
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         break;
 
@@ -213,6 +202,7 @@ void FoxOpenGLWidget::setWirefame(bool wirefame)
 {
     makeCurrent();
 
+     /* 用线条填充，默认是 GL_FILL */
     if (true == wirefame)
     {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

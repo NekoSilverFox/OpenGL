@@ -5,6 +5,7 @@
 #include <QOpenGLFunctions_4_5_Core>  // 相当于 GLAD
 #include <QOpenGLShaderProgram>
 #include <QTimer>
+#include <QOpenGLTexture>
 
 class FoxOpenGLWidget : public QOpenGLWidget, QOpenGLFunctions_4_5_Core
 {
@@ -40,6 +41,7 @@ private:
     Shape current_shape_;  // 记录当前绘制的图形
     QOpenGLShaderProgram shader_program_;  // 【重点】使用 Qt 提供的对象进行编译和链接
     QTimer timer_;
+    QOpenGLTexture* texture_wall_;  // 存储砖墙那张图片数据
 };
 
 #endif // FOXOPENGLWIDGET_H
