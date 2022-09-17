@@ -4,10 +4,10 @@
 
 // 顶点数据
 float vertices[] = {
-    0.5f, 0.5f, 0.0f,   // 右上角 0
-    0.5f, -0.5f, 0.0f,  // 右下角 1
-    -0.5f, -0.5f, 0.0f, // 左下角 2
-    -0.5f, 0.5f, 0.0f   // 左上角 3
+     0.5f,  0.5f, 0.0f,    1.0f, 0.0f, 0.0f,   // 右上角 0
+     0.5f, -0.5f, 0.0f,    0.0f, 1.0f, 0.0f,  // 右下角 1
+    -0.5f, -0.5f, 0.0f,    0.0f, 0.0f, 1.0f, // 左下角 2
+    -0.5f,  0.5f, 0.0f,    0.5f, 0.5f, 0.5f   // 左上角 3
 };
 
 unsigned int indices[] = {
@@ -46,9 +46,9 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
     this->current_shape_ = Shape::None;
 
     /* 每隔1ms取一次时间（发送一次信号） */
-    this->timer_.start(1);
-    connect(&this->timer_, SIGNAL(timeout()),
-            this, SLOT(changeColorWithTime()));
+//    this->timer_.start(1);
+//    connect(&this->timer_, SIGNAL(timeout()),
+//            this, SLOT(changeColorWithTime()));
 
 }
 
@@ -90,6 +90,7 @@ void FoxOpenGLWidget::initializeGL()
         qDebug() << "ERROR: " << this->shader_program_.log();
     }
 
+
     // ===================== VAO | VBO =====================
     // VAO 和 VBO 对象赋予 ID
     glGenVertexArrays(1, &VAO);
@@ -121,8 +122,13 @@ void FoxOpenGLWidget::initializeGL()
     */
     this->shader_program_.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
     GLint aPosLocation = this->shader_program_.attributeLocation("aPos");  // 获取顶点着色器中顶点属性 aPos 的位置
-    glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);  // 手动传入第几个属性
+    glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);  // 手动传入第几个属性
     glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
+
+    this->shader_program_.bind();
+    GLint aColorLocation = this->shader_program_.attributeLocation("aColor");
+    glVertexAttribPointer(aColorLocation, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(aColorLocation);
 #endif
 
 #if 0
@@ -134,6 +140,7 @@ void FoxOpenGLWidget::initializeGL()
     glEnableVertexAttribArray(aPosLocation);
 
 #endif
+
 
     // ===================== EBO =====================
     glGenBuffers(1, &EBO);
