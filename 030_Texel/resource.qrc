@@ -3,7 +3,4 @@
         <file>ShaderSource/source.frag</file>
         <file>ShaderSource/source.vert</file>
     </qresource>
-    <qresource prefix="/">
-        <file>Pictures/wall.jpg</file>
-    </qresource>
 </RCC>
