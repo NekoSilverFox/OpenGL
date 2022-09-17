@@ -112,6 +112,11 @@ void FoxOpenGLWidget::initializeGL()
     glEnableVertexAttribArray(aColorLocation);
 #endif
 
+    // 偏移量 xOffset
+    this->shader_program_.bind();
+    this->shader_program_.setUniformValue("xOffset", 0.5f);
+
+
 #if 0
     /* 当我们在顶点着色器中没有写 layout 时，也可以在此处代码根据名字手动指定某个顶点属性的位置 */
     this->shader_program_.bind();
@@ -169,7 +174,7 @@ void FoxOpenGLWidget::paintGL()
         break;
 
     case Shape::Rect:
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
         break;
 
     case Shape::Circle:
