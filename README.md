@@ -17,6 +17,9 @@
 
 <div align=left>
 <!-- 顶部至此截止 -->
+
+
+
 [toc]
 
 
@@ -127,6 +130,10 @@ target_link_libraries(
 | VBO 顶点缓冲对象                | Vertex Buffer Object          | VBO 顶点缓冲对象**管理着**顶点着色器（Vertex Shader），VBO的**类型是**`GL_ARRAY_BUFFER`；它会在 GPU 上创建内存，用于储存我们的大量顶点数据 |
 | EBO/IBO 元素/索引缓冲对象       | Element/Index Buffer Object   | EBO是一个缓冲区，就像一个顶点缓冲区对象一样，它**存储 OpenGL 要绘制顶点的==索引==** |
 | 着色器程序对象                  | Shader Program Object         | 多个着色器链接（Link）合并之后并最终链接完成的版本，在渲染对象时使用`glUseProgram(shaderProgram)`激活这个着色器程序 |
+| 映射                            | Map                           |                                                              |
+| 纹理                            | Texture                       | 纹理是一个2D图片（甚至也有1D和3D的纹理），它可以用来添加物体的细节 |
+| 纹理坐标                        | Texture Coordinate            | 我们绘制图形的每个顶点关联着一个纹理坐标，它用来标明该从纹理图像的哪个部分采样（译注：采集片段颜色） |
+| 采样器/采样                     | Sampler/Sampling              |                                                              |
 
 
 
@@ -1181,3 +1188,52 @@ float texCoords[] = {
 ```
 
 对纹理采样的解释非常宽松，它可以采用几种不同的插值方式。所以我们需要自己告诉OpenGL该怎样对纹理**采样**。
+
+---
+
+## QOpenGLTexture
+
+OpenGL 保证最少有 16 个**纹理单元**，也就是说你可以激活从 `GL_TEXTURE0` 到 `GL_TEXTURE15`。他们都是按顺序定义的，`GL_TEXTURE0+8`，可以得到 `GL_TEXTURE8`。 
+
+如果使用 QOpenGLTexture：
+
+- 我们自己的头文件
+
+    ```c++
+    #include <QOpenGLTexture>
+    
+    class FoxOpenGLWidget : public QOpenGLWidget, QOpenGLFunction_4_5_Core
+    {
+      
+      ...
+      
+    private:
+      QOpenGLTexture* texture_pic_;  // 用于存储图片数据
+    }
+    ```
+
+    
+
+- cpp 文件
+
+    ```c++
+    FoxOpenGLWidget::FoxOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
+    {
+      ...
+      // ===================== 纹理 =====================
+      this->shader_program_.bind();
+      this->shader_program_.setUniformValue("texture0", 0);  // 【重点】当涉及到多个纹理使，一定要为 uniform 设置纹理单元的编号
+      this->texture_pic_ = new QOpenGLTexture(QImage(":/Pictures/pic.jpg").mirrored());  // 因为QOpenGL的y轴是反的（镜像），所以需要mirrored翻转一下
+    }
+    
+    void FoxOpenGLWidget::paintGL()
+    {
+      ...
+        
+      this->texture_pic_->bind(NUMBER);  // 绑定纹理单元NUMBER的数据，并激活对应区域
+      
+      ...
+    }
+    ```
+
+    
