@@ -5,10 +5,10 @@
 // 顶点数据
 float vertices[] = {
     // 最后是纹理的st坐标
-     0.9f,  0.9f, 0.0f,    1.0f, 0.0f, 0.0f,    1.0f, 1.0f,   // 右上角 0
-     0.9f, -0.9f, 0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f,  // 右下角 1
-    -0.9f, -0.9f, 0.0f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f, // 左下角 2
-    -0.9f,  0.9f, 0.0f,    0.5f, 0.5f, 0.5f,    0.0f, 1.0f,   // 左上角 3
+     0.9f,  0.9f, 0.0f,    1.0f, 0.0f, 0.0f,     2.0f,  2.0f,   // 右上角 0
+     0.9f, -0.9f, 0.0f,    0.0f, 1.0f, 0.0f,     2.0f, -1.0f,  // 右下角 1
+    -0.9f, -0.9f, 0.0f,    0.0f, 0.0f, 1.0f,    -1.0f, -1.0f, // 左下角 2
+    -0.9f,  0.9f, 0.0f,    0.5f, 0.5f, 0.5f,    -1.0f,  2.0f,   // 左上角 3
 };
 
 unsigned int indices[] = {
@@ -185,9 +185,23 @@ void FoxOpenGLWidget::paintGL()
         break;
 
     case Shape::Rect:
+         // ===================== 绑定纹理 =====================
 //        this->texture_wall_->bind(0);  // 绑定纹理单元0的数据，并激活对应区域
 //        this->texture_nekosilverfox_->bind(1);
         this->texture_nekosilverfox_bk_->bind(2);
+
+        // ===================== 纹理环绕方式 =====================
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+
+    {  // 【重点】在 Switch 里定义变量要放在花括号里，如果是颜色填充要先设置，再传入颜色
+        float bord_color[] = {1.0, 1.0, 0.0, 1.0};
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, bord_color);
+    }
+
+
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         break;
 
