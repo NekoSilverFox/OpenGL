@@ -1236,4 +1236,97 @@ OpenGL 保证最少有 16 个**纹理单元**，也就是说你可以激活从 `
     }
     ```
 
+
+
+## 环绕方式
+
+> **纹理坐标**的范围通常是从(0, 0)到(1, 1)
+
+纹理的环绕发生在纹理**坐标**被映射到更大区域是时候（注意！不是单纯的放大），比如当纹理**坐标** (0, 0)~(1, 1) 放大到 (0, 0)~(2, 2) 时 
+
+| 环绕方式           | 描述                                                         |
+| ------------------ | ------------------------------------------------------------ |
+| GL_REPEAT          | 【默认】对纹理的默认行为，重复当前图像                       |
+| GL_MIRRORED_REPEAT | 和 GL_REPEAT 一样，但是每次重复图片是镜像的                  |
+| GL_CLAMP_TO_EDGE   | 纹理坐标会被约束在 0 到 1 之间，超出的部分会重复纹理坐标的边缘，产生一种边缘被拉伸的效果 |
+| GL_CLAMP_TO_BORDER | 超出的坐标为用户指定的边缘颜色                               |
+
+当**纹理坐标超出默认范围时**，每个选项都有不同的视觉效果输出
+
+![img](https://learnopengl-cn.github.io/img/01/06/texture_wrapping.png)
+
+前面提到的每个选项都可以使用`glTexParameter*`函数对单独的一个坐标轴设置（`s`、`t`（如果是使用3D纹理那么还有一个`r`）它们和`x`、`y`、`z`是等价的）：
+
+```
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+```
+
+- 第一个参数指定了纹理目标；我们使用的是2D纹理，因此纹理目标是GL_TEXTURE_2D。
+- 第二个参数需要我们指定设置的选项与应用的纹理轴。我们打算配置的是`WRAP`选项，并且指定`S`和`T`轴。注意：**需要对每个轴都进行单独的设置**
+- 最后一个参数需要我们传递一个环绕方式(Wrapping)，在这个例子中OpenGL会给当前激活的纹理设定纹理环绕方式为`GL_MIRRORED_REPEAT`。
+
+如果我们选择GL_CLAMP_TO_BORDER选项，我们还需要指定一个边缘的颜色。这需要使用glTexParameter函数的`fv`后缀形式，用GL_TEXTURE_BORDER_COLOR作为它的选项，并且传递一个float数组作为边缘的颜色值：
+
+```
+float borderColor[] = { 1.0f, 1.0f, 0.0f, 1.0f };
+glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+```
+
+## 纹理过滤
+
+纹理过滤(Texture Filtering)
+
+- **纹理像素≠分辨率**，纹理像素是构成图片的像素，而分辨率是依赖于显示器的
+- **纹理坐标**的精度是无限的，可以是任意的浮点值。比如纹理坐标可以选取 (0.15, 0.36) 和 (0.15686456, 0.36489458)，但它们可能取到的是同一个纹理像素
+- **纹理像素**是有限的（图片分辨率）
+- 一个像素需要一个颜色
+- **采样**就是，用过纹理坐标问图片要纹理像素的颜色值
+
+> Texture Pixel也叫Texel，你可以想象你打开一张`.jpg`格式图片，不断放大你会发现它是由无数像素点组成的，这个点就是纹理像素；注意不要和纹理坐标搞混，纹理坐标是你给模型顶点设置的那个数组，OpenGL以这个顶点的纹理坐标数据去查找纹理图像上的像素，然后进行采样提取纹理像素的颜色。
+
+
+
+在**纹理过滤**常见的有 2 种方式：
+
+- `GL_NEAREST`（也叫邻近过滤，Nearest Neighbor Filtering）
+
+    是OpenGL默认的纹理过滤方式。当设置为GL_NEAREST的时候，OpenGL会**选择中心点最接近纹理坐标的那个像素**。下图中你可以看到四个像素，加号代表纹理坐标。左上角那个纹理像素的中心距离纹理坐标最近，所以它会被选择为样本颜色：
+
+    ![img](https://learnopengl-cn.github.io/img/01/06/filter_nearest.png)
+
     
+
+- `GL_LINEAR`（也叫线性过滤，(Bi)linear Filtering）
+
+    它会**基于纹理坐标附近的纹理像素，计算出一个插值，近似出这些纹理像素之间的颜色**。一个纹理像素的中心距离纹理坐标越近，那么这个纹理像素的颜色对最终的样本颜色的贡献越大。下图中你可以看到返回的颜色是邻近像素的混合色：
+
+    
+
+    ![img](https://learnopengl-cn.github.io/img/01/06/filter_linear.png)
+
+那么这两种纹理过滤方式有怎样的视觉效果呢？让我们看看在一个很大的物体上应用一张**低分辨率**的纹理会发生什么吧（纹理被放大了，每个纹理像素都能看到）：
+
+![img](https://learnopengl-cn.github.io/img/01/06/texture_filtering.png)
+
+**纹理放大 | 缩小：**
+
+- **放大(Magnify)**
+
+    这里所说的纹理放大其实是将一张纹理放大到远大于它图片分辨率的情况。也就是原图片中一个像素，可能在显示器上占用多个像素
+
+    
+
+- **缩小(Minify)**
+
+    就是将一张图片缩小
+
+
+
+当进行**放大(Magnify)**和**缩小(Minify)**操作的时候可以**分别设置纹理过滤的选项**，比如你可以在纹理被缩小的时候使用邻近过滤，被放大时使用线性过滤。我们需要使用 `glTexParameter*` 函数为放大和缩小指定过滤方式。这段代码看起来会和纹理环绕方式的设置很相似：
+
+```c++
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);  // 纹理缩小的时候采用的策略
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // 纹理放大的时候采取的策略
+```
+
