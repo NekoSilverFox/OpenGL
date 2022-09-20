@@ -5,10 +5,10 @@
 // 顶点数据
 float vertices[] = {
     // 最后是纹理的st坐标
-     0.9f,  0.9f, 0.0f,    1.0f, 0.0f, 0.0f,     2.0f,  2.0f,   // 右上角 0
-     0.9f, -0.9f, 0.0f,    0.0f, 1.0f, 0.0f,     2.0f, -1.0f,  // 右下角 1
-    -0.9f, -0.9f, 0.0f,    0.0f, 0.0f, 1.0f,    -1.0f, -1.0f, // 左下角 2
-    -0.9f,  0.9f, 0.0f,    0.5f, 0.5f, 0.5f,    -1.0f,  2.0f,   // 左上角 3
+     0.9f,  0.9f, 0.0f,    1.0f, 0.0f, 0.0f,     1.0f,  1.0f,   // 右上角 0
+     0.9f, -0.9f, 0.0f,    0.0f, 1.0f, 0.0f,     1.0f,  0.0f,  // 右下角 1
+    -0.9f, -0.9f, 0.0f,    0.0f, 0.0f, 1.0f,     0.0f,  0.0f, // 左下角 2
+    -0.9f,  0.9f, 0.0f,    0.5f, 0.5f, 0.5f,     0.0f,  1.0f,   // 左上角 3
 };
 
 unsigned int indices[] = {
@@ -149,13 +149,15 @@ void FoxOpenGLWidget::initializeGL()
     this->texture_nekosilverfox_bk_ = new QOpenGLTexture(QImage(":/Pictures/nekosilverfox_bk.jpg").mirrored());
     // 纹理环绕方式
     this->texture_nekosilverfox_bk_->bind(2);  // 【重点】注意！再修改纹理之前要先绑定到对应的纹理单元上！
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);  // T轴纹理【环绕】方式
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);  // S轴纹理【环绕】方式
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);  // 缩小时轴纹理【过滤】方式
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // 放大时纹理【过滤】方式
 {  /* 【重点】如果在 Switch 里定义变量要放在花括号里，如果是颜色填充要先设置，再传入颜色*/ }
-    float bord_color[] = {1.0, 1.0, 0.0, 1.0};
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, bord_color);
+    // float bord_color[] = {1.0, 1.0, 0.0, 1.0};
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    // glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, bord_color);
 
 
     // ===================== 解绑 =====================
