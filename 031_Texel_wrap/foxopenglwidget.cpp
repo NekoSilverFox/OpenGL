@@ -147,6 +147,16 @@ void FoxOpenGLWidget::initializeGL()
     this->shader_program_.bind();
     this->shader_program_.setUniformValue("texture2", 2);
     this->texture_nekosilverfox_bk_ = new QOpenGLTexture(QImage(":/Pictures/nekosilverfox_bk.jpg").mirrored());
+    // 纹理环绕方式
+    this->texture_nekosilverfox_bk_->bind(2);  // 【重点】注意！再修改纹理之前要先绑定到对应的纹理单元上！
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+{  /* 【重点】如果在 Switch 里定义变量要放在花括号里，如果是颜色填充要先设置，再传入颜色*/ }
+    float bord_color[] = {1.0, 1.0, 0.0, 1.0};
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, bord_color);
+
 
     // ===================== 解绑 =====================
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
@@ -189,18 +199,6 @@ void FoxOpenGLWidget::paintGL()
 //        this->texture_wall_->bind(0);  // 绑定纹理单元0的数据，并激活对应区域
 //        this->texture_nekosilverfox_->bind(1);
         this->texture_nekosilverfox_bk_->bind(2);
-
-        // ===================== 纹理环绕方式 =====================
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-
-    {  // 【重点】在 Switch 里定义变量要放在花括号里，如果是颜色填充要先设置，再传入颜色
-        float bord_color[] = {1.0, 1.0, 0.0, 1.0};
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, bord_color);
-    }
-
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         break;
