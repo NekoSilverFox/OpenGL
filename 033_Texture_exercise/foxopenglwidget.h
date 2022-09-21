@@ -32,6 +32,9 @@ protected:
     virtual void resizeGL(int w, int h);
     virtual void paintGL();
 
+    /*处理键盘事件  */
+    void keyPressEvent(QKeyEvent* event);
+
 signals:
 
 public slots:
