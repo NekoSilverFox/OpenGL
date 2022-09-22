@@ -134,6 +134,8 @@ target_link_libraries(
 | 纹理                            | Texture                       | 纹理是一个2D图片（甚至也有1D和3D的纹理），它可以用来添加物体的细节 |
 | 纹理坐标                        | Texture Coordinate            | 我们绘制图形的每个顶点关联着一个纹理坐标，它用来标明该从纹理图像的哪个部分采样（译注：采集片段颜色） |
 | 采样器/采样                     | Sampler/Sampling              |                                                              |
+| 纹理过滤                        |                               |                                                              |
+| 多级渐远纹理                    | Mipmap                        |                                                              |
 
 
 
@@ -1326,7 +1328,238 @@ glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 当进行**放大(Magnify)**和**缩小(Minify)**操作的时候可以**分别设置纹理过滤的选项**，比如你可以在纹理被缩小的时候使用邻近过滤，被放大时使用线性过滤。我们需要使用 `glTexParameter*` 函数为放大和缩小指定过滤方式。这段代码看起来会和纹理环绕方式的设置很相似：
 
 ```c++
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);  // 纹理缩小的时候采用的策略
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // 纹理放大的时候采取的策略
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);  // 纹理缩小的时候采用的过滤策略
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // 纹理放大的时候采取的过滤策略
 ```
+
+
+
+## 多级渐远纹理
+
+> 多级渐远纹理主要是使用在纹理被缩小的情况下
+
+当一个物理靠近和远离观察者的时候，所占用的分辨率是不一样的。所以在物体远离观察者的时候，为了节省资源我们就不需要渲染这个物体的所有像素。而且由于远处的物体可能只产生很少的片段，OpenGL从高分辨率纹理中为这些片段获取正确的颜色值就很困难，因为它需要对一个跨过纹理很大部分的片段只拾取一个纹理颜色。在小物体上这会产生不真实的感觉。
+
+OpenGL使用一种叫做**多级渐远纹理(Mipmap)**的概念来解决这个问题，它简单来说就是一系列的纹理图像，后一个纹理图像是前一个的二分之一。多级渐远纹理背后的理念很简单：距观察者的距离超过一定的阈值，OpenGL会使用不同的多级渐远纹理，即最适合物体的距离的那个。由于距离远，解析度不高也不会被用户注意到。同时，多级渐远纹理另一加分之处是它的性能非常好。让我们看一下多级渐远纹理是什么样子的：
+
+![img](https://learnopengl-cn.github.io/img/01/06/mipmaps.png)
+
+手工为每个纹理图像创建一系列多级渐远纹理很麻烦，幸好OpenGL有一个`glGenerateMipmaps`函数，在创建完一个纹理后调用它OpenGL就会承担接下来的所有工作了。后面的教程中你会看到该如何使用它。
+
+在渲染中切换多级渐远纹理级别(Level)时，OpenGL在两个不同级别的多级渐远纹理层之间会产生不真实的生硬边界。就像普通的纹理过滤一样，切换多级渐远纹理级别时你也可以在两个不同多级渐远纹理级别之间使用`NEAREST`和`LINEAR`过滤。为了指定不同多级渐远纹理级别之间的过滤方式，你可以使用下面四个选项中的一个代替原有的过滤方式：
+
+**前面的是采样方式，后面的是多级渐远时再采用的方式**
+
+| 过滤方式                  | 描述                                                         |
+| :------------------------ | :----------------------------------------------------------- |
+| GL_NEAREST_MIPMAP_NEAREST | 使用最邻近的多级渐远纹理来匹配像素大小，并使用邻近插值进行纹理采样 |
+| GL_LINEAR_MIPMAP_NEAREST  | 使用最邻近的多级渐远纹理级别，并使用线性插值进行采样         |
+| GL_NEAREST_MIPMAP_LINEAR  | 在两个最匹配像素大小的多级渐远纹理之间进行线性插值，使用邻近插值进行采样 |
+| GL_LINEAR_MIPMAP_LINEAR   | 在两个邻近的多级渐远纹理之间使用线性插值，并使用线性插值进行采样 |
+
+就像纹理过滤一样，我们可以使用`glTexParameteri`将过滤方式设置为前面四种提到的方法之一：
+
+```
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+```
+
+一个常见的错误是，将放大过滤的选项设置为多级渐远纹理过滤选项之一。这样没有任何效果，因为**多级渐远纹理主要是使用在纹理被缩小的情况下**的：纹理放大不会使用多级渐远纹理，为放大过滤设置多级渐远纹理的选项会产生一个GL_INVALID_ENUM错误代码。
+
+
+
+
+
+# 线性代数
+
+## 缩放
+
+在 $x, y, z$ 上分别实现缩放 $S_1, S_2, S_3$ 倍可以使用以下的矩阵运算：
+$$
+\left[\begin{array}{cccc}
+S_1 & 0 & 0 & 0 \\
+0 & S_2 & 0 & 0 \\
+0 & 0 & S_3 & 0 \\
+0 & 0 & 0 & 1
+\end{array}\right] \cdot\left(\begin{array}{c}
+x \\
+y \\
+z \\
+1
+\end{array}\right)=\left(\begin{array}{c}
+S_1 \cdot x \\
+S_2 \cdot y \\
+S_3 \cdot z \\
+1
+\end{array}\right)
+$$
+注意，第四个缩放向量仍然是1，因为**在3D空间中缩放w分量是无意义的**。
+
+> w分量也就是齐次坐标(Homogeneous Coordinates)
+>
+> 向量的w分量也叫齐次坐标。想要从齐次向量得到3D向量，我们可以把x、y和z坐标分别除以w坐标。**使用齐次坐标有几点好处:它允许我们在3D向量上进行位移(如果没有w分量我们是不能位移向量的)**，而且下一章我们会用w值创建3D视觉效果。
+> **如果一个向量的齐次坐标是0，这个坐标就是方向向量，这个向量就不能位移**
+
+
+
+## 位移
+
+位移(Translation)是在原始向量的基础上加上另一个向量从而获得一个在不同位置的新向量的过程，从而在位移向量基础上移动了原始向量。
+
+在 $x, y, z$ 上分别实现位移 $T_1, T_2, T_3$ 倍可以使用以下的矩阵运算：
+$$
+\left[\begin{array}{cccc}
+1 & 0 & 0 & T_x \\
+0 & 1 & 0 & T_y \\
+0 & 0 & 1 & T_z \\
+0 & 0 & 0 & 1
+\end{array}\right] \cdot\left(\begin{array}{c}
+x \\
+y \\
+z \\
+1
+\end{array}\right)=\left(\begin{array}{c}
+x+T_x \\
+y+T_y \\
+z+T_z \\
+1
+\end{array}\right)
+$$
+这里的 $T_1, T_2, T_3$ 也就是**位移向量**
+
+
+
+## 旋转
+
+大多数旋转函数采用弧度制，但幸运的是角度制的角也可以很容易地转化为弧度制的:
+
+- 弧度转角度：`角度 = 弧度 * (180.0f / PI)`
+- 角度转弧度：`弧度 = 角度 * (PI / 180.0f)`
+
+`PI`约等于3.14159265359。
+
+
+
+**沿着 $x, y, z$ 轴旋转的公式为:**
+
+- **沿着 x 轴旋转**
+    $$
+    &{\left[\begin{array}{cccc}
+    1 & 0 & 0 & 0 \\
+    0 & \cos \theta & -\sin \theta & 0 \\
+    0 & \sin \theta & \cos \theta & 0 \\
+    0 & 0 & 0 & 1
+    \end{array}\right] \cdot\left(\begin{array}{l}
+    x \\
+    y \\
+    z \\
+    1
+    \end{array}\right)=\left(\begin{array}{c}
+    x \\
+    \cos \theta \cdot y-\sin \theta \cdot z \\
+    \sin \theta \cdot y+\cos \theta \cdot z \\
+    1
+    \end{array}\right)} \\
+    $$
+    
+
+- **沿着 y 轴旋转**
+    $$
+    &{\left[\begin{array}{cccc}
+    \cos \theta & 0 & \sin \theta & 0 \\
+    0 & 1 & 0 & 0 \\
+    -\sin \theta & 0 & \cos \theta & 0 \\
+    0 & 0 & 0 & 1
+    \end{array}\right] \cdot\left(\begin{array}{l}
+    x \\
+    y \\
+    z \\
+    1
+    \end{array}\right)=\left(\begin{array}{c}
+    \cos \theta \cdot x+\sin \theta \cdot z \\
+    y \\
+    -\sin \theta \cdot x+\cos \theta \cdot z \\
+    1
+    \end{array}\right)} \\
+    $$
+    
+
+- **沿着 z 轴旋转**
+    $$
+    \begin{aligned}
+    
+    
+    
+    
+    
+    &{\left[\begin{array}{cccc}
+    \cos \theta & -\sin \theta & 0 & 0 \\
+    \sin \theta & \cos \theta & 0 & 0 \\
+    0 & 0 & 1 & 0 \\
+    0 & 0 & 0 & 1
+    \end{array}\right] \cdot\left(\begin{array}{l}
+    x \\
+    y \\
+    z \\
+    1
+    \end{array}\right)=\left(\begin{array}{c}
+    \cos \theta \cdot x-\sin \theta \cdot y \\
+    \sin \theta \cdot x+\cos \theta \cdot y \\
+    z \\
+    1
+    \end{array}\right)}
+    \end{aligned}
+    $$
+    
+
+**三个角度同时旋转：**
+
+利用旋转矩阵我们可以把任意位置向量沿一个单位旋转轴进行旋转。也可以将多个矩阵复合，比如先沿着x轴旋转再沿着y轴旋转。但是这会很快导致一个问题——**万向节死锁**（Gimbal Lock，可以看看[这个视频](https://www.youtube.com/watch?v=zc8b2Jo7mno)[（优酷）](http://v.youku.com/v_show/id_XNzkyOTIyMTI=.html)来了解）。在这里我们不会讨论它的细节，但是对于3D空间中的旋转，一个更好的模型是沿着任意的一个轴，比如单位向量$(0.662, 0.2, 0.7222)$旋转，而不是对一系列旋转矩阵进行复合。这样的一个（超级麻烦的）矩阵是存在的，见下面这个公式，其中**$(Rx,Ry,Rz)$**代表任意旋转轴：
+
+
+
+
+
+在数学上讨论如何生成这样的矩阵仍然超出了本节内容。但是记住，即使这样一个矩阵也不能完全解决万向节死锁问题（尽管会极大地避免）。避免万向节死锁的真正解决方案是使用**四元数(Quaternion)**，它不仅更安全，而且计算会更有效率。四元数可能会在后面的教程中讨论。
+
+
+
+## 缩放与位移的组合
+
+**注意：在涉及到缩放与位移的组合时，我们要==先缩放再位移==**
+$$
+\left[\begin{array}{cccc}
+S_1 & 0 & 0 & T_x \\
+0 & S_2 & 0 & T_y \\
+0 & 0 & S_3 & T_z \\
+0 & 0 & 0 & 1
+\end{array}\right] \cdot\left(\begin{array}{c}
+x \\
+y \\
+z \\
+1
+\end{array}\right)=\left(\begin{array}{c}
+S_1 \cdot x+T_x \\
+S_2 \cdot y+T_y \\
+S_3 \cdot z+T_z \\
+1
+\end{array}\right)
+$$
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
