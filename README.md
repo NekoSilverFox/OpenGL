@@ -1365,3 +1365,201 @@ glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 ```
 
 一个常见的错误是，将放大过滤的选项设置为多级渐远纹理过滤选项之一。这样没有任何效果，因为**多级渐远纹理主要是使用在纹理被缩小的情况下**的：纹理放大不会使用多级渐远纹理，为放大过滤设置多级渐远纹理的选项会产生一个GL_INVALID_ENUM错误代码。
+
+
+
+
+
+# 线性代数
+
+## 缩放
+
+在 $x, y, z$ 上分别实现缩放 $S_1, S_2, S_3$ 倍可以使用以下的矩阵运算：
+$$
+\left[\begin{array}{cccc}
+S_1 & 0 & 0 & 0 \\
+0 & S_2 & 0 & 0 \\
+0 & 0 & S_3 & 0 \\
+0 & 0 & 0 & 1
+\end{array}\right] \cdot\left(\begin{array}{c}
+x \\
+y \\
+z \\
+1
+\end{array}\right)=\left(\begin{array}{c}
+S_1 \cdot x \\
+S_2 \cdot y \\
+S_3 \cdot z \\
+1
+\end{array}\right)
+$$
+注意，第四个缩放向量仍然是1，因为**在3D空间中缩放w分量是无意义的**。
+
+> w分量也就是齐次坐标(Homogeneous Coordinates)
+>
+> 向量的w分量也叫齐次坐标。想要从齐次向量得到3D向量，我们可以把x、y和z坐标分别除以w坐标。**使用齐次坐标有几点好处:它允许我们在3D向量上进行位移(如果没有w分量我们是不能位移向量的)**，而且下一章我们会用w值创建3D视觉效果。
+> **如果一个向量的齐次坐标是0，这个坐标就是方向向量，这个向量就不能位移**
+
+
+
+## 位移
+
+位移(Translation)是在原始向量的基础上加上另一个向量从而获得一个在不同位置的新向量的过程，从而在位移向量基础上移动了原始向量。
+
+在 $x, y, z$ 上分别实现位移 $T_1, T_2, T_3$ 倍可以使用以下的矩阵运算：
+$$
+\left[\begin{array}{cccc}
+1 & 0 & 0 & T_x \\
+0 & 1 & 0 & T_y \\
+0 & 0 & 1 & T_z \\
+0 & 0 & 0 & 1
+\end{array}\right] \cdot\left(\begin{array}{c}
+x \\
+y \\
+z \\
+1
+\end{array}\right)=\left(\begin{array}{c}
+x+T_x \\
+y+T_y \\
+z+T_z \\
+1
+\end{array}\right)
+$$
+这里的 $T_1, T_2, T_3$ 也就是**位移向量**
+
+
+
+## 旋转
+
+大多数旋转函数采用弧度制，但幸运的是角度制的角也可以很容易地转化为弧度制的:
+
+- 弧度转角度：`角度 = 弧度 * (180.0f / PI)`
+- 角度转弧度：`弧度 = 角度 * (PI / 180.0f)`
+
+`PI`约等于3.14159265359。
+
+
+
+**沿着 $x, y, z$ 轴旋转的公式为:**
+
+- **沿着 x 轴旋转**
+    $$
+    &{\left[\begin{array}{cccc}
+    1 & 0 & 0 & 0 \\
+    0 & \cos \theta & -\sin \theta & 0 \\
+    0 & \sin \theta & \cos \theta & 0 \\
+    0 & 0 & 0 & 1
+    \end{array}\right] \cdot\left(\begin{array}{l}
+    x \\
+    y \\
+    z \\
+    1
+    \end{array}\right)=\left(\begin{array}{c}
+    x \\
+    \cos \theta \cdot y-\sin \theta \cdot z \\
+    \sin \theta \cdot y+\cos \theta \cdot z \\
+    1
+    \end{array}\right)} \\
+    $$
+    
+
+- **沿着 y 轴旋转**
+    $$
+    &{\left[\begin{array}{cccc}
+    \cos \theta & 0 & \sin \theta & 0 \\
+    0 & 1 & 0 & 0 \\
+    -\sin \theta & 0 & \cos \theta & 0 \\
+    0 & 0 & 0 & 1
+    \end{array}\right] \cdot\left(\begin{array}{l}
+    x \\
+    y \\
+    z \\
+    1
+    \end{array}\right)=\left(\begin{array}{c}
+    \cos \theta \cdot x+\sin \theta \cdot z \\
+    y \\
+    -\sin \theta \cdot x+\cos \theta \cdot z \\
+    1
+    \end{array}\right)} \\
+    $$
+    
+
+- **沿着 z 轴旋转**
+    $$
+    \begin{aligned}
+    
+    
+    
+    
+    
+    &{\left[\begin{array}{cccc}
+    \cos \theta & -\sin \theta & 0 & 0 \\
+    \sin \theta & \cos \theta & 0 & 0 \\
+    0 & 0 & 1 & 0 \\
+    0 & 0 & 0 & 1
+    \end{array}\right] \cdot\left(\begin{array}{l}
+    x \\
+    y \\
+    z \\
+    1
+    \end{array}\right)=\left(\begin{array}{c}
+    \cos \theta \cdot x-\sin \theta \cdot y \\
+    \sin \theta \cdot x+\cos \theta \cdot y \\
+    z \\
+    1
+    \end{array}\right)}
+    \end{aligned}
+    $$
+    
+
+**三个角度同时旋转：**
+
+利用旋转矩阵我们可以把任意位置向量沿一个单位旋转轴进行旋转。也可以将多个矩阵复合，比如先沿着x轴旋转再沿着y轴旋转。但是这会很快导致一个问题——**万向节死锁**（Gimbal Lock，可以看看[这个视频](https://www.youtube.com/watch?v=zc8b2Jo7mno)[（优酷）](http://v.youku.com/v_show/id_XNzkyOTIyMTI=.html)来了解）。在这里我们不会讨论它的细节，但是对于3D空间中的旋转，一个更好的模型是沿着任意的一个轴，比如单位向量$(0.662, 0.2, 0.7222)$旋转，而不是对一系列旋转矩阵进行复合。这样的一个（超级麻烦的）矩阵是存在的，见下面这个公式，其中**$(Rx,Ry,Rz)$**代表任意旋转轴：
+
+
+
+
+
+在数学上讨论如何生成这样的矩阵仍然超出了本节内容。但是记住，即使这样一个矩阵也不能完全解决万向节死锁问题（尽管会极大地避免）。避免万向节死锁的真正解决方案是使用**四元数(Quaternion)**，它不仅更安全，而且计算会更有效率。四元数可能会在后面的教程中讨论。
+
+
+
+## 缩放与位移的组合
+
+**注意：在涉及到缩放与位移的组合时，我们要==先缩放再位移==**
+$$
+\left[\begin{array}{cccc}
+S_1 & 0 & 0 & T_x \\
+0 & S_2 & 0 & T_y \\
+0 & 0 & S_3 & T_z \\
+0 & 0 & 0 & 1
+\end{array}\right] \cdot\left(\begin{array}{c}
+x \\
+y \\
+z \\
+1
+\end{array}\right)=\left(\begin{array}{c}
+S_1 \cdot x+T_x \\
+S_2 \cdot y+T_y \\
+S_3 \cdot z+T_z \\
+1
+\end{array}\right)
+$$
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
