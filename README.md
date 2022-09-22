@@ -1462,7 +1462,6 @@ $$
     \end{array}\right)} \\
     $$
     
-
 - **沿着 y 轴旋转**
     $$
     &{\left[\begin{array}{cccc}
@@ -1483,7 +1482,6 @@ $$
     \end{array}\right)} \\
     $$
     
-
 - **沿着 z 轴旋转**
     $$
     \begin{aligned}
@@ -1517,7 +1515,14 @@ $$
 利用旋转矩阵我们可以把任意位置向量沿一个单位旋转轴进行旋转。也可以将多个矩阵复合，比如先沿着x轴旋转再沿着y轴旋转。但是这会很快导致一个问题——**万向节死锁**（Gimbal Lock，可以看看[这个视频](https://www.youtube.com/watch?v=zc8b2Jo7mno)[（优酷）](http://v.youku.com/v_show/id_XNzkyOTIyMTI=.html)来了解）。在这里我们不会讨论它的细节，但是对于3D空间中的旋转，一个更好的模型是沿着任意的一个轴，比如单位向量$(0.662, 0.2, 0.7222)$旋转，而不是对一系列旋转矩阵进行复合。这样的一个（超级麻烦的）矩阵是存在的，见下面这个公式，其中**$(Rx,Ry,Rz)$**代表任意旋转轴：
 
 
-
+$$
+\left[\begin{array}{cccc}
+\cos \theta+R_x{ }^2(1-\cos \theta) & R_x R_y(1-\cos \theta)-R_z \sin \theta & R_x R_z(1-\cos \theta)+R_y \sin \theta & 0 \\
+R_y R_x(1-\cos \theta)+R_z \sin \theta & \cos \theta+R_y{ }^2(1-\cos \theta) & R_y R_z(1-\cos \theta)-R_x \sin \theta & 0 \\
+R_z R_x(1-\cos \theta)-R_y \sin \theta & R_z R_y(1-\cos \theta)+R_x \sin \theta & \cos \theta+R_z{ }^2(1-\cos \theta) & 0 \\
+0 & 0 & 0 & 1
+\end{array}\right]
+$$
 
 
 在数学上讨论如何生成这样的矩阵仍然超出了本节内容。但是记住，即使这样一个矩阵也不能完全解决万向节死锁问题（尽管会极大地避免）。避免万向节死锁的真正解决方案是使用**四元数(Quaternion)**，它不仅更安全，而且计算会更有效率。四元数可能会在后面的教程中讨论。
@@ -1545,7 +1550,6 @@ S_3 \cdot z+T_z \\
 1
 \end{array}\right)
 $$
-
 
 
 
