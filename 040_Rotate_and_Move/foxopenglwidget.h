@@ -43,7 +43,7 @@ public slots:
 private:
     Shape current_shape_;  // 记录当前绘制的图形
     QOpenGLShaderProgram shader_program_;  // 【重点】使用 Qt 提供的对象进行编译和链接
-    QTimer timer_;
+    QTimer timer_;  // 【重点】 这里是 Timer - 计时器类
     QOpenGLTexture* texture_wall_;  // 存储砖墙那张图片数据
     QOpenGLTexture* texture_nekosilverfox_;
     QOpenGLTexture* texture_nekosilverfox_bk_;
