@@ -225,10 +225,16 @@ void FoxOpenGLWidget::paintGL()
         this->texture_wall_->bind(0);  // 绑定纹理单元0的数据，并激活对应区域
         this->texture_nekosilverfox_->bind(1);
         this->texture_nekosilverfox_bk_->bind(2);
-
         /* 【重点】一定要先旋转再位移！！！！ */
         this->shader_program_.setUniformValue("matrix", matrix);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
+
+        /* 绘制第二个三角形 */
+        matrix.setToIdentity();  // 恢复成单位矩阵
+        matrix.translate(-0.4f, 0.4f, 0.0f);  // 位移
+        matrix.scale(fabs(sin(time_ms)));  // 实现放大缩小
+        this->shader_program_.setUniformValue("matrix", matrix);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         break;
 
