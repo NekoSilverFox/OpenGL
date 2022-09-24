@@ -32,6 +32,9 @@ protected:
     virtual void resizeGL(int w, int h);
     virtual void paintGL();
 
+    /* 处理键盘事件 */
+    void keyPressEvent(QKeyEvent* event);
+
 signals:
 
 public slots:
@@ -43,6 +46,7 @@ private:
     QTimer timer_;
     QOpenGLTexture* texture_wall_;  // 存储砖墙那张图片数据
     QOpenGLTexture* texture_nekosilverfox_;
+    QOpenGLTexture* texture_nekosilverfox_bk_;
 };
 
 #endif // FOXOPENGLWIDGET_H

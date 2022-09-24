@@ -43,6 +43,7 @@ private:
     QTimer timer_;
     QOpenGLTexture* texture_wall_;  // 存储砖墙那张图片数据
     QOpenGLTexture* texture_nekosilverfox_;
+    QOpenGLTexture* texture_nekosilverfox_bk_;
 };
 
 #endif // FOXOPENGLWIDGET_H

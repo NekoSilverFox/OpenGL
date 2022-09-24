@@ -5,10 +5,10 @@
 // 顶点数据
 float vertices[] = {
     // 最后是纹理的st坐标
-     0.5f,  0.5f, 0.0f,    1.0f, 0.0f, 0.0f,    1.0f, 1.0f,   // 右上角 0
-     0.5f, -0.5f, 0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f,  // 右下角 1
-    -0.5f, -0.5f, 0.0f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f, // 左下角 2
-    -0.5f,  0.5f, 0.0f,    0.5f, 0.5f, 0.5f,    0.0f, 1.0f,   // 左上角 3
+     0.3f,  0.3f, 0.0f,    1.0f, 0.0f, 0.0f,     1.0f,  1.0f,   // 右上角 0
+     0.3f, -0.3f, 0.0f,    0.0f, 1.0f, 0.0f,     1.0f,  0.0f,  // 右下角 1
+    -0.3f, -0.3f, 0.0f,    0.0f, 0.0f, 1.0f,     0.0f,  0.0f, // 左下角 2
+    -0.3f,  0.3f, 0.0f,    0.5f, 0.5f, 0.5f,     0.0f,  1.0f,   // 左上角 3
 };
 
 unsigned int indices[] = {
@@ -25,15 +25,22 @@ unsigned int VBO, VAO;
 // 创建 EBO 元素缓冲对象
 unsigned int EBO;
 
+float val_alpha = 0.5;
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
     this->current_shape_ = Shape::None;
 
-    /* 每隔1ms取一次时间（发送一次信号） */
-//    this->timer_.start(1);
+    /* 暂时用于键盘点击事件 */
+    setFocusPolicy(Qt::StrongFocus);
+
+    /* 每隔100ms取一次时间（发送一次信号） */
+    this->timer_.start(100);
 //    connect(&this->timer_, SIGNAL(timeout()),
 //            this, SLOT(changeColorWithTime()));
+
+    connect(&this->timer_, SIGNAL(timeout()),
+            this, SLOT(rotate()));
 
 }
 
@@ -136,13 +143,40 @@ void FoxOpenGLWidget::initializeGL()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);  // EBO/IBO 是储存顶点【索引】的
 
     // ===================== 纹理 =====================
+    // 开启透明度
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     this->shader_program_.bind();
     this->shader_program_.setUniformValue("texture0", 0);  // 【重点】当涉及到多个纹理使，一定要为 uniform 设置纹理单元的编号
     this->texture_wall_ = new QOpenGLTexture(QImage(":/Pictures/wall.jpg").mirrored());  // 因为QOpenGL的y轴是反的（镜像），所以需要mirrored翻转一下
 
     this->shader_program_.bind();
     this->shader_program_.setUniformValue("texture1", 1);
-    this->texture_nekosilverfox_ = new QOpenGLTexture(QImage(":/Pictures/nekosilverfox.jpg").mirrored());
+    this->texture_nekosilverfox_ = new QOpenGLTexture(QImage(":/Pictures/nekosilverfox.png").mirrored());
+    this->texture_nekosilverfox_->bind(1);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    this->shader_program_.bind();
+    this->shader_program_.setUniformValue("texture2", 2);
+    this->texture_nekosilverfox_bk_ = new QOpenGLTexture(QImage(":/Pictures/nekosilverfox_bk.jpg").mirrored());
+    // 纹理环绕方式
+    this->texture_nekosilverfox_bk_->bind(2);  // 【重点】注意！再修改纹理之前要先绑定到对应的纹理单元上！
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);  // T轴纹理【环绕】方式
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);  // S轴纹理【环绕】方式
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);  // 缩小时轴纹理【过滤】方式
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // 放大时纹理【过滤】方式
+{  /* 【重点】如果在 Switch 里定义变量要放在花括号里，如果是颜色填充要先设置，再传入颜色*/ }
+    // float bord_color[] = {1.0, 1.0, 0.0, 1.0};
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    // glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, bord_color);
+
+     this->shader_program_.bind();
+     this->shader_program_.setUniformValue("val_alpha", val_alpha);
+
 
     // ===================== 解绑 =====================
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
@@ -174,6 +208,12 @@ void FoxOpenGLWidget::paintGL()
 //    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);  // 6 代表6个点，因为一个矩形是2个三角形构成的，一个三角形有3个点
 //    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, &indices);  // 直接到索引数组里去绘制，如果VAO没有绑定EBO的话
 
+    QMatrix4x4 matrix;  // QMatrix 默认生成的是一个单位矩阵（对角线上的元素为1）
+    unsigned int time_ms = QTime::currentTime().msec();
+    // 【重点】这里是先旋转再位移！！ 因为矩阵运算 T*R*v 顺序是从右向左的！！不然转轴不是图片中心！！
+    matrix.rotate(time_ms, 0.0f, 0.0f, 1.0f);  // 旋转
+    matrix.translate(0.4f, 0.0f, 0.0f);  // 位移
+
     // 通过 this->current_shape_ 确定当前需要绘制的图形
     switch (this->current_shape_)
     {
@@ -181,8 +221,20 @@ void FoxOpenGLWidget::paintGL()
         break;
 
     case Shape::Rect:
+         // ===================== 绑定纹理 =====================
         this->texture_wall_->bind(0);  // 绑定纹理单元0的数据，并激活对应区域
         this->texture_nekosilverfox_->bind(1);
+        this->texture_nekosilverfox_bk_->bind(2);
+        /* 【重点】一定要先旋转再位移！！！！ */
+        this->shader_program_.setUniformValue("matrix", matrix);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+
+        /* 绘制第二个三角形 */
+        matrix.setToIdentity();  // 恢复成单位矩阵
+        matrix.translate(-0.4f, 0.4f, 0.0f);  // 位移
+        matrix.scale(fabs(sin(time_ms)));  // 实现放大缩小
+        this->shader_program_.setUniformValue("matrix", matrix);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         break;
 
@@ -196,7 +248,7 @@ void FoxOpenGLWidget::paintGL()
         break;
 
     }
-
+    
 }
 
 void FoxOpenGLWidget::drawShape(FoxOpenGLWidget::Shape shape)
@@ -234,5 +286,39 @@ void FoxOpenGLWidget::changeColorWithTime()
     this->shader_program_.setUniformValue("ourColor", 0.0f, greenValue, 0.0f, 1.0f);
 
     doneCurrent();
+    update();
+}
+
+/* 处理键盘事件 */
+#include <QKeyEvent>
+void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
+{
+    switch (event->key()) {
+    case Qt::Key_Up:
+        qDebug() << "Key event - Key_Up - val_alpha = " << val_alpha;
+        val_alpha += 0.1;
+        break;
+    case Qt::Key_Down:
+        qDebug() << "Key event - Key_Down - val_alpha = " << val_alpha;
+        val_alpha -= 0.1;
+        break;
+    default:
+        qDebug() << "Key event - Other key:" << event->key();
+        break;
+    }
+
+    if (val_alpha > 1.0) val_alpha = 1.0;
+    if (val_alpha < 0.0) val_alpha = 0.0;
+
+    makeCurrent();
+    this->shader_program_.bind();
+    this->shader_program_.setUniformValue("val_alpha", val_alpha);
+    doneCurrent();
+    update();
+
+}
+
+void FoxOpenGLWidget::rotate()
+{
     update();
 }

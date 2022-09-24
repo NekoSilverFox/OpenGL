@@ -5,10 +5,22 @@
 // 顶点数据
 float vertices[] = {
     // 最后是纹理的st坐标
-     0.5f,  0.5f, 0.0f,    1.0f, 0.0f, 0.0f,    1.0f, 1.0f,   // 右上角 0
-     0.5f, -0.5f, 0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f,  // 右下角 1
-    -0.5f, -0.5f, 0.0f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f, // 左下角 2
-    -0.5f,  0.5f, 0.0f,    0.5f, 0.5f, 0.5f,    0.0f, 1.0f,   // 左上角 3
+     0.9f,  0.9f, 0.0f,    1.0f, 0.0f, 0.0f,     1.0f,  1.0f,   // 右上角 0
+     0.9f, -0.9f, 0.0f,    0.0f, 1.0f, 0.0f,     1.0f,  0.0f,  // 右下角 1
+    -0.9f, -0.9f, 0.0f,    0.0f, 0.0f, 1.0f,     0.0f,  0.0f, // 左下角 2
+    -0.9f,  0.9f, 0.0f,    0.5f, 0.5f, 0.5f,     0.0f,  1.0f,   // 左上角 3
+
+// 第二题
+//     0.9f,  0.9f, 0.0f,    1.0f, 0.0f, 0.0f,     2.0f,  2.0f,   // 右上角 0
+//     0.9f, -0.9f, 0.0f,    0.0f, 1.0f, 0.0f,     2.0f,  0.0f,  // 右下角 1
+//    -0.9f, -0.9f, 0.0f,    0.0f, 0.0f, 1.0f,     0.0f,  0.0f, // 左下角 2
+//    -0.9f,  0.9f, 0.0f,    0.5f, 0.5f, 0.5f,     0.0f,  2.0f,   // 左上角 3
+
+// 第三题
+//    0.9f,  0.9f, 0.0f,    1.0f, 0.0f, 0.0f,     0.60f,  0.60f,   // 右上角 0
+//    0.9f, -0.9f, 0.0f,    0.0f, 1.0f, 0.0f,     0.60f,  0.40f,  // 右下角 1
+//   -0.9f, -0.9f, 0.0f,    0.0f, 0.0f, 1.0f,     0.40f,  0.40f, // 左下角 2
+//   -0.9f,  0.9f, 0.0f,    0.5f, 0.5f, 0.5f,     0.40f,  0.60f,   // 左上角 3
 };
 
 unsigned int indices[] = {
@@ -25,10 +37,13 @@ unsigned int VBO, VAO;
 // 创建 EBO 元素缓冲对象
 unsigned int EBO;
 
+float val_alpha = 0.5;
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
     this->current_shape_ = Shape::None;
+
+    setFocusPolicy(Qt::StrongFocus);
 
     /* 每隔1ms取一次时间（发送一次信号） */
 //    this->timer_.start(1);
@@ -136,13 +151,40 @@ void FoxOpenGLWidget::initializeGL()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);  // EBO/IBO 是储存顶点【索引】的
 
     // ===================== 纹理 =====================
+    // 开启透明度
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     this->shader_program_.bind();
     this->shader_program_.setUniformValue("texture0", 0);  // 【重点】当涉及到多个纹理使，一定要为 uniform 设置纹理单元的编号
     this->texture_wall_ = new QOpenGLTexture(QImage(":/Pictures/wall.jpg").mirrored());  // 因为QOpenGL的y轴是反的（镜像），所以需要mirrored翻转一下
 
     this->shader_program_.bind();
     this->shader_program_.setUniformValue("texture1", 1);
-    this->texture_nekosilverfox_ = new QOpenGLTexture(QImage(":/Pictures/nekosilverfox.jpg").mirrored());
+    this->texture_nekosilverfox_ = new QOpenGLTexture(QImage(":/Pictures/nekosilverfox.png").mirrored());
+    this->texture_nekosilverfox_->bind(1);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    this->shader_program_.bind();
+    this->shader_program_.setUniformValue("texture2", 2);
+    this->texture_nekosilverfox_bk_ = new QOpenGLTexture(QImage(":/Pictures/nekosilverfox_bk.jpg").mirrored());
+    // 纹理环绕方式
+    this->texture_nekosilverfox_bk_->bind(2);  // 【重点】注意！再修改纹理之前要先绑定到对应的纹理单元上！
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);  // T轴纹理【环绕】方式
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);  // S轴纹理【环绕】方式
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);  // 缩小时轴纹理【过滤】方式
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // 放大时纹理【过滤】方式
+{  /* 【重点】如果在 Switch 里定义变量要放在花括号里，如果是颜色填充要先设置，再传入颜色*/ }
+    // float bord_color[] = {1.0, 1.0, 0.0, 1.0};
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    // glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, bord_color);
+
+     this->shader_program_.bind();
+     this->shader_program_.setUniformValue("val_alpha", val_alpha);
+
 
     // ===================== 解绑 =====================
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
@@ -181,8 +223,11 @@ void FoxOpenGLWidget::paintGL()
         break;
 
     case Shape::Rect:
+         // ===================== 绑定纹理 =====================
         this->texture_wall_->bind(0);  // 绑定纹理单元0的数据，并激活对应区域
         this->texture_nekosilverfox_->bind(1);
+//        this->texture_nekosilverfox_bk_->bind(2);
+
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         break;
 
@@ -196,7 +241,7 @@ void FoxOpenGLWidget::paintGL()
         break;
 
     }
-
+    
 }
 
 void FoxOpenGLWidget::drawShape(FoxOpenGLWidget::Shape shape)
@@ -235,4 +280,33 @@ void FoxOpenGLWidget::changeColorWithTime()
 
     doneCurrent();
     update();
+}
+
+/* 处理键盘事件 */
+#include <QKeyEvent>
+void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
+{
+    qDebug() << "Key event" << "/n";
+    switch (event->key()) {
+    case Qt::Key_Up:
+        qDebug() << "Key event - Key_Up - val_alpha = " << val_alpha;
+        val_alpha += 0.1;
+        break;
+    case Qt::Key_Down:
+        qDebug() << "Key event - Key_Down - val_alpha = " << val_alpha;
+        val_alpha -= 0.1;
+        break;
+    default:
+        break;
+    }
+
+    if (val_alpha > 1.0) val_alpha = 1.0;
+    if (val_alpha < 0.0) val_alpha = 0.0;
+
+    makeCurrent();
+    this->shader_program_.bind();
+    this->shader_program_.setUniformValue("val_alpha", val_alpha);
+    doneCurrent();
+    update();
+
 }
