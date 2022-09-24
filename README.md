@@ -1553,7 +1553,20 @@ $$
 
 
 
+## QMatrix
 
+QMatrix 是 Qt 为我们封装好的一系列矩阵运算的类：
+
+> **注意：运算的顺序受到调用方法顺序的影响**
+>
+> ==矩阵运算顺序是从又向左的！！！==
+
+定义一个变量：`QMatrixa4x4 matrix;`：
+
+- **缩放**：`matrix.scale(float factor)`
+- **旋转**：`matrix.rotate(float angle, float x, float y, float z = 0.0f)`，`angle` 是旋转量，后面 3 个参数是转轴
+- **位移**：`matrix.translate(float x, float y, float z)`
+- **恢复成单位矩阵**：`matrix.setToIdentity()`
 
 
 
