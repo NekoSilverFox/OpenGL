@@ -5,10 +5,10 @@
 // 顶点数据
 float vertices[] = {
     // 最后是纹理的st坐标
-     0.9f,  0.9f, 0.0f,    1.0f, 0.0f, 0.0f,     1.0f,  1.0f,   // 右上角 0
-     0.9f, -0.9f, 0.0f,    0.0f, 1.0f, 0.0f,     1.0f,  0.0f,  // 右下角 1
-    -0.9f, -0.9f, 0.0f,    0.0f, 0.0f, 1.0f,     0.0f,  0.0f, // 左下角 2
-    -0.9f,  0.9f, 0.0f,    0.5f, 0.5f, 0.5f,     0.0f,  1.0f,   // 左上角 3
+     0.3f,  0.3f, 0.0f,    1.0f, 0.0f, 0.0f,     1.0f,  1.0f,   // 右上角 0
+     0.3f, -0.3f, 0.0f,    0.0f, 1.0f, 0.0f,     1.0f,  0.0f,  // 右下角 1
+    -0.3f, -0.3f, 0.0f,    0.0f, 0.0f, 1.0f,     0.0f,  0.0f, // 左下角 2
+    -0.3f,  0.3f, 0.0f,    0.5f, 0.5f, 0.5f,     0.0f,  1.0f,   // 左上角 3
 };
 
 unsigned int indices[] = {
@@ -34,10 +34,13 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
     /* 暂时用于键盘点击事件 */
     setFocusPolicy(Qt::StrongFocus);
 
-    /* 每隔1ms取一次时间（发送一次信号） */
-//    this->timer_.start(1);
+    /* 每隔100ms取一次时间（发送一次信号） */
+    this->timer_.start(100);
 //    connect(&this->timer_, SIGNAL(timeout()),
 //            this, SLOT(changeColorWithTime()));
+
+    connect(&this->timer_, SIGNAL(timeout()),
+            this, SLOT(rotate()));
 
 }
 
@@ -205,6 +208,12 @@ void FoxOpenGLWidget::paintGL()
 //    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);  // 6 代表6个点，因为一个矩形是2个三角形构成的，一个三角形有3个点
 //    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, &indices);  // 直接到索引数组里去绘制，如果VAO没有绑定EBO的话
 
+    QMatrix4x4 matrix;  // QMatrix 默认生成的是一个单位矩阵（对角线上的元素为1）
+    unsigned int time_ms = QTime::currentTime().msec();
+    // 【重点】这里是先旋转再位移！！ 因为矩阵运算 T*R*v 顺序是从右向左的！！不然转轴不是图片中心！！
+    matrix.rotate(time_ms, 0.0f, 0.0f, 1.0f);  // 旋转
+    matrix.translate(0.4f, 0.0f, 0.0f);  // 位移
+
     // 通过 this->current_shape_ 确定当前需要绘制的图形
     switch (this->current_shape_)
     {
@@ -215,7 +224,10 @@ void FoxOpenGLWidget::paintGL()
          // ===================== 绑定纹理 =====================
         this->texture_wall_->bind(0);  // 绑定纹理单元0的数据，并激活对应区域
         this->texture_nekosilverfox_->bind(1);
-//        this->texture_nekosilverfox_bk_->bind(2);
+        this->texture_nekosilverfox_bk_->bind(2);
+
+        /* 【重点】一定要先旋转再位移！！！！ */
+        this->shader_program_.setUniformValue("matrix", matrix);
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         break;
@@ -285,7 +297,7 @@ void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
         val_alpha -= 0.1;
         break;
     default:
-        qDebug() << "Key event - " << event->key();
+        qDebug() << "Key event - Other key:" << event->key();
         break;
     }
 
@@ -298,4 +310,9 @@ void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
     doneCurrent();
     update();
 
+}
+
+void FoxOpenGLWidget::rotate()
+{
+    update();
 }

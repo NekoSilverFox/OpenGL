@@ -39,6 +39,7 @@ signals:
 
 public slots:
     void changeColorWithTime();
+    void rotate();
 
 private:
     Shape current_shape_;  // 记录当前绘制的图形
