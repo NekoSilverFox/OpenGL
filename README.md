@@ -1,22 +1,39 @@
 <p align="center">
  <img width="100px" src="https://raw.githubusercontent.com/NekoSilverFox/NekoSilverfox/403ab045b7d9adeaaf8186c451af7243f5d8f46d/icons/silverfox.svg" align="center" alt="NekoSilverfox" />
  <h1 align="center">OpenGL</h1>
- <p align="center"><b>计算机图形</b></p>
+ <p align="center"><b>计算机图形学</b></p>
 </p>
 
-> “绝不能恐惧，恐惧是思维杀手。恐惧是引向毁灭的死神。我将正视恐惧，任由它穿过我的躯体。当恐惧逝去，我会洞悉它的轨迹。恐惧所过之处，万物无存，唯我独立。”
+
+
+ <p align="center">
+  <img width="250px" src="https://github.com/NekoSilverFox/NekoSilverfox/blob/master/icons/logo_building_spbstu.png?raw=true" align="center" alt="ogo_building_spbstu" />
+  </br>
+  </br>
+  <b><b>Санкт-Петербургский государственный политехнический университет</b></br></b>
+  <b>Институт компьютерных наук и технологий</b>
+ </p>
+
+<div align=left>
+<!-- SPbSTU 最后一行 -->
+
 
 
 <div align=center>
 
 
-
 [![License](https://img.shields.io/badge/license-Apache%202.0-brightgreen)](LICENSE)
-
+![ZYNQ](https://img.shields.io/badge/Qt-QOpenGLWidget-orange)
+![SoC](https://img.shields.io/badge/OpenGL-4.5-orange)
 
 
 <div align=left>
 <!-- 顶部至此截止 -->
+
+
+
+> “绝不能恐惧，恐惧是思维杀手。恐惧是引向毁灭的死神。我将正视恐惧，任由它穿过我的躯体。当恐惧逝去，我会洞悉它的轨迹。恐惧所过之处，万物无存，唯我独立。”
+
 
 
 
