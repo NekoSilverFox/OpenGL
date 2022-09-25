@@ -47,6 +47,20 @@ float vertices[] = {
     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 };
 
+/* 实现绘制10个立方体在不同位置 */
+QVector<QVector3D> cubePositions = {
+  QVector3D( 0.0f,  0.0f,  0.0f),
+  QVector3D( 2.0f,  5.0f, -15.0f),
+  QVector3D(-1.5f, -2.2f, -2.5f),
+  QVector3D(-3.8f, -2.0f, -12.3f),
+  QVector3D( 2.4f, -0.4f, -3.5f),
+  QVector3D(-1.7f,  3.0f, -7.5f),
+  QVector3D( 1.3f, -2.0f, -2.5f),
+  QVector3D( 1.5f,  2.0f, -2.5f),
+  QVector3D( 1.5f,  0.2f, -1.5f),
+  QVector3D(-1.3f,  1.0f, -1.5f)
+};
+
 unsigned int indices[] = {
     // 注意索引从0开始!
     // 此例的索引(0,1,2,3)就是顶点数组vertices的下标，
@@ -70,8 +84,8 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
     /* 暂时用于键盘点击事件 */
     setFocusPolicy(Qt::StrongFocus);
 
-    /* 每隔100ms取一次时间（发送一次信号） */
-    this->timer_.start(100);
+    /* 每隔1ms取一次时间（发送一次信号） */
+    this->timer_.start(1);
     connect(&this->timer_, SIGNAL(timeout()),
             this, SLOT(rotate()));
 
@@ -228,7 +242,7 @@ void FoxOpenGLWidget::paintGL()
 {
     /* 设置 OpenGLWidget 控件背景颜色为深青色，并且设置深度信息（Z-缓冲） */
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);  // set方法【重点】如果没有 initializeGL，目前是一个空指针状态，没有指向显卡里面的函数，会报错
-    glEnable(GL_DEPTH);  // 深度信息，如果不设置立方体就像没有盖子
+    glEnable(GL_DEPTH_TEST);  // 深度信息，如果不设置立方体就像没有盖子
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // use方法
 
     /* 重新绑定 VAO */
@@ -246,7 +260,6 @@ void FoxOpenGLWidget::paintGL()
     QMatrix4x4 mat_view;
     unsigned int time_ms = QTime::currentTime().msec();
 
-    mat_model.rotate(time_ms, 1.0f, 3.0f, 0.5f);  // 沿着转轴旋转图形
     mat_view.translate(0.0f, 0.0f, -3.0f);  // 移动摄像机，【重点】这个位置是摄像机相对于世界原点而言的！！所以这里相当于摄像机沿着z轴往后退3个点
 
 
@@ -263,12 +276,19 @@ void FoxOpenGLWidget::paintGL()
         this->texture_nekosilverfox_->bind(1);
         this->texture_nekosilverfox_bk_->bind(2);
 
-
-        /* 【重点】一定要先旋转再位移！！！！ */
-        this->shader_program_.setUniformValue("mat_model", mat_model);  // 图形矩阵
         this->shader_program_.setUniformValue("mat_view", mat_view);  // 摄像机矩阵
 //        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glDrawArrays(GL_TRIANGLES, 0, 36);  // 一共绘制 36 个顶点
+
+        foreach (auto item, cubePositions)
+        {
+            /* 【重点】一定要先旋转再位移！！！！ */
+            mat_model.setToIdentity();  // 注意重置为单位矩阵！！
+            mat_model.translate(item);  // 将每个立方体都移动到对应的不同位置
+            mat_model.rotate(time_ms / 10, 1.0f, 3.0f, 0.5f);  // 沿着转轴旋转图形
+            this->shader_program_.setUniformValue("mat_model", mat_model);  // 图形矩阵
+            glDrawArrays(GL_TRIANGLES, 0, 36);  // 一共绘制 36 个顶点
+        }
+
         break;
 
     case Shape::Circle:
