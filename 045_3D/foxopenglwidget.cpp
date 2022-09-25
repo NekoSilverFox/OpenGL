@@ -4,11 +4,47 @@
 
 // 顶点数据
 float vertices[] = {
-    // 最后是纹理的st坐标
-     0.9f,  0.9f, 0.0f,    1.0f, 0.0f, 0.0f,     1.0f,  1.0f,   // 右上角 0
-     0.9f, -0.9f, 0.0f,    0.0f, 1.0f, 0.0f,     1.0f,  0.0f,  // 右下角 1
-    -0.9f, -0.9f, 0.0f,    0.0f, 0.0f, 1.0f,     0.0f,  0.0f, // 左下角 2
-    -0.9f,  0.9f, 0.0f,    0.5f, 0.5f, 0.5f,     0.0f,  1.0f,   // 左上角 3
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 };
 
 unsigned int indices[] = {
@@ -108,17 +144,12 @@ void FoxOpenGLWidget::initializeGL()
     */
     this->shader_program_.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
     GLint aPosLocation = this->shader_program_.attributeLocation("aPos");  // 获取顶点着色器中顶点属性 aPos 的位置
-    glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);  // 手动传入第几个属性
+    glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);  // 手动传入第几个属性
     glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
 
     this->shader_program_.bind();
-    GLint aColorLocation = this->shader_program_.attributeLocation("aColor");
-    glVertexAttribPointer(aColorLocation, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(aColorLocation);
-
-    this->shader_program_.bind();
     GLint aTexelLocation = this->shader_program_.attributeLocation("aTexel");
-    glVertexAttribPointer(aTexelLocation, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glVertexAttribPointer(aTexelLocation, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(aTexelLocation);
 
 #endif
@@ -174,6 +205,11 @@ void FoxOpenGLWidget::initializeGL()
      this->shader_program_.bind();
      this->shader_program_.setUniformValue("val_alpha", val_alpha);
 
+     /* 透视（焦距）一般设置一次就好了，之后不变。如果放在PaintGL() 里会导致每次重绘都调用，增加资源消耗 */
+     QMatrix4x4 mat_projection;
+     mat_projection.perspective(45, (float)width()/(float)height(), 0.1f, 100.0f);  // 透视
+     this->shader_program_.setUniformValue("mat_projection", mat_projection);
+
 
     // ===================== 解绑 =====================
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
@@ -190,9 +226,10 @@ void FoxOpenGLWidget::resizeGL(int w, int h)
 
 void FoxOpenGLWidget::paintGL()
 {
-    /* 设置 OpenGLWidget 控件背景颜色为深青色 */
+    /* 设置 OpenGLWidget 控件背景颜色为深青色，并且设置深度信息（Z-缓冲） */
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);  // set方法【重点】如果没有 initializeGL，目前是一个空指针状态，没有指向显卡里面的函数，会报错
-    glClear(GL_COLOR_BUFFER_BIT);  // use方法
+    glEnable(GL_DEPTH);  // 深度信息，如果不设置立方体就像没有盖子
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // use方法
 
     /* 重新绑定 VAO */
     glBindVertexArray(VAO);
@@ -205,11 +242,14 @@ void FoxOpenGLWidget::paintGL()
 //    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);  // 6 代表6个点，因为一个矩形是2个三角形构成的，一个三角形有3个点
 //    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, &indices);  // 直接到索引数组里去绘制，如果VAO没有绑定EBO的话
 
-    QMatrix4x4 matrix;  // QMatrix 默认生成的是一个单位矩阵（对角线上的元素为1）
+    QMatrix4x4 mat_model; // QMatrix 默认生成的是一个单位矩阵（对角线上的元素为1）
+    QMatrix4x4 mat_view;
     unsigned int time_ms = QTime::currentTime().msec();
-    // 【重点】这里是先旋转再位移！！ 因为矩阵运算 T*R*v 顺序是从右向左的！！不然转轴不是图片中心！！
-    matrix.rotate(time_ms, 0.0f, 0.0f, 1.0f);  // 旋转
-    matrix.translate(0.4f, 0.0f, 0.0f);  // 位移
+
+    mat_model.rotate(time_ms, 1.0f, 3.0f, 0.5f);  // 沿着转轴旋转图形
+    mat_view.translate(0.0f, 0.0f, -3.0f);  // 移动摄像机，【重点】这个位置是摄像机相对于世界原点而言的！！所以这里相当于摄像机沿着z轴往后退3个点
+
+
 
     // 通过 this->current_shape_ 确定当前需要绘制的图形
     switch (this->current_shape_)
@@ -222,10 +262,13 @@ void FoxOpenGLWidget::paintGL()
         this->texture_wall_->bind(0);  // 绑定纹理单元0的数据，并激活对应区域
         this->texture_nekosilverfox_->bind(1);
         this->texture_nekosilverfox_bk_->bind(2);
-        /* 【重点】一定要先旋转再位移！！！！ */
-        this->shader_program_.setUniformValue("matrix", matrix);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
+
+        /* 【重点】一定要先旋转再位移！！！！ */
+        this->shader_program_.setUniformValue("mat_model", mat_model);  // 图形矩阵
+        this->shader_program_.setUniformValue("mat_view", mat_view);  // 摄像机矩阵
+//        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_TRIANGLES, 0, 36);  // 一共绘制 36 个顶点
         break;
 
     case Shape::Circle:
