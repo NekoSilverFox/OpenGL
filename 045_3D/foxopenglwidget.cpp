@@ -2,7 +2,8 @@
 #include <QTime>
 #include "foxopenglwidget.h"
 
-// 顶点数据
+
+// 一个立方体的顶点数据（36个顶点）
 float vertices[] = {
     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
      0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
@@ -256,12 +257,12 @@ void FoxOpenGLWidget::paintGL()
 //    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);  // 6 代表6个点，因为一个矩形是2个三角形构成的，一个三角形有3个点
 //    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, &indices);  // 直接到索引数组里去绘制，如果VAO没有绑定EBO的话
 
-    QMatrix4x4 mat_model; // QMatrix 默认生成的是一个单位矩阵（对角线上的元素为1）
-    QMatrix4x4 mat_view;
     unsigned int time_ms = QTime::currentTime().msec();
 
-    mat_view.translate(0.0f, 0.0f, -3.0f);  // 移动摄像机，【重点】这个位置是摄像机相对于世界原点而言的！！所以这里相当于摄像机沿着z轴往后退3个点
+    QMatrix4x4 mat_model; // QMatrix 默认生成的是一个单位矩阵（对角线上的元素为1）
+    QMatrix4x4 mat_view;
 
+    mat_view.translate(0.0f, 0.0f, -3.0f);  // 移动世界，【重点】这个位置是世界原点相对于摄像机而言的！！所以这里相当于世界沿着 z 轴对于摄像机向后退 3 个单位
 
 
     // 通过 this->current_shape_ 确定当前需要绘制的图形
@@ -284,7 +285,7 @@ void FoxOpenGLWidget::paintGL()
             /* 【重点】一定要先旋转再位移！！！！ */
             mat_model.setToIdentity();  // 注意重置为单位矩阵！！
             mat_model.translate(item);  // 将每个立方体都移动到对应的不同位置
-            mat_model.rotate(time_ms / 10, 1.0f, 3.0f, 0.5f);  // 沿着转轴旋转图形
+            mat_model.rotate(time_ms / 10 , 1.0f, 3.0f, 0.5f);  // 沿着转轴旋转图形
             this->shader_program_.setUniformValue("mat_model", mat_model);  // 图形矩阵
             glDrawArrays(GL_TRIANGLES, 0, 36);  // 一共绘制 36 个顶点
         }
