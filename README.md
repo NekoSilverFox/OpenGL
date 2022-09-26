@@ -1766,6 +1766,27 @@ $$
 
 # 3D
 
+## 右手坐标系
+
+**右手坐标系(Right-handed System)**
+
+按照惯例，OpenGL是一个右手坐标系。简单来说，就是正x轴在你的右手边，正y轴朝上，而正z轴是朝向后方的。想象你的屏幕处于三个轴的中心，则正z轴穿过你的屏幕朝向你。坐标系画起来如下：
+
+![coordinate_systems_right_handed](https://learnopengl-cn.github.io/img/01/08/coordinate_systems_right_handed.png)
+
+为了理解为什么被称为右手坐标系，按如下的步骤做：
+
+- 沿着正y轴方向伸出你的右臂，手指着上方。
+- 大拇指指向右方。
+- 食指指向上方。
+- 中指向下弯曲90度。 
+
+如果你的动作正确，那么你的大拇指指向正x轴方向，食指指向正y轴方向，中指指向正z轴方向。如果你用左臂来做这些动作，你会发现z轴的方向是相反的。这个叫做左手坐标系，它被DirectX广泛地使用。注意在标准化设备坐标系中OpenGL实际上使用的是左手坐标系（投影矩阵交换了左右手）。
+
+
+
+## 矩阵定义
+
 我们想要在场景里面稍微往后移动，以使得物体变成可见的（当在世界空间时，我们位于原点(0,0,0)）。要想在场景里面移动，先仔细想一想下面这个句子：
 
 - ***将摄像机向后移动，和将整个场景向前移动是一样的。***
@@ -1774,11 +1795,62 @@ $$
 
 
 
-## 右手坐标系
+**使用 Qt 提供的 `QMatrix4x4` 进行：**
+
+- **顶点着色器**
+
+    注意：我们这里的运算是在顶点着色器，也就是 GPU 中进行的。因为 GPU 对于矩阵运算很在手
+
+    ```glsl
+    #version 330 core
+    layout (location = 0) in vec3 aPos;   // 位置变量的属性位置值为 0
+    layout (location = 1) in vec2 aTexel; // 存储2D纹理坐标s、t
+    
+    out vec2 ourTexel; // 向片段着色器输出2D纹理坐标s、t
+    
+    uniform mat4 mat_model;
+    uniform mat4 mat_view;
+    uniform mat4 mat_projection;
+    
+    void main()
+    {
+        gl_Position = mat_projection * mat_view * mat_model * vec4(aPos, 1.0);  // 【重点】实现最终的效果
+    
+        ourTexel = vec2(aTexel.s, aTexel.t);
+    }
+    ```
 
 
+    而这三个矩阵的定义是使用 `QMatrix4x4` 定义的，然后通过 `QShaderProgram.setUniformValue("val", val)` 将定义的数据传入
 
+- **旋转模型**
 
+    ```c++
+    QMatrix4x4 mat_model; // QMatrix 默认生成的是一个单位矩阵（对角线上的元素为1）
+    mat_model.rotate(角度, 1.0f, 3.0f, 0.5f);  // 沿着转轴旋转图形
+    this->shader_program_.setUniformValue("mat_model", mat_model);  // 图形矩阵
+    ```
+
+    
+
+- **移动场景（世界）**
+
+    ```c++
+    QMatrix4x4 mat_view;
+    mat_view.translate(0.0f, 0.0f, -3.0f);  // 移动世界，【重点】这个位置是世界原点相对于摄像机而言的！！所以这里相当于世界沿着 z 轴对于摄像机向后退 3 个单位
+    this->shader_program_.setUniformValue("mat_view", mat_view);
+    ```
+
+    
+
+- **投影矩阵（透视投影）**
+
+    ```c++
+    /* 透视（焦距）一般设置一次就好了，之后不变。如果放在PaintGL() 里会导致每次重绘都调用，增加资源消耗 */
+    QMatrix4x4 mat_projection;
+    mat_projection.perspective(45, (float)width()/(float)height(), 0.1f, 100.0f);  // 透视
+    this->shader_program_.setUniformValue("mat_projection", mat_projection);
+    ```
 
 
 
