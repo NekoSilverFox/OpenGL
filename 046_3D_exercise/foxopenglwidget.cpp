@@ -222,7 +222,7 @@ void FoxOpenGLWidget::initializeGL()
 
      /* 透视（焦距）一般设置一次就好了，之后不变。如果放在PaintGL() 里会导致每次重绘都调用，增加资源消耗 */
      QMatrix4x4 mat_projection;
-     mat_projection.perspective(45, (float)width()/(float)height(), 0.1f, 100.0f);  // 透视
+     mat_projection.perspective(50, (float)width()/(float)(1*height()), 0.1f, 100.0f);  // 透视
      this->shader_program_.setUniformValue("mat_projection", mat_projection);
 
 
@@ -241,6 +241,8 @@ void FoxOpenGLWidget::resizeGL(int w, int h)
 
 void FoxOpenGLWidget::paintGL()
 {
+    glViewport(0, 0, width(), height());
+
     /* 设置 OpenGLWidget 控件背景颜色为深青色，并且设置深度信息（Z-缓冲） */
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);  // set方法【重点】如果没有 initializeGL，目前是一个空指针状态，没有指向显卡里面的函数，会报错
     glEnable(GL_DEPTH_TEST);  // 深度信息，如果不设置立方体就像没有盖子
@@ -260,9 +262,9 @@ void FoxOpenGLWidget::paintGL()
     unsigned int time_ms = QTime::currentTime().msec();
 
     QMatrix4x4 mat_model; // QMatrix 默认生成的是一个单位矩阵（对角线上的元素为1）
-    QMatrix4x4 mat_view;
+    QMatrix4x4 mat_view;  // 【重点】 view代表摄像机拍摄的物体，也就是全世界！！！
 
-    mat_view.translate(0.0f, 0.0f, -3.0f);  // 移动世界，【重点】这个位置是世界原点相对于摄像机而言的！！所以这里相当于世界沿着 z 轴对于摄像机向后退 3 个单位
+    mat_view.translate(3.0f, 0.0f, -3.0f);  // 移动世界，【重点】这个位置是世界原点相对于摄像机而言的！！所以这里相当于世界沿着 z 轴对于摄像机向后退 3 个单位
 
 
     // 通过 this->current_shape_ 确定当前需要绘制的图形
@@ -280,16 +282,25 @@ void FoxOpenGLWidget::paintGL()
         this->shader_program_.setUniformValue("mat_view", mat_view);  // 摄像机矩阵
 //        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-        foreach (auto item, cubePositions)
-        {
-            /* 【重点】一定要先旋转再位移！！！！ */
-            mat_model.setToIdentity();  // 注意重置为单位矩阵！！
-            mat_model.translate(item);  // 将每个立方体都移动到对应的不同位置
-            mat_model.rotate(time_ms / 10 , 1.0f, 3.0f, 0.5f);  // 沿着转轴旋转图形
-            this->shader_program_.setUniformValue("mat_model", mat_model);  // 图形矩阵
-            glDrawArrays(GL_TRIANGLES, 0, 36);  // 一共绘制 36 个顶点
-        }
+        {  /* 【重点】如果在 Switch 里定义变量要放在花括号里 */
+            int i = 0;
+            foreach (auto item, cubePositions)
+            {
+                /* 【重点】一定要先旋转再位移！！！！ */
+                mat_model.setToIdentity();  // 注意重置为单位矩阵！！
+                mat_model.translate(item);  // 将每个立方体都移动到对应的不同位置
 
+                if (0 == i % 3)
+                {
+                    mat_model.rotate(time_ms / 10 , 1.0f, 3.0f, 0.5f);  // 沿着转轴旋转图形
+                }
+
+                this->shader_program_.setUniformValue("mat_model", mat_model);  // 图形矩阵
+                glDrawArrays(GL_TRIANGLES, 0, 36);  // 一共绘制 36 个顶点
+
+                i++;
+        }
+    }
         break;
 
     case Shape::Circle:
