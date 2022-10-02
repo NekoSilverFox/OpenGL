@@ -50,11 +50,24 @@
 | [002_Triangle_VAO_VBO](https://github.com/NekoSilverFox/OpenGL/tree/main/002_Triangle_VAO_VBO) | 基于 `001` 的初始化控件后，增加使用 VAO、VBO 代码绘制三角形的代码<br />顶点和片段着色器的编写、编译、链接和使用 |
 | [003_Triangle_EBO](https://github.com/NekoSilverFox/OpenGL/tree/main/003_Triangle_EBO) | 通过 EBO（元素/索引缓冲对象）进行了 2 个三角形的绘制（绘制为 1 个矩形） |
 | [005_Two_triangle_exercise](https://github.com/NekoSilverFox/OpenGL/tree/main/005_Two_triangle_exercise) | 小练习：使用 VAO 和 VBO 数组进行对不同三角形的绘制；使用 2 个片段着色器进行分别着色 |
+|                                                              |                                                              |
 | [010_Qt_UI_with_OpenGL](https://github.com/NekoSilverFox/OpenGL/tree/main/010_Qt_UI_with_OpenGL) | Qt UI 调用 OpenGL 功能：通过 QOpenGLWidget 上的按钮实现三角形的绘制、清除、是否开启线框模式<br />Qt`update()` 函数的注意事项及使用 |
 | [011_QOpenGLShaderProgram](https://github.com/NekoSilverFox/OpenGL/tree/main/011_QOpenGLShaderProgram) | 使用 Qt 提供的 QOpenGLShaderProgram 类，进行顶点和片段着色器的编译链接和使用。并且将 GLSL 代码以 Qt 资源文件的方式传入和使用 |
 |                                                              |                                                              |
+| [020_GLSL_in_out](https://github.com/NekoSilverFox/OpenGL/tree/main/020_GLSL_in_out) | 讲解了 GLSL 代码中 `in` 和 `out` 关键字                      |
+| [021_GLSL_layout](https://github.com/NekoSilverFox/OpenGL/tree/main/021_GLSL_layout) | 讲解了 GLSL 代码中 `layout` 关键字，比如 `layout (location = 2) in vec3 aPos;` 定义了顶点属性 `aPos` 的位置是 2 |
+| [022_GLSL_uniform](https://github.com/NekoSilverFox/OpenGL/tree/main/022_GLSL_uniform) | 讲解了 GLSL 代码中 `uniform` 关键字，使用 `uniform` 是一种从 CPU 向 GPU 传送数据的方式 |
+| [023_GLSL_more_Attrib](https://github.com/NekoSilverFox/OpenGL/tree/main/023_GLSL_more_Attrib) | 使用 `layout` 关键字实现了更多的顶点属性（增加颜色值）       |
+| [024_GLSL_exercise](https://github.com/NekoSilverFox/OpenGL/tree/main/024_GLSL_exercise) | GLSL 小练习                                                  |
 |                                                              |                                                              |
+| [030_Texel](https://github.com/NekoSilverFox/OpenGL/tree/main/030_Texel) | 纹理                                                         |
+| [031_Texel_wrap](https://github.com/NekoSilverFox/OpenGL/tree/main/031_Texel_wrap) | 设置纹理环绕方式（重复、镜像、颜色填充等）                   |
+| [032_Texture_Filtering](https://github.com/NekoSilverFox/OpenGL/tree/main/032_Texture_Filtering) | 纹理的过滤方式（`GL_LINEAR` - 线性过滤；`GL_NEAREST` - 临近过滤） |
+| [033_Texture_exercise](https://github.com/NekoSilverFox/OpenGL/tree/main/033_Texture_exercise) | 纹理小练习                                                   |
 |                                                              |                                                              |
+| [040_Rotate_and_Move](https://github.com/NekoSilverFox/OpenGL/tree/main/040_Rotate_and_Move) | 使用矩阵移动和缩放                                           |
+| [045_3D](https://github.com/NekoSilverFox/OpenGL/tree/main/045_3D) | 实现 3D 立方体效果                                           |
+| [046_3D_exercise](https://github.com/NekoSilverFox/OpenGL/tree/main/046_3D_exercise) | 3D 小练习                                                    |
 |                                                              |                                                              |
 
 
@@ -1707,7 +1720,7 @@ glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)width/(float)heigh
 
 同样，`glm::perspective`所做的其实就是创建了一个定义了可视空间的大**平截头体**，任何在这个==平截头体以外的东西最后都不会出现在裁剪空间体积内，并且将会受到裁剪==。一个透视平截头体可以被看作一个不均匀形状的箱子，在这个箱子内部的每个坐标都会被映射到裁剪空间上的一个点。下面是一张透视平截头体的图片：
 
-![ perspective_frustum](https://learnopengl-cn.github.io/img/01/08/perspective_frustum.png)
+![image-20220925164252267](doc/pic/README/image-20220925164252267.png)
 
 - 它的第一个参数定义了**fov的值**，它表示的是**视野(Field of View)**，并且设置了观察空间的大小。如果想要一个真实的观察效果，它的值通常设置为45.0f，但想要一个末日风格的结果你可以将其设置一个更大的值。
 - 第二个参数设置了**宽高比**，由视口的宽除以高所得
@@ -1727,8 +1740,31 @@ glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)width/(float)heigh
 
 我们为上述的每一个步骤都创建了一个变换矩阵：模型矩阵、观察矩阵和投影矩阵。一个顶点坐标将会根据以下过程被变换到裁剪坐标：
 $$
+运算方向：<——————————
+\\
 V_{clip}=M_{projection}⋅M_{view}⋅M_{model}⋅V_{local}
 $$
+他们默认都是 4x4 单位矩阵：
+
+- **$V_{local}$ 由顶点构成的（3D）图形**
+
+- **$M_{model}$ 模型**
+
+- **$M_{view}$ 观察矩阵（摄像机）**，注意：观察矩阵移动的是整个世界，而摄像机不动！
+
+- **$M_{projection}$ 投影矩阵**
+
+    运算的结果，也就是 $V_{clip}$ 我们可以将它传给顶点着色器中的 `gl_Position`
+
+    如果是 `QMatrix4x4` 单位矩阵，那么他们都可以调用方法：
+
+    - **缩放**：`matrix.scale(float factor)`
+    - **旋转**：`matrix.rotate(float angle, float x, float y, float z = 0.0f)`，`angle` 是旋转量，后面 3 个参数是转轴
+    - **位移**：`matrix.translate(float x, float y, float z)`
+    - **恢复成单位矩阵**：`matrix.setToIdentity()`
+
+    
+
 ==注意矩阵运算的顺序是相反的（记住我们需要从右往左阅读矩阵的乘法）==。最后的顶点应该被赋值到顶点着色器中的 gl_Position，OpenGL将会自动进行透视除法和裁剪。
 
 > **然后呢？**
@@ -1736,6 +1772,140 @@ $$
 > 顶点着色器的输出要求所有的顶点都在裁剪空间内，这正是我们刚才使用变换矩阵所做的。OpenGL 然后对**裁剪坐标**执行**透视除法**从而将它们变换到**标准化设备坐标**。OpenGL会使用glViewPort内部的参数来将标准化设备坐标映射到**屏幕坐标**，每个坐标都关联了一个屏幕上的点（在我们的例子中是一个800x600的屏幕）。这个过程称为视口变换。
 
 这一章的主题可能会比较难理解，如果你仍然不确定每个空间的作用的话，你也不必太担心。接下来你会看到我们是怎样运用这些坐标空间的，而且之后也会有足够多的例子。
+
+
+
+
+
+# 3D
+
+## 右手坐标系
+
+**右手坐标系(Right-handed System)**
+
+按照惯例，OpenGL是一个右手坐标系。简单来说，就是正x轴在你的右手边，正y轴朝上，而正z轴是朝向后方的。想象你的屏幕处于三个轴的中心，则正z轴穿过你的屏幕朝向你。坐标系画起来如下：
+
+![coordinate_systems_right_handed](https://learnopengl-cn.github.io/img/01/08/coordinate_systems_right_handed.png)
+
+为了理解为什么被称为右手坐标系，按如下的步骤做：
+
+- 沿着正y轴方向伸出你的右臂，手指着上方。
+- 大拇指指向右方。
+- 食指指向上方。
+- 中指向下弯曲90度。 
+
+如果你的动作正确，那么你的大拇指指向正x轴方向，食指指向正y轴方向，中指指向正z轴方向。如果你用左臂来做这些动作，你会发现z轴的方向是相反的。这个叫做左手坐标系，它被DirectX广泛地使用。注意在标准化设备坐标系中OpenGL实际上使用的是左手坐标系（投影矩阵交换了左右手）。
+
+
+
+## 矩阵定义
+
+我们想要在场景里面稍微往后移动，以使得物体变成可见的（当在世界空间时，我们位于原点(0,0,0)）。要想在场景里面移动，先仔细想一想下面这个句子：
+
+- ***将摄像机向后移动，和将整个场景向前移动是一样的。***
+
+这正是观察矩阵所做的，我们以相反于摄像机移动的方向移动整个场景。因为我们想要往后移动，并且OpenGL是一个**右手坐标系(Right-handed System)**，所以我们需要沿着z轴的正方向移动。我们会通过将场景沿着z轴负方向平移来实现。它会给我们一种我们在往后移动的感觉。
+
+
+
+**使用 Qt 提供的 `QMatrix4x4` 进行：**
+
+- **顶点着色器**
+
+    注意：我们这里的运算是在顶点着色器，也就是 GPU 中进行的。因为 GPU 对于矩阵运算很在手
+
+    ```glsl
+    #version 330 core
+    layout (location = 0) in vec3 aPos;   // 位置变量的属性位置值为 0
+    layout (location = 1) in vec2 aTexel; // 存储2D纹理坐标s、t
+    
+    out vec2 ourTexel; // 向片段着色器输出2D纹理坐标s、t
+    
+    uniform mat4 mat_model;
+    uniform mat4 mat_view;
+    uniform mat4 mat_projection;
+    
+    void main()
+    {
+        gl_Position = mat_projection * mat_view * mat_model * vec4(aPos, 1.0);  // 【重点】实现最终的效果
+    
+        ourTexel = vec2(aTexel.s, aTexel.t);
+    }
+    ```
+
+
+    而这三个矩阵的定义是使用 `QMatrix4x4` 定义的，然后通过 `QShaderProgram.setUniformValue("val", val)` 将定义的数据传入着色器
+
+- **旋转模型**
+
+    ```c++
+    QMatrix4x4 mat_model; // QMatrix 默认生成的是一个单位矩阵（对角线上的元素为1）
+    mat_model.rotate(角度, 1.0f, 3.0f, 0.5f);  // 沿着转轴旋转图形
+    this->shader_program_.setUniformValue("mat_model", mat_model);  // 图形矩阵
+    ```
+
+    
+
+- **移动场景（世界）**
+
+    ```c++
+    QMatrix4x4 mat_view;
+    mat_view.translate(0.0f, 0.0f, -3.0f);  // 移动世界，【重点】这个位置是世界原点相对于摄像机而言的！！所以这里相当于世界沿着 z 轴对于摄像机向后退 3 个单位
+    this->shader_program_.setUniformValue("mat_view", mat_view);
+    ```
+
+    
+
+- **投影矩阵（透视投影）**
+
+    ```c++
+    /* 透视（焦距）一般设置一次就好了，之后不变。如果放在PaintGL() 里会导致每次重绘都调用，增加资源消耗 */
+    QMatrix4x4 mat_projection;
+    mat_projection.perspective(45, (float)width()/(float)height(), 0.1f, 100.0f);  // 透视
+    this->shader_program_.setUniformValue("mat_projection", mat_projection);
+    ```
+
+
+
+## Z缓冲
+
+**OpenGL存储它的所有深度信息于一个Z缓冲(Z-buffer)中，也被称为深度缓冲(Depth Buffer)**。GLFW 会自动为你生成这样一个缓冲（就像它也有一个颜色缓冲来存储输出图像的颜色）。深度值存储在每个片段里面（作为片段的**z**值），当片段想要输出它的颜色时，OpenGL会将它的深度值和z缓冲进行比较，如果当前的片段在其它片段之后，它将会被丢弃，否则将会覆盖。这个过程称为**深度测试(Depth Testing)**，它是由OpenGL自动完成的。
+
+
+
+如果不开启深度测试，绘制出来的立方体就好像没有盖子：
+
+![image-20220926130550452](doc/pic/README/image-20220926130550452.png)
+
+
+
+然而，如果我们想要确定OpenGL真的执行了深度测试，首先我们要告诉OpenGL我们想要启用深度测试；它默认是关闭的。我们可以通过glEnable函数来开启深度测试。`glEnable`和`glDisable`函数允许我们启用或禁用某个OpenGL功能。这个功能会一直保持启用/禁用状态，直到另一个调用来禁用/启用它。现在我们想**启用深度测试，需要开启`GL_DEPTH_TEST`**：
+
+```c++
+glEnable(GL_DEPTH_TEST);
+```
+
+因为我们使用了深度测试，我们也想要在每次渲染迭代之前清除深度缓冲（否则前一帧的深度信息仍然保存在缓冲中）。就像清除颜色缓冲一样，我们可以通过在glClear函数中指定DEPTH_BUFFER_BIT位来清除深度缓冲：
+
+```c++
+glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+```
+
+我们来重新运行下程序看看OpenGL是否执行了深度测试：
+
+![image-20220926130652221](doc/pic/README/image-20220926130652221.png)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
