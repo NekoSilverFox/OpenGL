@@ -1897,6 +1897,61 @@ glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
 
+## 摄像机
+
+OpenGL 本身没有摄像机（Camera）的概念，但是我们可以通过把场景中的所有物体往相反的方向移动的方式来模拟出摄像机，产生一种我们在移动的感觉
+
+![img](https://learnopengl-cn.github.io/img/01/09/camera_axes.png)
+
+
+
+### 摄像机位置
+
+获取摄像机位置很简单。摄像机位置简单来说就是世界空间中一个指向摄像机位置的向量。我们把摄像机位置设置为上一节中的那个相同的位置：
+
+```c++
+this->camera_pos_ = QVector3D(0.0f, 0.0f, 2.0f);
+```
+
+> 不要忘记正z轴是从屏幕指向你的，如果我们希望摄像机向后移动，我们就沿着z轴的正方向移动。
+
+
+
+### 摄像机方向
+
+下一个需要的向量是摄像机的方向，这里指的是**摄像机指向哪个方向**。现在我们让摄像机指向场景原点：(0, 0, 0)。还记得**如果将两个矢量相减，我们就能得到这两个矢量的差**吗？**用场景原点向量减去摄像机位置向量的结果就是摄像机的指向向量**。由于我们知道摄像机指向z轴负方向，但我们希望**方向向量(Direction Vector)**指向摄像机的z轴正方向。如果我们交换相减的顺序，我们就会获得一个指向摄像机正z轴方向的向量：
+
+```c++
+this->camera_target_ = QVector3D(0.0f, 0.0f, 0.0f);
+this->camera_direction_ = QVector3D(this->camera_pos_ - this->camera_target_);
+this->camera_direction_.normalize();  // 标准化
+```
+
+> **方向**向量(Direction Vector)并不是最好的名字，因为它实际上指向从它到目标向量的相反方向（译注：注意看前面的那个图，蓝色的方向向量大概指向z轴的正方向，与摄像机实际指向的方向是正好相反的）。
+
+
+
+
+
+### 右轴
+
+我们需要的另一个向量是一个**右向量**(Right Vector)，**它代表摄像机空间的x轴的正方向**。为获取右向量我们需要先使用一个小技巧：先定义一个**上向量**(Up Vector)。接下来把上向量和第二步得到的方向向量进行叉乘。两个向量叉乘的结果会同时垂直于两向量，因此我们会得到指向x轴正方向的那个向量（如果我们交换两个向量叉乘的顺序就会得到相反的指向x轴负方向的向量）：
+
+```c++
+this->up_ = QVector3D(0.0f, 1.0f, 0.0f);
+this->camera_right_ = QVector3D::crossProduct(this->up_, this->camera_direction_);
+this->camera_right_.normalize();
+```
+
+
+
+### 上轴
+
+现在我们已经有了x轴向量和z轴向量，**获取一个指向摄像机的正y轴向量就相对简单了：我们把右向量和方向向量进行叉乘**：
+
+```c++
+this->camera_up_ = QVector3D::crossProduct(this->camera_direction_, this->camera_right_);
+```
 
 
 
@@ -1904,14 +1959,41 @@ glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
 
+### Look At
 
+使用矩阵的好处之一是如果你使用3个相互垂直（或非线性）的轴定义了一个坐标空间，你可以用这3个轴外加一个平移向量来创建一个矩阵，并且你可以用这个矩阵乘以任何向量来将其变换到那个坐标空间。这正是**LookAt**矩阵所做的，现在我们有了3个相互垂直的轴和一个定义摄像机空间的位置坐标，我们可以创建我们自己的LookAt矩阵了：
 
+![image-20221002231151376](doc/pic/README/image-20221002231151376.png)
 
+其中R是右向量，U是上向量，D是方向向量P是摄像机位置向量。注意，位置向量是相反的，因为我们最终希望把世界平移到与我们自身移动的相反方向。把这个LookAt矩阵作为观察矩阵可以很高效地把所有世界坐标变换到刚刚定义的观察空间。LookAt矩阵就像它的名字表达的那样：它会创建一个看着(Look at)给定目标的观察矩阵。
 
+幸运的是，GLM已经提供了这些支持。我们要做的只是定义一个摄像机位置，一个目标位置和一个表示世界空间中的上向量的向量（我们计算右向量使用的那个上向量）。接着GLM就会创建一个LookAt矩阵，我们可以把它当作我们的观察矩阵：
 
+```c++
+QMatrix4x4 mat_view;  // 【重点】 view代表摄像机拍摄的物体，也就是全世界！！！
+mat_view.lookAt(this->camera_direction_, this->camera_target_, this->up_);
+```
 
+glm::LookAt函数需要一个位置、目标和上向量。它会创建一个和在上一节使用的一样的观察矩阵。
 
+在讨论用户输入之前，我们先来做些有意思的事，把我们的摄像机在场景中旋转。我们会将摄像机的注视点保持在(0, 0, 0)。
 
+我们需要用到一点三角学的知识来在每一帧创建一个x和z坐标，它会代表圆上的一点，我们将会使用它作为摄像机的位置。通过重新计算x和y坐标，我们会遍历圆上的所有点，这样摄像机就会绕着场景旋转了。我们预先定义这个圆的半径radius，在每次渲染迭代中使用 Qt 的 timeelapsed() 函数重新创建观察矩阵，来扩大这个圆。
+
+```c++
+const float radius = 10.0f;
+float time = this->time_.elapsed() / 1000.0;  // 注意是 1000.0
+float cam_x = sin(time) * radius;
+float cam_z = cos(time) * radius;
+
+mat_view.lookAt(QVector3D(cam_x, 0.0f, cam_z), this->camera_target_, this->up_);
+```
+
+如果你运行代码，应该会得到下面的结果：
+
+<video src="https://learnopengl-cn.github.io/img/01/09/camera_circle.mp4" controls="controls" style="box-sizing: border-box; display: block; margin-left: auto; margin-right: auto; caret-color: rgb(34, 34, 34); color: rgb(34, 34, 34); font-family: &quot;Microsoft Yahei&quot;, Lato, proxima-nova, &quot;Helvetica Neue&quot;, Arial, sans-serif; font-size: 15px; font-style: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: auto; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; text-decoration: none;"></video>
+
+通过这一小段代码，摄像机现在会随着时间流逝围绕场景转动了。自己试试改变半径和位置/方向参数，看看**LookAt**矩阵是如何工作的。同时，如果你在哪卡住的话，这里有[源码](https://learnopengl.com/code_viewer_gh.php?code=src/1.getting_started/7.1.camera_circle/camera_circle.cpp)。
 
 
 
