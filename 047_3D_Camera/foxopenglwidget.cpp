@@ -222,7 +222,7 @@ void FoxOpenGLWidget::initializeGL()
 
      /* 透视（焦距）一般设置一次就好了，之后不变。如果放在PaintGL() 里会导致每次重绘都调用，增加资源消耗 */
      QMatrix4x4 mat_projection;
-     mat_projection.perspective(50, (float)width()/(float)height(), 0.1f, 100.0f);  // 透视
+     mat_projection.perspective(50, (float)width()/(float)(1*height()), 0.1f, 100.0f);  // 透视
      this->shader_program_.setUniformValue("mat_projection", mat_projection);
 
 
