@@ -90,6 +90,21 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
     connect(&this->timer_, SIGNAL(timeout()),
             this, SLOT(rotate()));
 
+    this->time_.start();
+
+    /* 摄像机 */
+    this->camera_pos_ = QVector3D(0.0f, 0.0f, 2.0f);
+
+    this->camera_target_ = QVector3D(0.0f, 0.0f, 0.0f);
+
+    this->camera_direction_ = QVector3D(this->camera_pos_ - this->camera_target_);
+    this->camera_direction_.normalize();
+
+    this->up_ = QVector3D(0.0f, 1.0f, 0.0f);
+    this->camera_right_ = QVector3D::crossProduct(this->up_, this->camera_direction_);
+    this->camera_right_.normalize();
+
+    this->camera_up_ = QVector3D::crossProduct(this->camera_direction_, this->camera_right_);
 }
 
 FoxOpenGLWidget::~FoxOpenGLWidget()
@@ -259,12 +274,16 @@ void FoxOpenGLWidget::paintGL()
 //    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);  // 6 代表6个点，因为一个矩形是2个三角形构成的，一个三角形有3个点
 //    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, &indices);  // 直接到索引数组里去绘制，如果VAO没有绑定EBO的话
 
-    unsigned int time_ms = QTime::currentTime().msec();
-
     QMatrix4x4 mat_model; // QMatrix 默认生成的是一个单位矩阵（对角线上的元素为1）
     QMatrix4x4 mat_view;  // 【重点】 view代表摄像机拍摄的物体，也就是全世界！！！
 
-    mat_view.translate(3.0f, 0.0f, -3.0f);  // 移动世界，【重点】这个位置是世界原点相对于摄像机而言的！！所以这里相当于世界沿着 z 轴对于摄像机向后退 3 个单位
+    const float radius = 10.0f;
+    float time = this->time_.elapsed() / 1000.0;  // 注意是 1000.0
+    float cam_x = sin(time) * radius;
+    float cam_z = cos(time) * radius;
+
+//    mat_view.translate(3.0f, 0.0f, -3.0f);  // 移动世界，【重点】这个位置是世界原点相对于摄像机而言的！！所以这里相当于世界沿着 z 轴对于摄像机向后退 3 个单位
+    mat_view.lookAt(QVector3D(cam_x, 0.0f, cam_z), this->camera_target_, this->up_);
 
 
     // 通过 this->current_shape_ 确定当前需要绘制的图形
@@ -292,7 +311,7 @@ void FoxOpenGLWidget::paintGL()
 
                 if (0 == i % 3)
                 {
-                    mat_model.rotate(time_ms / 10 , 1.0f, 3.0f, 0.5f);  // 沿着转轴旋转图形
+                    mat_model.rotate(time, 1.0f, 3.0f, 0.5f);  // 沿着转轴旋转图形
                 }
 
                 this->shader_program_.setUniformValue("mat_model", mat_model);  // 图形矩阵
