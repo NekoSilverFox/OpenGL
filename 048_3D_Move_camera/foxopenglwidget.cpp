@@ -2,6 +2,7 @@
 #include <QTime>
 #include "foxopenglwidget.h"
 
+#define TIMEOUT 50  // 50 毫秒更新一次
 
 // 一个立方体的顶点数据（36个顶点）
 float vertices[] = {
@@ -85,8 +86,8 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
     /* 暂时用于键盘点击事件 */
     setFocusPolicy(Qt::StrongFocus);
 
-    /* 每隔1ms取一次时间（发送一次信号） */
-    this->timer_.start(1);
+    /* 每隔 TIMEOUT毫秒 取一次时间（发送一次信号） */
+    this->timer_.start(TIMEOUT);
     connect(&this->timer_, SIGNAL(timeout()),
             this, SLOT(rotate()));
 
@@ -99,6 +100,8 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
 
     this->camera_direction_ = QVector3D(this->camera_pos_ - this->camera_target_);
     this->camera_direction_.normalize();
+
+    this->camera_front = QVector3D(0.0f, 0.0f, -1.0f);
 
     this->up_ = QVector3D(0.0f, 1.0f, 0.0f);
     this->camera_right_ = QVector3D::crossProduct(this->up_, this->camera_direction_);
@@ -283,7 +286,7 @@ void FoxOpenGLWidget::paintGL()
     float cam_z = cos(time) * radius;
 
 //    mat_view.translate(3.0f, 0.0f, -3.0f);  // 移动世界，【重点】这个位置是世界原点相对于摄像机而言的！！所以这里相当于世界沿着 z 轴对于摄像机向后退 3 个单位
-    mat_view.lookAt(QVector3D(cam_x, 0.0f, cam_z), this->camera_target_, this->up_);
+    mat_view.lookAt(this->camera_pos_, this->camera_pos_ + this->camera_front, this->up_);
 
 
     // 通过 this->current_shape_ 确定当前需要绘制的图形
@@ -377,15 +380,25 @@ void FoxOpenGLWidget::changeColorWithTime()
 #include <QKeyEvent>
 void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
 {
+    float cameraSpeed = 2.5 * TIMEOUT / 1000;
+
     switch (event->key()) {
     case Qt::Key_Up:
         qDebug() << "Key event - Key_Up - val_alpha = " << val_alpha;
         val_alpha += 0.1;
         break;
+
     case Qt::Key_Down:
         qDebug() << "Key event - Key_Down - val_alpha = " << val_alpha;
         val_alpha -= 0.1;
         break;
+
+    /* 键盘WASD移动摄像机 */
+    case Qt::Key_W: this->camera_pos_ += cameraSpeed * this->camera_front; break;
+    case Qt::Key_A: this->camera_pos_ -= cameraSpeed * this->camera_right_; break;
+    case Qt::Key_S: this->camera_pos_ -= cameraSpeed * this->camera_front; break;
+    case Qt::Key_D: this->camera_pos_ += cameraSpeed * this->camera_right_; break;
+
     default:
         qDebug() << "Key event - Other key:" << event->key();
         break;

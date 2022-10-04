@@ -57,6 +57,7 @@ private:
     QVector3D camera_target_;  // 摄像机看向的目标
     QVector3D camera_direction_;  //
     QVector3D up_;  //
+    QVector3D camera_front; // 摄像机指向的方向
     QVector3D camera_right_;  // axis
     QVector3D camera_up_;  // 基底
 
