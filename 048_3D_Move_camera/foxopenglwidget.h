@@ -7,6 +7,7 @@
 #include <QTimer>
 #include <QTime>
 #include <QOpenGLTexture>
+#include "camera.h"
 
 class FoxOpenGLWidget : public QOpenGLWidget, QOpenGLFunctions_4_5_Core
 {
@@ -54,14 +55,7 @@ private:
     QOpenGLTexture* texture_nekosilverfox_bk_;
 
 
-    /* 摄像机相关 */
-    QVector3D camera_pos_;  // 摄像机位置
-    QVector3D camera_target_;  // 摄像机看向的目标
-    QVector3D camera_direction_;  //
-    QVector3D up_;  //
-    QVector3D camera_front; // 摄像机指向的方向
-    QVector3D camera_right_;  // axis
-    QVector3D camera_up_;  // 基底
+    Camera camera_;
 
 };
 

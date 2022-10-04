@@ -78,7 +78,9 @@ unsigned int VBO, VAO;
 unsigned int EBO;
 
 float val_alpha = 0.5;
-float fov = 50.0f;
+QPoint delta_pos;
+
+
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
     this->current_shape_ = Shape::None;
@@ -87,28 +89,14 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
     setFocusPolicy(Qt::StrongFocus);
     setMouseTracking(true);
 
-    /* 每隔 TIMEOUT毫秒 取一次时间（发送一次信号） */
+    /* 计时器（时钟）每隔 TIMEOUT毫秒 取一次时间（发送一次信号） */
     this->timer_.start(TIMEOUT);
     connect(&this->timer_, SIGNAL(timeout()),
             this, SLOT(rotate()));
 
     this->time_.start();
 
-    /* 摄像机 */
-    this->camera_pos_ = QVector3D(0.0f, 0.0f, 2.0f);
-
-    this->camera_target_ = QVector3D(0.0f, 0.0f, 0.0f);
-
-    this->camera_direction_ = QVector3D(this->camera_pos_ - this->camera_target_);
-    this->camera_direction_.normalize();
-
-    this->camera_front = QVector3D(0.0f, 0.0f, -1.0f);
-
-    this->up_ = QVector3D(0.0f, 1.0f, 0.0f);
-    this->camera_right_ = QVector3D::crossProduct(this->up_, this->camera_direction_);
-    this->camera_right_.normalize();
-
-    this->camera_up_ = QVector3D::crossProduct(this->camera_direction_, this->camera_right_);
+    camera_ = new Camera(QVector3D(0.0f, 0.0f, 3.0f), QVector3D(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
 }
 
 FoxOpenGLWidget::~FoxOpenGLWidget()
@@ -275,19 +263,16 @@ void FoxOpenGLWidget::paintGL()
     QMatrix4x4 mat_model; // QMatrix 默认生成的是一个单位矩阵（对角线上的元素为1）
     QMatrix4x4 mat_view;  // 【重点】 view代表摄像机拍摄的物体，也就是全世界！！！
     QMatrix4x4 mat_projection;  // 透视（焦距）一般设置一次就好了，之后不变。如果放在PaintGL() 里会导致每次重绘都调用，增加资源消耗
-    mat_projection.perspective(fov, (float)width()/(float)height(), 0.1f, 100.0f);  // 透视
+
+    mat_view = camera_.getViewMatrix();
+    this->shader_program_.setUniformValue("mat_view", mat_view);  // 摄像机矩阵
+
+    mat_projection.perspective(camera_.zoom_fov, (float)width()/(float)height(), 0.1f, 100.0f);  // 透视
     this->shader_program_.setUniformValue("mat_projection", mat_projection);
-
-    const float radius = 10.0f;
-    float time = this->time_.elapsed() / 1000.0;  // 注意是 1000.0
-    float cam_x = sin(time) * radius;
-    float cam_z = cos(time) * radius;
-
-//    mat_view.translate(3.0f, 0.0f, -3.0f);  // 移动世界，【重点】这个位置是世界原点相对于摄像机而言的！！所以这里相当于世界沿着 z 轴对于摄像机向后退 3 个单位
-    mat_view.lookAt(this->camera_pos_, this->camera_pos_ + this->camera_front, this->up_);
 
 
     // 通过 this->current_shape_ 确定当前需要绘制的图形
+    float time = this->time_.elapsed() / 1000.0;  // 注意是 1000.0
     switch (this->current_shape_)
     {
     case Shape::None:
@@ -299,7 +284,7 @@ void FoxOpenGLWidget::paintGL()
         this->texture_nekosilverfox_->bind(1);
         this->texture_nekosilverfox_bk_->bind(2);
 
-        this->shader_program_.setUniformValue("mat_view", mat_view);  // 摄像机矩阵
+
 //        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         {  /* 【重点】如果在 Switch 里定义变量要放在花括号里 */
@@ -316,7 +301,7 @@ void FoxOpenGLWidget::paintGL()
                 }
 
                 this->shader_program_.setUniformValue("mat_model", mat_model);  // 图形矩阵
-                glDrawArrays(GL_TRIANGLES, 0, 36);  // 一共绘制 36 个顶点
+                glDrawArrays(GL_TRIANGLES, 0, 36);  // 一共绘制 36 个顶点（本个立方体的）
 
                 i++;
         }
@@ -378,7 +363,7 @@ void FoxOpenGLWidget::changeColorWithTime()
 #include <QKeyEvent>
 void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
 {
-    float cameraSpeed = 2.5 * TIMEOUT / 1000;
+    float cameraSpeed = TIMEOUT / 1000;
 
     switch (event->key()) {
     case Qt::Key_Up:
@@ -392,10 +377,10 @@ void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
         break;
 
     /* 键盘WASD移动摄像机 */
-    case Qt::Key_W: this->camera_pos_ += cameraSpeed * this->camera_front; break;
-    case Qt::Key_A: this->camera_pos_ -= cameraSpeed * this->camera_right_; break;
-    case Qt::Key_S: this->camera_pos_ -= cameraSpeed * this->camera_front; break;
-    case Qt::Key_D: this->camera_pos_ += cameraSpeed * this->camera_right_; break;
+    case Qt::Key_W: camera_.moveCamera(Camera_Movement::FORWARD, cameraSpeed);  break;
+    case Qt::Key_A: camera_.moveCamera(Camera_Movement::LEFT, cameraSpeed);     break;
+    case Qt::Key_S: camera_.moveCamera(Camera_Movement::BACKWARD, cameraSpeed); break;
+    case Qt::Key_D: camera_.moveCamera(Camera_Movement::RIGHT, cameraSpeed);    break;
 
     default:
         qDebug() << "Key event - Other key:" << event->key();
@@ -413,43 +398,24 @@ void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
 
 }
 
-float PI = 3.1415926;
-QPoint delta_pos;
+
 void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    /* 默认参数 */
-    static float yaw = -90;
-    static float pitch = 0;
     static QPoint last_pos(width()/2, height()/2);
-
     auto current_pos = event->pos();
     delta_pos = current_pos - last_pos;
     last_pos = current_pos;
 
-    float sensitivity = 0.1f;  // 鼠标灵敏度
-    delta_pos *= sensitivity;
-    yaw += delta_pos.x();
-    pitch -= delta_pos.y();
-
-    if (pitch > 89.0f) pitch = 89.0f;
-    if (pitch < -89.0f) pitch = -89.0f;
-
     qDebug() << delta_pos.x() << ", " << delta_pos.y();
 
-    this->camera_front.setX(cos(yaw*PI/180) * cos(pitch*PI/180));
-    this->camera_front.setY(sin(pitch*PI/180));
-    this->camera_front.setZ(sin(yaw*PI/180) * cos(pitch*PI/180));
-    this->camera_front.normalize();
+    camera_.changeCameraFront(delta_pos.x(), delta_pos.y());
 
     update();
 }
 
 void FoxOpenGLWidget::wheelEvent(QWheelEvent *event)
 {
-
-    if (fov >= 1.0f && fov <= 75.0f) fov -= event->angleDelta().y()/120;  // 一步是 120
-    if (fov <= 1.0f) fov = 1.0f;
-    if (fov >= 75.0f) fov = 75.0f;
+    camera_.changeCameraZoomFov(event->angleDelta().y()/120);  // 一步是 120
 
     update();
 }

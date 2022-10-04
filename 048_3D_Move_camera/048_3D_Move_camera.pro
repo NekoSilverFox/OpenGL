@@ -30,7 +30,8 @@ SOURCES += \
 
 HEADERS += \
         mainwindow.h \
-    foxopenglwidget.h
+    foxopenglwidget.h \
+    camera.h
 
 FORMS += \
         mainwindow.ui
