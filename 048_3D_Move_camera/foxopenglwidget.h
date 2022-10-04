@@ -35,6 +35,8 @@ protected:
 
     /* 处理键盘事件 */
     void keyPressEvent(QKeyEvent* event);
+    void mouseMoveEvent(QMouseEvent* event);
+    void wheelEvent(QWheelEvent* event);  // 鼠标滚轮
 
 signals:
 

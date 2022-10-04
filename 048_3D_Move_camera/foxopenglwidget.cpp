@@ -78,13 +78,14 @@ unsigned int VBO, VAO;
 unsigned int EBO;
 
 float val_alpha = 0.5;
-
+float fov = 50.0f;
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
     this->current_shape_ = Shape::None;
 
     /* 暂时用于键盘点击事件 */
     setFocusPolicy(Qt::StrongFocus);
+    setMouseTracking(true);
 
     /* 每隔 TIMEOUT毫秒 取一次时间（发送一次信号） */
     this->timer_.start(TIMEOUT);
@@ -238,12 +239,6 @@ void FoxOpenGLWidget::initializeGL()
      this->shader_program_.bind();
      this->shader_program_.setUniformValue("val_alpha", val_alpha);
 
-     /* 透视（焦距）一般设置一次就好了，之后不变。如果放在PaintGL() 里会导致每次重绘都调用，增加资源消耗 */
-     QMatrix4x4 mat_projection;
-     mat_projection.perspective(50, (float)width()/(float)(1*height()), 0.1f, 100.0f);  // 透视
-     this->shader_program_.setUniformValue("mat_projection", mat_projection);
-
-
     // ===================== 解绑 =====================
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
     glBindVertexArray(0);
@@ -279,6 +274,9 @@ void FoxOpenGLWidget::paintGL()
 
     QMatrix4x4 mat_model; // QMatrix 默认生成的是一个单位矩阵（对角线上的元素为1）
     QMatrix4x4 mat_view;  // 【重点】 view代表摄像机拍摄的物体，也就是全世界！！！
+    QMatrix4x4 mat_projection;  // 透视（焦距）一般设置一次就好了，之后不变。如果放在PaintGL() 里会导致每次重绘都调用，增加资源消耗
+    mat_projection.perspective(fov, (float)width()/(float)height(), 0.1f, 100.0f);  // 透视
+    this->shader_program_.setUniformValue("mat_projection", mat_projection);
 
     const float radius = 10.0f;
     float time = this->time_.elapsed() / 1000.0;  // 注意是 1000.0
@@ -413,6 +411,47 @@ void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
     doneCurrent();
     update();
 
+}
+
+float PI = 3.1415926;
+QPoint delta_pos;
+void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent *event)
+{
+    /* 默认参数 */
+    static float yaw = -90;
+    static float pitch = 0;
+    static QPoint last_pos(width()/2, height()/2);
+
+    auto current_pos = event->pos();
+    delta_pos = current_pos - last_pos;
+    last_pos = current_pos;
+
+    float sensitivity = 0.1f;  // 鼠标灵敏度
+    delta_pos *= sensitivity;
+    yaw += delta_pos.x();
+    pitch -= delta_pos.y();
+
+    if (pitch > 89.0f) pitch = 89.0f;
+    if (pitch < -89.0f) pitch = -89.0f;
+
+    qDebug() << delta_pos.x() << ", " << delta_pos.y();
+
+    this->camera_front.setX(cos(yaw*PI/180) * cos(pitch*PI/180));
+    this->camera_front.setY(sin(pitch*PI/180));
+    this->camera_front.setZ(sin(yaw*PI/180) * cos(pitch*PI/180));
+    this->camera_front.normalize();
+
+    update();
+}
+
+void FoxOpenGLWidget::wheelEvent(QWheelEvent *event)
+{
+
+    if (fov >= 1.0f && fov <= 75.0f) fov -= event->angleDelta().y()/120;  // 一步是 120
+    if (fov <= 1.0f) fov = 1.0f;
+    if (fov >= 75.0f) fov = 75.0f;
+
+    update();
 }
 
 void FoxOpenGLWidget::rotate()
