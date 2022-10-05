@@ -1,10 +1,13 @@
 #include <QDebug>
 #include <QTime>
+#include <QKeyEvent>
 #include "foxopenglwidget.h"
+
 
 #define TIMEOUT 50  // 50 毫秒更新一次
 
-// 一个立方体的顶点数据（36个顶点）
+
+/* 一个立方体的顶点数据（36个顶点） */
 float vertices[] = {
     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
      0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
@@ -49,7 +52,7 @@ float vertices[] = {
     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 };
 
-/* 实现绘制10个立方体在不同位置 */
+/* 10个立方体的不同位置 */
 QVector<QVector3D> cubePositions = {
   QVector3D( 0.0f,  0.0f,  0.0f),
   QVector3D( 2.0f,  5.0f, -15.0f),
@@ -63,6 +66,7 @@ QVector<QVector3D> cubePositions = {
   QVector3D(-1.3f,  1.0f, -1.5f)
 };
 
+/* EBO 索引 */
 unsigned int indices[] = {
     // 注意索引从0开始!
     // 此例的索引(0,1,2,3)就是顶点数组vertices的下标，
@@ -71,17 +75,20 @@ unsigned int indices[] = {
     1, 2, 3  // 第二个三角形
 };
 
-// 创建 VAO 和 VBO 对象并且赋予 ID
+/* 创建 VAO、VBO 对象并且赋予 ID */
 unsigned int VBO, VAO;
 
-// 创建 EBO 元素缓冲对象
+/* 创建 EBO 元素缓冲对象 */
 unsigned int EBO;
 
+/* 透明度 */
 float val_alpha = 0.5;
+
+/* 鼠标位置偏移量 */
 QPoint delta_pos;
 
 
-FoxOpenGLWidget::FoxOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
+FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
     this->current_shape_ = Shape::None;
 
@@ -96,7 +103,6 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
 
     this->time_.start();
 
-    camera_ = new Camera(QVector3D(0.0f, 0.0f, 3.0f), QVector3D(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
 }
 
 FoxOpenGLWidget::~FoxOpenGLWidget()
@@ -121,18 +127,20 @@ void FoxOpenGLWidget::initializeGL()
     initializeOpenGLFunctions();  // 【重点】初始化OpenGL函数，将 Qt 里的函数指针指向显卡的函数（头文件 QOpenGLFunctions_X_X_Core）
 
 
-    // ===================== 顶点着色器 =====================
+    // ===================== 着色器 =====================
+    // 顶点着色器
     this->shader_program_.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/source.vert");  // 通过资源文件
 
-    // ===================== 片段着色器 =====================
+    // 片段着色器
     this->shader_program_.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/source.frag");
 
-    // ===================== 链接着色器 =====================
+    // 链接着色器
     bool success = this->shader_program_.link();
     if (!success)
     {
         qDebug() << "ERROR: " << this->shader_program_.log();
     }
+    // =================================================
 
 
     // ===================== VAO | VBO =====================
@@ -185,12 +193,15 @@ void FoxOpenGLWidget::initializeGL()
     glEnableVertexAttribArray(aPosLocation);
 
 #endif
+    // =================================================
 
 
     // ===================== EBO =====================
     glGenBuffers(1, &EBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);  // EBO/IBO 是储存顶点【索引】的
+    // =================================================
+
 
     // ===================== 纹理 =====================
     // 开启透明度
@@ -226,19 +237,24 @@ void FoxOpenGLWidget::initializeGL()
 
      this->shader_program_.bind();
      this->shader_program_.setUniformValue("val_alpha", val_alpha);
+     // =================================================
+
 
     // ===================== 解绑 =====================
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);  // 注意 VAO 不参与管理 VBO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    // =================================================
 }
+
 
 void FoxOpenGLWidget::resizeGL(int w, int h)
 {
     Q_UNUSED(w);
     Q_UNUSED(h);
 }
+
 
 void FoxOpenGLWidget::paintGL()
 {
@@ -275,11 +291,10 @@ void FoxOpenGLWidget::paintGL()
     float time = this->time_.elapsed() / 1000.0;  // 注意是 1000.0
     switch (this->current_shape_)
     {
-    case Shape::None:
-        break;
+    case Shape::None: break;
 
     case Shape::Rect:
-         // ===================== 绑定纹理 =====================
+        // ===================== 绑定纹理 =====================
         this->texture_wall_->bind(0);  // 绑定纹理单元0的数据，并激活对应区域
         this->texture_nekosilverfox_->bind(1);
         this->texture_nekosilverfox_bk_->bind(2);
@@ -297,7 +312,7 @@ void FoxOpenGLWidget::paintGL()
 
                 if (0 == i % 3)
                 {
-                    mat_model.rotate(time, 1.0f, 3.0f, 0.5f);  // 沿着转轴旋转图形
+                    mat_model.rotate(time * 10, 1.0f, 3.0f, 0.5f);  // 沿着转轴旋转图形
                 }
 
                 this->shader_program_.setUniformValue("mat_model", mat_model);  // 图形矩阵
@@ -308,24 +323,19 @@ void FoxOpenGLWidget::paintGL()
     }
         break;
 
-    case Shape::Circle:
-        break;
-
-    case Shape::Triangle:
-        break;
-
-    default:
-        break;
-
-    }
-    
+    case Shape::Circle: break;
+    case Shape::Triangle: break;
+    default: break;
+    }   
 }
+
 
 void FoxOpenGLWidget::drawShape(FoxOpenGLWidget::Shape shape)
 {
     this->current_shape_ = shape;
     update();  // 【重点】注意使用 update() 进行重绘，也就是这条语句会重新调用 paintGL()
 }
+
 
 void FoxOpenGLWidget::setWirefame(bool wirefame)
 {
@@ -345,6 +355,7 @@ void FoxOpenGLWidget::setWirefame(bool wirefame)
     update();  // 【重点】注意使用 update() 进行重绘，也就是这条语句会重新调用 paintGL()
 }
 
+
 void FoxOpenGLWidget::changeColorWithTime()
 {
     if (this->current_shape_ == Shape::None) return;
@@ -359,22 +370,17 @@ void FoxOpenGLWidget::changeColorWithTime()
     update();
 }
 
+
 /* 处理键盘事件 */
-#include <QKeyEvent>
 void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
 {
-    float cameraSpeed = TIMEOUT / 1000;
+    float cameraSpeed = (float)TIMEOUT / (float)1000;
 
     switch (event->key()) {
-    case Qt::Key_Up:
-        qDebug() << "Key event - Key_Up - val_alpha = " << val_alpha;
-        val_alpha += 0.1;
-        break;
 
-    case Qt::Key_Down:
-        qDebug() << "Key event - Key_Down - val_alpha = " << val_alpha;
-        val_alpha -= 0.1;
-        break;
+    /* 键盘上下键改变透明度 */
+    case Qt::Key_Up: val_alpha += 0.1; break;
+    case Qt::Key_Down: val_alpha -= 0.1; break;
 
     /* 键盘WASD移动摄像机 */
     case Qt::Key_W: camera_.moveCamera(Camera_Movement::FORWARD, cameraSpeed);  break;
@@ -382,9 +388,7 @@ void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
     case Qt::Key_S: camera_.moveCamera(Camera_Movement::BACKWARD, cameraSpeed); break;
     case Qt::Key_D: camera_.moveCamera(Camera_Movement::RIGHT, cameraSpeed);    break;
 
-    default:
-        qDebug() << "Key event - Other key:" << event->key();
-        break;
+    default: break;
     }
 
     if (val_alpha > 1.0) val_alpha = 1.0;
@@ -399,6 +403,7 @@ void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
 }
 
 
+/* 处理鼠标移动事件 */
 void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent *event)
 {
     static QPoint last_pos(width()/2, height()/2);
@@ -406,13 +411,13 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent *event)
     delta_pos = current_pos - last_pos;
     last_pos = current_pos;
 
-    qDebug() << delta_pos.x() << ", " << delta_pos.y();
-
-    camera_.changeCameraFront(delta_pos.x(), delta_pos.y());
+    camera_.changeCameraFront(delta_pos.x(), delta_pos.y(), true);
 
     update();
 }
 
+
+/* 处理鼠标滚轮事件 */
 void FoxOpenGLWidget::wheelEvent(QWheelEvent *event)
 {
     camera_.changeCameraZoomFov(event->angleDelta().y()/120);  // 一步是 120
