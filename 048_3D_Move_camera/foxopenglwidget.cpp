@@ -1,13 +1,10 @@
 #include <QDebug>
 #include <QTime>
-#include <QKeyEvent>
 #include "foxopenglwidget.h"
-
 
 #define TIMEOUT 50  // 50 毫秒更新一次
 
-
-/* 一个立方体的顶点数据（36个顶点） */
+// 一个立方体的顶点数据（36个顶点）
 float vertices[] = {
     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
      0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
@@ -52,7 +49,7 @@ float vertices[] = {
     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 };
 
-/* 10个立方体的不同位置 */
+/* 实现绘制10个立方体在不同位置 */
 QVector<QVector3D> cubePositions = {
   QVector3D( 0.0f,  0.0f,  0.0f),
   QVector3D( 2.0f,  5.0f, -15.0f),
@@ -66,7 +63,6 @@ QVector<QVector3D> cubePositions = {
   QVector3D(-1.3f,  1.0f, -1.5f)
 };
 
-/* EBO 索引 */
 unsigned int indices[] = {
     // 注意索引从0开始!
     // 此例的索引(0,1,2,3)就是顶点数组vertices的下标，
@@ -75,20 +71,15 @@ unsigned int indices[] = {
     1, 2, 3  // 第二个三角形
 };
 
-/* 创建 VAO、VBO 对象并且赋予 ID */
+// 创建 VAO 和 VBO 对象并且赋予 ID
 unsigned int VBO, VAO;
 
-/* 创建 EBO 元素缓冲对象 */
+// 创建 EBO 元素缓冲对象
 unsigned int EBO;
 
-/* 透明度 */
 float val_alpha = 0.5;
-
-/* 鼠标位置偏移量 */
-QPoint delta_pos;
-
-
-FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
+float fov = 50.0f;
+FoxOpenGLWidget::FoxOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
     this->current_shape_ = Shape::None;
 
@@ -96,13 +87,28 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
     setFocusPolicy(Qt::StrongFocus);
     setMouseTracking(true);
 
-    /* 计时器（时钟）每隔 TIMEOUT毫秒 取一次时间（发送一次信号） */
+    /* 每隔 TIMEOUT毫秒 取一次时间（发送一次信号） */
     this->timer_.start(TIMEOUT);
     connect(&this->timer_, SIGNAL(timeout()),
             this, SLOT(rotate()));
 
     this->time_.start();
 
+    /* 摄像机 */
+    this->camera_pos_ = QVector3D(0.0f, 0.0f, 2.0f);
+
+    this->camera_target_ = QVector3D(0.0f, 0.0f, 0.0f);
+
+    this->camera_direction_ = QVector3D(this->camera_pos_ - this->camera_target_);
+    this->camera_direction_.normalize();
+
+    this->camera_front = QVector3D(0.0f, 0.0f, -1.0f);
+
+    this->up_ = QVector3D(0.0f, 1.0f, 0.0f);
+    this->camera_right_ = QVector3D::crossProduct(this->up_, this->camera_direction_);
+    this->camera_right_.normalize();
+
+    this->camera_up_ = QVector3D::crossProduct(this->camera_direction_, this->camera_right_);
 }
 
 FoxOpenGLWidget::~FoxOpenGLWidget()
@@ -127,20 +133,18 @@ void FoxOpenGLWidget::initializeGL()
     initializeOpenGLFunctions();  // 【重点】初始化OpenGL函数，将 Qt 里的函数指针指向显卡的函数（头文件 QOpenGLFunctions_X_X_Core）
 
 
-    // ===================== 着色器 =====================
-    // 顶点着色器
+    // ===================== 顶点着色器 =====================
     this->shader_program_.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/source.vert");  // 通过资源文件
 
-    // 片段着色器
+    // ===================== 片段着色器 =====================
     this->shader_program_.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/source.frag");
 
-    // 链接着色器
+    // ===================== 链接着色器 =====================
     bool success = this->shader_program_.link();
     if (!success)
     {
         qDebug() << "ERROR: " << this->shader_program_.log();
     }
-    // =================================================
 
 
     // ===================== VAO | VBO =====================
@@ -193,15 +197,12 @@ void FoxOpenGLWidget::initializeGL()
     glEnableVertexAttribArray(aPosLocation);
 
 #endif
-    // =================================================
 
 
     // ===================== EBO =====================
     glGenBuffers(1, &EBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);  // EBO/IBO 是储存顶点【索引】的
-    // =================================================
-
 
     // ===================== 纹理 =====================
     // 开启透明度
@@ -237,24 +238,19 @@ void FoxOpenGLWidget::initializeGL()
 
      this->shader_program_.bind();
      this->shader_program_.setUniformValue("val_alpha", val_alpha);
-     // =================================================
-
 
     // ===================== 解绑 =====================
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);  // 注意 VAO 不参与管理 VBO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    // =================================================
 }
-
 
 void FoxOpenGLWidget::resizeGL(int w, int h)
 {
     Q_UNUSED(w);
     Q_UNUSED(h);
 }
-
 
 void FoxOpenGLWidget::paintGL()
 {
@@ -279,27 +275,31 @@ void FoxOpenGLWidget::paintGL()
     QMatrix4x4 mat_model; // QMatrix 默认生成的是一个单位矩阵（对角线上的元素为1）
     QMatrix4x4 mat_view;  // 【重点】 view代表摄像机拍摄的物体，也就是全世界！！！
     QMatrix4x4 mat_projection;  // 透视（焦距）一般设置一次就好了，之后不变。如果放在PaintGL() 里会导致每次重绘都调用，增加资源消耗
-
-    mat_view = camera_.getViewMatrix();
-    this->shader_program_.setUniformValue("mat_view", mat_view);  // 摄像机矩阵
-
-    mat_projection.perspective(camera_.zoom_fov, (float)width()/(float)height(), 0.1f, 100.0f);  // 透视
+    mat_projection.perspective(fov, (float)width()/(float)height(), 0.1f, 100.0f);  // 透视
     this->shader_program_.setUniformValue("mat_projection", mat_projection);
+
+    const float radius = 10.0f;
+    float time = this->time_.elapsed() / 1000.0;  // 注意是 1000.0
+    float cam_x = sin(time) * radius;
+    float cam_z = cos(time) * radius;
+
+//    mat_view.translate(3.0f, 0.0f, -3.0f);  // 移动世界，【重点】这个位置是世界原点相对于摄像机而言的！！所以这里相当于世界沿着 z 轴对于摄像机向后退 3 个单位
+    mat_view.lookAt(this->camera_pos_, this->camera_pos_ + this->camera_front, this->up_);
 
 
     // 通过 this->current_shape_ 确定当前需要绘制的图形
-    float time = this->time_.elapsed() / 1000.0;  // 注意是 1000.0
     switch (this->current_shape_)
     {
-    case Shape::None: break;
+    case Shape::None:
+        break;
 
     case Shape::Rect:
-        // ===================== 绑定纹理 =====================
+         // ===================== 绑定纹理 =====================
         this->texture_wall_->bind(0);  // 绑定纹理单元0的数据，并激活对应区域
         this->texture_nekosilverfox_->bind(1);
         this->texture_nekosilverfox_bk_->bind(2);
 
-
+        this->shader_program_.setUniformValue("mat_view", mat_view);  // 摄像机矩阵
 //        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         {  /* 【重点】如果在 Switch 里定义变量要放在花括号里 */
@@ -312,30 +312,35 @@ void FoxOpenGLWidget::paintGL()
 
                 if (0 == i % 3)
                 {
-                    mat_model.rotate(time * 10, 1.0f, 3.0f, 0.5f);  // 沿着转轴旋转图形
+                    mat_model.rotate(time, 1.0f, 3.0f, 0.5f);  // 沿着转轴旋转图形
                 }
 
                 this->shader_program_.setUniformValue("mat_model", mat_model);  // 图形矩阵
-                glDrawArrays(GL_TRIANGLES, 0, 36);  // 一共绘制 36 个顶点（本个立方体的）
+                glDrawArrays(GL_TRIANGLES, 0, 36);  // 一共绘制 36 个顶点
 
                 i++;
         }
     }
         break;
 
-    case Shape::Circle: break;
-    case Shape::Triangle: break;
-    default: break;
-    }   
-}
+    case Shape::Circle:
+        break;
 
+    case Shape::Triangle:
+        break;
+
+    default:
+        break;
+
+    }
+    
+}
 
 void FoxOpenGLWidget::drawShape(FoxOpenGLWidget::Shape shape)
 {
     this->current_shape_ = shape;
     update();  // 【重点】注意使用 update() 进行重绘，也就是这条语句会重新调用 paintGL()
 }
-
 
 void FoxOpenGLWidget::setWirefame(bool wirefame)
 {
@@ -355,7 +360,6 @@ void FoxOpenGLWidget::setWirefame(bool wirefame)
     update();  // 【重点】注意使用 update() 进行重绘，也就是这条语句会重新调用 paintGL()
 }
 
-
 void FoxOpenGLWidget::changeColorWithTime()
 {
     if (this->current_shape_ == Shape::None) return;
@@ -370,25 +374,32 @@ void FoxOpenGLWidget::changeColorWithTime()
     update();
 }
 
-
 /* 处理键盘事件 */
+#include <QKeyEvent>
 void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
 {
-    float cameraSpeed = (float)TIMEOUT / (float)1000;
+    float cameraSpeed = 2.5 * TIMEOUT / 1000;
 
     switch (event->key()) {
+    case Qt::Key_Up:
+        qDebug() << "Key event - Key_Up - val_alpha = " << val_alpha;
+        val_alpha += 0.1;
+        break;
 
-    /* 键盘上下键改变透明度 */
-    case Qt::Key_Up: val_alpha += 0.1; break;
-    case Qt::Key_Down: val_alpha -= 0.1; break;
+    case Qt::Key_Down:
+        qDebug() << "Key event - Key_Down - val_alpha = " << val_alpha;
+        val_alpha -= 0.1;
+        break;
 
     /* 键盘WASD移动摄像机 */
-    case Qt::Key_W: camera_.moveCamera(Camera_Movement::FORWARD, cameraSpeed);  break;
-    case Qt::Key_A: camera_.moveCamera(Camera_Movement::LEFT, cameraSpeed);     break;
-    case Qt::Key_S: camera_.moveCamera(Camera_Movement::BACKWARD, cameraSpeed); break;
-    case Qt::Key_D: camera_.moveCamera(Camera_Movement::RIGHT, cameraSpeed);    break;
+    case Qt::Key_W: this->camera_pos_ += cameraSpeed * this->camera_front; break;
+    case Qt::Key_A: this->camera_pos_ -= cameraSpeed * this->camera_right_; break;
+    case Qt::Key_S: this->camera_pos_ -= cameraSpeed * this->camera_front; break;
+    case Qt::Key_D: this->camera_pos_ += cameraSpeed * this->camera_right_; break;
 
-    default: break;
+    default:
+        qDebug() << "Key event - Other key:" << event->key();
+        break;
     }
 
     if (val_alpha > 1.0) val_alpha = 1.0;
@@ -402,25 +413,43 @@ void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
 
 }
 
-
-/* 处理鼠标移动事件 */
+float PI = 3.1415926;
+QPoint delta_pos;
 void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent *event)
 {
+    /* 默认参数 */
+    static float yaw = -90;
+    static float pitch = 0;
     static QPoint last_pos(width()/2, height()/2);
+
     auto current_pos = event->pos();
     delta_pos = current_pos - last_pos;
     last_pos = current_pos;
 
-    camera_.changeCameraFront(delta_pos.x(), delta_pos.y(), true);
+    float sensitivity = 0.1f;  // 鼠标灵敏度
+    delta_pos *= sensitivity;
+    yaw += delta_pos.x();
+    pitch -= delta_pos.y();
+
+    if (pitch > 89.0f) pitch = 89.0f;
+    if (pitch < -89.0f) pitch = -89.0f;
+
+    qDebug() << delta_pos.x() << ", " << delta_pos.y();
+
+    this->camera_front.setX(cos(yaw*PI/180) * cos(pitch*PI/180));
+    this->camera_front.setY(sin(pitch*PI/180));
+    this->camera_front.setZ(sin(yaw*PI/180) * cos(pitch*PI/180));
+    this->camera_front.normalize();
 
     update();
 }
 
-
-/* 处理鼠标滚轮事件 */
 void FoxOpenGLWidget::wheelEvent(QWheelEvent *event)
 {
-    camera_.changeCameraZoomFov(event->angleDelta().y()/120);  // 一步是 120
+
+    if (fov >= 1.0f && fov <= 75.0f) fov -= event->angleDelta().y()/120;  // 一步是 120
+    if (fov <= 1.0f) fov = 1.0f;
+    if (fov >= 75.0f) fov = 75.0f;
 
     update();
 }
