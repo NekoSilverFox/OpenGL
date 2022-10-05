@@ -1999,3 +1999,39 @@ mat_view.lookAt(QVector3D(cam_x, 0.0f, cam_z), this->camera_target_, this->up_);
 
 
 
+## 自由移动
+
+让摄像机绕着场景转的确很有趣，但是让我们自己移动摄像机会更有趣！首先我们必须设置一个摄像机系统，所以在我们的程序前面定义一些摄像机变量很有用：
+
+```c++
+QVectex3D cameraPos   = QVectex3D(0.0f, 0.0f,  3.0f);
+QVectex3D cameraFront = QVectex3D(0.0f, 0.0f, -1.0f);  // 摄像机看的方向， -1 代表向前看
+QVectex3D cameraUp    = QVectex3D(0.0f, 1.0f,  0.0f);
+```
+
+`LookAt`函数现在成了：
+
+```c++
+mat_view.lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+```
+
+我们首先将摄像机位置设置为之前定义的cameraPos。方向是当前的位置加上我们刚刚定义的方向向量。这样能保证无论我们怎么移动，摄像机都会注视着目标方向。让我们摆弄一下这些向量，在按下某些按钮时更新cameraPos向量。
+
+新添加几个需要检查的按键命令：
+
+```c++
+float cameraSpeed = 2.5 * 50;
+case Qt::Key_W: this->camera_pos_ += cameraSpeed * this->camera_front; break;
+case Qt::Key_A: this->camera_pos_ -= cameraSpeed * this->camera_right_; break;
+case Qt::Key_S: this->camera_pos_ -= cameraSpeed * this->camera_front; break;
+case Qt::Key_D: this->camera_pos_ += cameraSpeed * this->camera_right_; break;
+```
+
+当我们按下**WASD**键的任意一个，摄像机的位置都会相应更新。如果我们希望向前或向后移动，我们就把位置向量加上或减去方向向量。如果我们希望向左右移动，我们使用叉乘来创建一个**右向量**(Right Vector)，并沿着它相应移动就可以了。这样就创建了使用摄像机时熟悉的横移(Strafe)效果。
+
+注意，我们对**右向量**进行了标准化。如果我们没对这个向量进行标准化，最后的叉乘结果会根据cameraFront变量返回大小不同的向量。如果我们不对向量进行标准化，我们就得根据摄像机的朝向不同加速或减速移动了，但如果进行了标准化移动就是匀速的。
+
+现在你就应该能够移动摄像机了，虽然移动速度和系统有关，你可能会需要调整一下cameraSpeed。
+
+
+
