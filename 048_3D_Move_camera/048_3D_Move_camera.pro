@@ -26,12 +26,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    foxopenglwidget.cpp
+    foxopenglwidget.cpp \
+    camera.cpp
 
 HEADERS += \
         mainwindow.h \
     foxopenglwidget.h \
-    camera.h
+    camera.hpp
 
 FORMS += \
         mainwindow.ui
