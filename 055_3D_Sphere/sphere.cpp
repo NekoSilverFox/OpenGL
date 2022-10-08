@@ -29,9 +29,9 @@ void Sphere::_genVectorVerticesAndIndices()
 {
     /*2-计算球体顶点*/
     //生成球的顶点
-    for (int y=0; y<=_y_segments; y++)
+    for (int y = 0; y <= _y_segments; y++)
     {
-        for (int x=0; x<=_x_segments; x++)
+        for (int x = 0; x <= _x_segments; x++)
         {
             float xSegment = (float)x / (float)_x_segments;
             float ySegment = (float)y / (float)_y_segments;
@@ -45,9 +45,9 @@ void Sphere::_genVectorVerticesAndIndices()
     }
 
     //生成球的Indices
-    for (int i=0;i<_y_segments;i++)
+    for (int i = 0; i < _y_segments; i++)
     {
-        for (int j=0;j<_x_segments;j++)
+        for (int j = 0; j < _x_segments; j++)
         {
             indices.push_back(i * (_x_segments + 1) + j);
             indices.push_back((i + 1) * (_x_segments + 1) + j);
