@@ -9,6 +9,7 @@
 #include <QTime>
 #include <QOpenGLTexture>
 #include "camera.hpp"
+#include "sphere.h"
 
 
 class FoxOpenGLWidget : public QOpenGLWidget, QOpenGLFunctions_4_5_Core
@@ -53,7 +54,12 @@ public slots:
 
 private:
     Shape current_shape_;  // 记录当前绘制的图形
+    Sphere _sphere;  // 球体
+
+
+    /* 着色器对象 */
     QOpenGLShaderProgram shader_program_;  // 【重点】使用 Qt 提供的着色器对象
+    QOpenGLShaderProgram _shader_sphere;
 
     /* 时钟及计时器 */
     QTimer timer_;  // 【重点】 这里是 Timer - 计时器类
@@ -65,7 +71,7 @@ private:
     QOpenGLTexture* texture_nekosilverfox_bk_;
 
     /* 封装的摄像机类 */
-    Camera camera_ = Camera(QVector3D(0.0f, 0.0f, 3.0f), QVector3D(0.0f, 1.0f, 0.0f), 50.0f, -90.0f, 0.0f);
+    Camera camera_;
 };
 
 #endif // FOXOPENGLWIDGET_H

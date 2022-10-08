@@ -2,84 +2,10 @@
 #include <QTime>
 #include <QKeyEvent>
 #include "foxopenglwidget.h"
+#include "sphere.h"
 
 
 #define TIMEOUT 50  // 50 毫秒更新一次
-
-//将球横纵划分成50*50的网格
-const int Y_SEGMENTS = 50;
-const int X_SEGMENTS = 50;
-//将球横纵划分成50*50的网格
-const int Y_SEGMENTS = 50;
-const int X_SEGMENTS = 50;
-
-/* 一个立方体的顶点数据（36个顶点） */
-float vertices[] = {
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-};
-
-/* 10个立方体的不同位置 */
-QVector<QVector3D> cubePositions = {
-  QVector3D( 0.0f,  0.0f,  0.0f),
-  QVector3D( 2.0f,  5.0f, -15.0f),
-  QVector3D(-1.5f, -2.2f, -2.5f),
-  QVector3D(-3.8f, -2.0f, -12.3f),
-  QVector3D( 2.4f, -0.4f, -3.5f),
-  QVector3D(-1.7f,  3.0f, -7.5f),
-  QVector3D( 1.3f, -2.0f, -2.5f),
-  QVector3D( 1.5f,  2.0f, -2.5f),
-  QVector3D( 1.5f,  0.2f, -1.5f),
-  QVector3D(-1.3f,  1.0f, -1.5f)
-};
-
-/* EBO 索引 */
-unsigned int indices[] = {
-    // 注意索引从0开始!
-    // 此例的索引(0,1,2,3)就是顶点数组vertices的下标，
-    // 这样可以由下标代表顶点组合成矩形
-    0, 1, 3, // 第一个三角形
-    1, 2, 3  // 第二个三角形
-};
 
 /* 创建 VAO、VBO 对象并且赋予 ID */
 unsigned int VBO, VAO;
@@ -97,6 +23,9 @@ QPoint delta_pos;
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
     this->current_shape_ = Shape::None;
+    this->_sphere = Sphere(X_SPHERE_SEGMENTS, Y_SPHERE_SEGMENTS);
+
+    this->camera_ = Camera(QVector3D(0.0f, 0.0f, 3.0f), QVector3D(0.0f, 1.0f, 0.0f), 50.0f, -90.0f, 0.0f);
 
     /* 暂时用于键盘点击事件 */
     setFocusPolicy(Qt::StrongFocus);
@@ -165,7 +94,7 @@ void FoxOpenGLWidget::initializeGL()
                                             const GLvoid* data,  // 数据
                                             GLenum usage)  // 创建在 GPU 上的哪一片区域（显存上的每个区域的性能是不一样的）https://registry.khronos.org/OpenGL-Refpages/es3.0/
     */
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, _sphere.vertices.size()*sizeof(float), &_sphere.vertices[0], GL_STATIC_DRAW);
 
 #if 1
     /* 告知显卡如何解析缓冲区里面的属性值
@@ -180,13 +109,13 @@ void FoxOpenGLWidget::initializeGL()
     */
     this->shader_program_.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
     GLint aPosLocation = this->shader_program_.attributeLocation("aPos");  // 获取顶点着色器中顶点属性 aPos 的位置
-    glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);  // 手动传入第几个属性
+    glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);  // 手动传入第几个属性
     glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
 
-    this->shader_program_.bind();
-    GLint aTexelLocation = this->shader_program_.attributeLocation("aTexel");
-    glVertexAttribPointer(aTexelLocation, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(aTexelLocation);
+//    this->shader_program_.bind();
+//    GLint aTexelLocation = this->shader_program_.attributeLocation("aTexel");
+//    glVertexAttribPointer(aTexelLocation, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+//    glEnableVertexAttribArray(aTexelLocation);
 
 #endif
 
@@ -205,10 +134,10 @@ void FoxOpenGLWidget::initializeGL()
     // ===================== EBO =====================
     glGenBuffers(1, &EBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);  // EBO/IBO 是储存顶点【索引】的
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int)*_sphere.indices.size(), &_sphere.indices[0], GL_STATIC_DRAW);  // EBO/IBO 是储存顶点【索引】的
     // =================================================
 
-
+#if 0
     // ===================== 纹理 =====================
     // 开启透明度
     glEnable(GL_BLEND);
@@ -240,7 +169,7 @@ void FoxOpenGLWidget::initializeGL()
     // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     // glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, bord_color);
-
+#endif
      this->shader_program_.bind();
      this->shader_program_.setUniformValue("val_alpha", val_alpha);
      // =================================================
@@ -301,32 +230,13 @@ void FoxOpenGLWidget::paintGL()
 
     case Shape::Rect:
         // ===================== 绑定纹理 =====================
-        this->texture_wall_->bind(0);  // 绑定纹理单元0的数据，并激活对应区域
-        this->texture_nekosilverfox_->bind(1);
-        this->texture_nekosilverfox_bk_->bind(2);
+//        this->texture_wall_->bind(0);  // 绑定纹理单元0的数据，并激活对应区域
+//        this->texture_nekosilverfox_->bind(1);
+//        this->texture_nekosilverfox_bk_->bind(2);
 
-
-//        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-        {  /* 【重点】如果在 Switch 里定义变量要放在花括号里 */
-            int i = 0;
-            foreach (auto item, cubePositions)
-            {
-                /* 【重点】一定要先旋转再位移！！！！ */
-                mat_model.setToIdentity();  // 注意重置为单位矩阵！！
-                mat_model.translate(item);  // 将每个立方体都移动到对应的不同位置
-
-                if (0 == i % 3)
-                {
-                    mat_model.rotate(time * 10, 1.0f, 3.0f, 0.5f);  // 沿着转轴旋转图形
-                }
-
-                this->shader_program_.setUniformValue("mat_model", mat_model);  // 图形矩阵
-                glDrawArrays(GL_TRIANGLES, 0, 36);  // 一共绘制 36 个顶点（本个立方体的）
-
-                i++;
-        }
-    }
+        mat_model.rotate(time * 10, 1.0f, 3.0f, 0.5f);  // 沿着转轴旋转图形
+        this->shader_program_.setUniformValue("mat_model", mat_model);  // 图形矩阵
+        glDrawElements(GL_TRIANGLES, _sphere.getNumTrianglesinSphere(), GL_UNSIGNED_INT, 0);
         break;
 
     case Shape::Circle: break;
@@ -403,6 +313,7 @@ void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
     makeCurrent();
     this->shader_program_.bind();
     this->shader_program_.setUniformValue("val_alpha", val_alpha);
+    qDebug() << "[INFO] val_alpha=" << val_alpha;
     doneCurrent();
     update();
 

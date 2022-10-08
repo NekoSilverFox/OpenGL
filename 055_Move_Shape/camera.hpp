@@ -26,13 +26,12 @@ const float SENSITIVITY =   0.1f;   // 鼠标灵敏度
 const float ZOOM_FOV    =   50.f;   // 摄像机视角
 const float MIN_ZOOM_FOV=   1.0f;
 const float MAX_ZOOM_FOV=   90.0f;
-const float PI          =   3.1415926;
 
 
 class Camera
 {
 public:
-    Camera() = delete;
+    Camera();
     Camera(QVector3D position, QVector3D up, float zoom_fov, float yaw, float pitch);
     Camera(float pos_x, float pos_y, float pos_z,
            float up_x, float up_y, float up_z,

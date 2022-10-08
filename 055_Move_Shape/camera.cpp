@@ -1,4 +1,19 @@
 #include "camera.hpp"
+#include <math.h>
+
+
+Camera::Camera()
+{
+    position = QVector3D(0.0f, 0.0f, 0.0f);
+    up = QVector3D(0.0f, 1.0f, 0.0f);
+    zoom_fov = ZOOM_FOV;
+    yaw = YAW;
+    pitch = PITCH;
+    move_speed = SPEED;
+    mouse_sensitivity = SENSITIVITY;
+
+    _updateCameraVectors();
+}
 
 
 Camera::Camera(QVector3D position   = QVector3D(0.0f, 0.0f, 0.0f),
@@ -100,9 +115,9 @@ QMatrix4x4 Camera::getViewMatrix()
 void Camera::_updateCameraVectors()
 {
     QVector3D new_front;
-    new_front.setX(cos(yaw*PI/180) * cos(pitch*PI/180));
-    new_front.setY(sin(pitch*PI/180));
-    new_front.setZ(sin(yaw*PI/180) * cos(pitch*PI/180));
+    new_front.setX(cos(yaw*M_PI/180) * cos(pitch*M_PI/180));
+    new_front.setY(sin(pitch*M_PI/180));
+    new_front.setZ(sin(yaw*M_PI/180) * cos(pitch*M_PI/180));
     new_front.normalize();
     front = new_front;
 
