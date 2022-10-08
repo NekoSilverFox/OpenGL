@@ -23,6 +23,7 @@ QPoint delta_pos;
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
     this->current_shape_ = Shape::None;
+
     this->_sphere = Sphere(X_SPHERE_SEGMENTS, Y_SPHERE_SEGMENTS);
 
     this->camera_ = Camera(QVector3D(0.0f, 0.0f, 3.0f), QVector3D(0.0f, 1.0f, 0.0f), 50.0f, -90.0f, 0.0f);
@@ -34,10 +35,9 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
     /* 计时器（时钟）每隔 TIMEOUT毫秒 取一次时间（发送一次信号） */
     this->timer_.start(TIMEOUT);
     connect(&this->timer_, SIGNAL(timeout()),
-            this, SLOT(rotate()));
+            this, SLOT(updateGL()));
 
     this->time_.start();
-
 }
 
 FoxOpenGLWidget::~FoxOpenGLWidget()
@@ -63,18 +63,17 @@ void FoxOpenGLWidget::initializeGL()
 
 
     // ===================== 着色器 =====================
-    // 顶点着色器
-    this->shader_program_.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/source.vert");  // 通过资源文件
-
-    // 片段着色器
-    this->shader_program_.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/source.frag");
-
-    // 链接着色器
-    bool success = this->shader_program_.link();
+    /* 球体 */
+    _sp_sphere.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/sphere.vert");
+    _sp_sphere.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/sphere.frag");
+    bool success = _sp_sphere.link();
     if (!success)
     {
-        qDebug() << "ERROR: " << this->shader_program_.log();
+        qDebug() << "ERROR: " << _sp_sphere.log();
     }
+
+    _sp_sphere.bind();
+    _sp_sphere.setUniformValue("val_alpha", val_alpha);
     // =================================================
 
 
@@ -94,7 +93,7 @@ void FoxOpenGLWidget::initializeGL()
                                             const GLvoid* data,  // 数据
                                             GLenum usage)  // 创建在 GPU 上的哪一片区域（显存上的每个区域的性能是不一样的）https://registry.khronos.org/OpenGL-Refpages/es3.0/
     */
-    glBufferData(GL_ARRAY_BUFFER, _sphere.vertices.size()*sizeof(float), &_sphere.vertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*_sphere.vertices.size(), &_sphere.vertices[0], GL_STATIC_DRAW);
 
 #if 1
     /* 告知显卡如何解析缓冲区里面的属性值
@@ -107,26 +106,10 @@ void FoxOpenGLWidget::initializeGL()
                                     const void* offset  // 偏移量
         )
     */
-    this->shader_program_.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
-    GLint aPosLocation = this->shader_program_.attributeLocation("aPos");  // 获取顶点着色器中顶点属性 aPos 的位置
+    this->_sp_sphere.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
+    GLint aPosLocation = this->_sp_sphere.attributeLocation("aPos");  // 获取顶点着色器中顶点属性 aPos 的位置
     glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);  // 手动传入第几个属性
     glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
-
-//    this->shader_program_.bind();
-//    GLint aTexelLocation = this->shader_program_.attributeLocation("aTexel");
-//    glVertexAttribPointer(aTexelLocation, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-//    glEnableVertexAttribArray(aTexelLocation);
-
-#endif
-
-#if 0
-    /* 当我们在顶点着色器中没有写 layout 时，也可以在此处代码根据名字手动指定某个顶点属性的位置 */
-    this->shader_program_.bind();
-    GLint aPosLocation = 2;
-    this->shader_program_.bindAttributeLocation("aPos", aPosLocation);
-    glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(aPosLocation);
-
 #endif
     // =================================================
 
@@ -137,41 +120,8 @@ void FoxOpenGLWidget::initializeGL()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int)*_sphere.indices.size(), &_sphere.indices[0], GL_STATIC_DRAW);  // EBO/IBO 是储存顶点【索引】的
     // =================================================
 
-#if 0
-    // ===================== 纹理 =====================
-    // 开启透明度
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    this->shader_program_.bind();
-    this->shader_program_.setUniformValue("texture0", 0);  // 【重点】当涉及到多个纹理使，一定要为 uniform 设置纹理单元的编号
-    this->texture_wall_ = new QOpenGLTexture(QImage(":/Pictures/wall.jpg").mirrored());  // 因为QOpenGL的y轴是反的（镜像），所以需要mirrored翻转一下
 
-    this->shader_program_.bind();
-    this->shader_program_.setUniformValue("texture1", 1);
-    this->texture_nekosilverfox_ = new QOpenGLTexture(QImage(":/Pictures/nekosilverfox.png").mirrored());
-    this->texture_nekosilverfox_->bind(1);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    this->shader_program_.bind();
-    this->shader_program_.setUniformValue("texture2", 2);
-    this->texture_nekosilverfox_bk_ = new QOpenGLTexture(QImage(":/Pictures/nekosilverfox_bk.jpg").mirrored());
-    // 纹理环绕方式
-    this->texture_nekosilverfox_bk_->bind(2);  // 【重点】注意！再修改纹理之前要先绑定到对应的纹理单元上！
-     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);  // T轴纹理【环绕】方式
-     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);  // S轴纹理【环绕】方式
-     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);  // 缩小时轴纹理【过滤】方式
-     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // 放大时纹理【过滤】方式
-{  /* 【重点】如果在 Switch 里定义变量要放在花括号里，如果是颜色填充要先设置，再传入颜色*/ }
-    // float bord_color[] = {1.0, 1.0, 0.0, 1.0};
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    // glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, bord_color);
-#endif
-     this->shader_program_.bind();
-     this->shader_program_.setUniformValue("val_alpha", val_alpha);
      // =================================================
 
 
@@ -204,22 +154,17 @@ void FoxOpenGLWidget::paintGL()
     glBindVertexArray(VAO);
 
     /* 【重点】使用 QOpenGLShaderProgram 进行着色器绑定 */
-    this->shader_program_.bind();
-
-    /* 绘制三角形 */
-//    glDrawArrays(GL_TRIANGLES, 0, 6);
-//    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);  // 6 代表6个点，因为一个矩形是2个三角形构成的，一个三角形有3个点
-//    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, &indices);  // 直接到索引数组里去绘制，如果VAO没有绑定EBO的话
+    _sp_sphere.bind();
 
     QMatrix4x4 mat_model; // QMatrix 默认生成的是一个单位矩阵（对角线上的元素为1）
     QMatrix4x4 mat_view;  // 【重点】 view代表摄像机拍摄的物体，也就是全世界！！！
     QMatrix4x4 mat_projection;  // 透视（焦距）一般设置一次就好了，之后不变。如果放在PaintGL() 里会导致每次重绘都调用，增加资源消耗
 
     mat_view = camera_.getViewMatrix();
-    this->shader_program_.setUniformValue("mat_view", mat_view);  // 摄像机矩阵
+    this->_sp_sphere.setUniformValue("mat_view", mat_view);  // 摄像机矩阵
 
     mat_projection.perspective(camera_.zoom_fov, (float)width()/(float)height(), 0.1f, 100.0f);  // 透视
-    this->shader_program_.setUniformValue("mat_projection", mat_projection);
+    this->_sp_sphere.setUniformValue("mat_projection", mat_projection);
 
 
     // 通过 this->current_shape_ 确定当前需要绘制的图形
@@ -229,13 +174,8 @@ void FoxOpenGLWidget::paintGL()
     case Shape::None: break;
 
     case Shape::Rect:
-        // ===================== 绑定纹理 =====================
-//        this->texture_wall_->bind(0);  // 绑定纹理单元0的数据，并激活对应区域
-//        this->texture_nekosilverfox_->bind(1);
-//        this->texture_nekosilverfox_bk_->bind(2);
-
         mat_model.rotate(time * 10, 1.0f, 3.0f, 0.5f);  // 沿着转轴旋转图形
-        this->shader_program_.setUniformValue("mat_model", mat_model);  // 图形矩阵
+        this->_sp_sphere.setUniformValue("mat_model", mat_model);  // 图形矩阵
         glDrawElements(GL_TRIANGLES, _sphere.getNumTrianglesinSphere(), GL_UNSIGNED_INT, 0);
         break;
 
@@ -272,21 +212,6 @@ void FoxOpenGLWidget::setWirefame(bool wirefame)
 }
 
 
-void FoxOpenGLWidget::changeColorWithTime()
-{
-    if (this->current_shape_ == Shape::None) return;
-
-    makeCurrent();
-
-    int current_sec = QTime::currentTime().second();  // 取到秒
-    float greenValue = sin(current_sec);
-    this->shader_program_.setUniformValue("ourColor", 0.0f, greenValue, 0.0f, 1.0f);
-
-    doneCurrent();
-    update();
-}
-
-
 /* 处理键盘事件 */
 void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
 {
@@ -311,8 +236,8 @@ void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
     if (val_alpha < 0.0) val_alpha = 0.0;
 
     makeCurrent();
-    this->shader_program_.bind();
-    this->shader_program_.setUniformValue("val_alpha", val_alpha);
+    _sp_sphere.bind();
+    _sp_sphere.setUniformValue("val_alpha", val_alpha);
     qDebug() << "[INFO] val_alpha=" << val_alpha;
     doneCurrent();
     update();
@@ -342,7 +267,7 @@ void FoxOpenGLWidget::wheelEvent(QWheelEvent *event)
     update();
 }
 
-void FoxOpenGLWidget::rotate()
+void FoxOpenGLWidget::updateGL()
 {
     update();
 }

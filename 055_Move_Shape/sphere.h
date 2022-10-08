@@ -1,11 +1,14 @@
 #ifndef SPHERE_H
 #define SPHERE_H
 
+
 #include <vector>
+#include <QOpenGLShaderProgram>
+
 
 //将球横纵划分成50*50的网格
-const int X_SPHERE_SEGMENTS = 50;
-const int Y_SPHERE_SEGMENTS = 50;
+const unsigned int X_SPHERE_SEGMENTS = 50;
+const unsigned int Y_SPHERE_SEGMENTS = 50;
 
 
 class Sphere
@@ -24,6 +27,7 @@ private:
 public:
     std::vector<float> vertices;  // 顶点
     std::vector<int> indices; // EBO 索引s
+
 
 private:
     unsigned int _x_segments;

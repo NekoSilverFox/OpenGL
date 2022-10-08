@@ -49,17 +49,15 @@ protected:
 signals:
 
 public slots:
-    void changeColorWithTime();
-    void rotate();
+    void updateGL();
 
 private:
     Shape current_shape_;  // 记录当前绘制的图形
-    Sphere _sphere;  // 球体
 
+    /* 球体 */
+    Sphere _sphere;
+    QOpenGLShaderProgram _sp_sphere;
 
-    /* 着色器对象 */
-    QOpenGLShaderProgram shader_program_;  // 【重点】使用 Qt 提供的着色器对象
-    QOpenGLShaderProgram _shader_sphere;
 
     /* 时钟及计时器 */
     QTimer timer_;  // 【重点】 这里是 Timer - 计时器类
