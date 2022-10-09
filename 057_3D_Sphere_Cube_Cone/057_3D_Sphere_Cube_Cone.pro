@@ -36,9 +36,9 @@ HEADERS += \
         mainwindow.h \
     foxopenglwidget.h \
     camera.hpp \
-    sphere.h \
-    cube.h \
-    cone.hpp
+    cone.hpp \
+    cube.hpp \
+    sphere.hpp
 
 FORMS += \
         mainwindow.ui

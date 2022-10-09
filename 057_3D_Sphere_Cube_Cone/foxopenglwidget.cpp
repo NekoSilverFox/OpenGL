@@ -2,7 +2,7 @@
 #include <QTime>
 #include <QKeyEvent>
 #include "foxopenglwidget.h"
-#include "sphere.h"
+#include "sphere.hpp"
 
 
 #define TIMEOUT 50  // 50 毫秒更新一次
@@ -30,6 +30,10 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
     is_draw_sphere = false;
     is_draw_cone = false;
     is_draw_cube = false;
+
+    is_move_sphere = false;
+    is_move_cone = false;
+    is_move_cube = false;
 
     this->camera_ = Camera(QVector3D(0.0f, 0.0f, 3.0f), QVector3D(0.0f, 1.0f, 0.0f), 50.0f, -90.0f, 0.0f);
 
@@ -127,6 +131,8 @@ void FoxOpenGLWidget::initializeGL()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[0]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int)*_sphere.indices.size(), &_sphere.indices[0], GL_STATIC_DRAW);  // EBO/IBO 是储存顶点【索引】的
 
+    _sphere.mat_model.translate(-2.0f, 0.0f, 0.0f);
+    _sphere.mat_model.scale(0.7);
 
     // ------------------------ 解绑 ------------------------
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
@@ -174,6 +180,8 @@ void FoxOpenGLWidget::initializeGL()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int)*_cone.indices.size(), &_cone.indices[0], GL_STATIC_DRAW);  // EBO/IBO 是储存顶点【索引】的
 
 
+    _cone.mat_model.translate(0.0f, 0.0f, 0.0f);
+
     // ------------------------ 解绑 ------------------------
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
     glBindVertexArray(0);
@@ -212,6 +220,7 @@ void FoxOpenGLWidget::initializeGL()
     glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);  // 手动传入第几个属性
     glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
 
+    _cube.mat_model.translate(0.0f, -0.5f, 0.0f);
 
     // ------------------------ 解绑 ------------------------
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
@@ -236,10 +245,6 @@ void FoxOpenGLWidget::paintGL()
     glEnable(GL_DEPTH_TEST);  // 深度信息，如果不设置立方体就像没有盖子
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // use方法
 
-    QMatrix4x4 mat_model_sphere; // QMatrix 默认生成的是一个单位矩阵（对角线上的元素为1）
-    QMatrix4x4 mat_model_cone;
-    QMatrix4x4 mat_model_cube;
-
     QMatrix4x4 mat_view;  // 【重点】 view代表摄像机拍摄的物体，也就是全世界！！！
     mat_view = camera_.getViewMatrix();
 
@@ -257,18 +262,14 @@ void FoxOpenGLWidget::paintGL()
 
         /* 【重点】使用 QOpenGLShaderProgram 进行着色器绑定 */
         _sp_sphere.bind();
-
         /* 摄像机矩阵 */
         _sp_sphere.setUniformValue("mat_view", mat_view);
-
         /* 透视 */
         _sp_sphere.setUniformValue("mat_projection", mat_projection);
 
         /* 模型操作 */
-        mat_model_sphere.translate(-2.0f, 0.0f, 0.0f);
-        mat_model_sphere.rotate(time * 10, 1.0f, 3.0f, 0.5f);  // 沿着转轴旋转图形
-        mat_model_sphere.scale(0.5);
-        _sp_sphere.setUniformValue("mat_model", mat_model_sphere);
+//        _sphere.mat_model.rotate(time, 1.0f, 3.0f, 0.5f);  // 沿着转轴旋转图形
+        _sp_sphere.setUniformValue("mat_model", _sphere.mat_model);
 
         glDrawElements(GL_TRIANGLES, _sphere.getNumTrianglesinSphere(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
@@ -282,10 +283,7 @@ void FoxOpenGLWidget::paintGL()
         _sp_cone.bind();
         _sp_cone.setUniformValue("mat_view", mat_view);
         _sp_cone.setUniformValue("mat_projection", mat_projection);
-
-        /* 模型操作 */
-        mat_model_cone.translate(0.0f, 0.0f, 0.0f);
-        _sp_cone.setUniformValue("mat_model", mat_model_cone);
+        _sp_cone.setUniformValue("mat_model", _cone.mat_model);
 
         glDrawElements(GL_TRIANGLES, _cone.getNumTrianglesinSphere(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
@@ -295,15 +293,14 @@ void FoxOpenGLWidget::paintGL()
     if (is_draw_cube)
     {
         glBindVertexArray(VAOs[2]);
+
         _sp_cube.bind();
         _sp_cube.setUniformValue("mat_view", mat_view);
         _sp_cube.setUniformValue("mat_projection", mat_projection);
-
-        /* 模型操作 */
-        mat_model_cube.translate(0.0f, -0.5f, 0.0f);
-        _sp_cube.setUniformValue("mat_model", mat_model_cube);
+        _sp_cube.setUniformValue("mat_model", _cube.mat_model);
 
         glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
     }
 
 }
@@ -335,10 +332,30 @@ void FoxOpenGLWidget::setWirefame(bool wirefame)
 }
 
 
+void FoxOpenGLWidget::move3DShape(QVector3D step)
+{
+    if (is_move_sphere)
+    {
+        _sphere.mat_model.translate(step);
+    }
+
+    if (is_move_cone)
+    {
+        _cone.mat_model.translate(step);
+    }
+
+    if (is_move_cube)
+    {
+        _cube.mat_model.translate(step);
+    }
+}
+
+
 /* 处理键盘事件 */
 void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
 {
     float cameraSpeed = (float)TIMEOUT / (float)1000;
+    float moveSpeed = 0.05;
 
     switch (event->key())
     {
@@ -348,17 +365,17 @@ void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Plus: val_alpha -= 0.1; break;
 
     /* 键盘WASD移动摄像机 */
-    case Qt::Key_W:     camera_.moveCamera(Camera_Movement::FORWARD, cameraSpeed);  break;
-    case Qt::Key_A:     camera_.moveCamera(Camera_Movement::LEFT, cameraSpeed);     break;
-    case Qt::Key_S:     camera_.moveCamera(Camera_Movement::BACKWARD, cameraSpeed); break;
-    case Qt::Key_D:     camera_.moveCamera(Camera_Movement::RIGHT, cameraSpeed);    break;
-    case Qt::Key_Space: camera_.moveCamera(Camera_Movement::UP, cameraSpeed);       break;
-    case Qt::Key_Shift: camera_.moveCamera(Camera_Movement::DOWN, cameraSpeed);     break;
+    case Qt::Key_W:     camera_.moveCamera(Camera_Movement::FORWARD,    cameraSpeed);  break;
+    case Qt::Key_A:     camera_.moveCamera(Camera_Movement::LEFT,       cameraSpeed);  break;
+    case Qt::Key_S:     camera_.moveCamera(Camera_Movement::BACKWARD,   cameraSpeed);  break;
+    case Qt::Key_D:     camera_.moveCamera(Camera_Movement::RIGHT,      cameraSpeed);  break;
+    case Qt::Key_Space: camera_.moveCamera(Camera_Movement::UP,         cameraSpeed);  break;
+    case Qt::Key_Shift: camera_.moveCamera(Camera_Movement::DOWN,       cameraSpeed);  break;
 
-    case Qt::Key_Up:    break;
-    case Qt::Key_Down:    break;
-    case Qt::Key_Left:    break;
-    case Qt::Key_Right:    break;
+    case Qt::Key_Up:    move3DShape(QVector3D( 0.0f,      moveSpeed, 0.0f));  break;
+    case Qt::Key_Down:  move3DShape(QVector3D( 0.0f,     -moveSpeed, 0.0f));  break;
+    case Qt::Key_Left:  move3DShape(QVector3D(-moveSpeed, 0.0f,      0.0f));  break;
+    case Qt::Key_Right: move3DShape(QVector3D( moveSpeed, 0.0f,      0.0f));  break;
 
     default: break;
     }

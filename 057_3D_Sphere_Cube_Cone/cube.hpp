@@ -3,7 +3,7 @@
 
 
 #include <vector>
-
+#include <QMatrix4x4>
 
 const float LENGTH = 1.0f;
 
@@ -20,6 +20,7 @@ private:
 public:
     std::vector<float> vertices;  // 顶点
 
+    QMatrix4x4 mat_model;
 
 private:
     float _length;
