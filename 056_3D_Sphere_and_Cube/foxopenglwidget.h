@@ -10,6 +10,7 @@
 #include <QOpenGLTexture>
 #include "camera.hpp"
 #include "sphere.h"
+#include "cube.h"
 
 
 class FoxOpenGLWidget : public QOpenGLWidget, QOpenGLFunctions_4_5_Core
@@ -58,6 +59,9 @@ private:
     Sphere _sphere;
     QOpenGLShaderProgram _sp_sphere;
 
+    /* 立方体 */
+    Cube _cube;
+    QOpenGLShaderProgram _sp_cube;
 
     /* 时钟及计时器 */
     QTimer timer_;  // 【重点】 这里是 Timer - 计时器类

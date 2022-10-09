@@ -21,7 +21,7 @@ Sphere::Sphere(const unsigned int x_segments, const unsigned int y_segments) :
 /* 获取绘制三角形的数量 */
 unsigned int Sphere::getNumTrianglesinSphere()
 {
-    return _x_segments * _y_segments *6;
+    return _x_segments * _y_segments * 6;
 }
 
 
