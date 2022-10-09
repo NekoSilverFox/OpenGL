@@ -48,30 +48,15 @@ QWidget:checked {
      <height>27</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menu">
-    <property name="title">
-     <string>文件</string>
-    </property>
-   </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
-     <string>查看</string>
+     <string>Selete</string>
     </property>
+    <addaction name="actionSphere"/>
+    <addaction name="actionCone"/>
+    <addaction name="actionCube"/>
    </widget>
-   <widget class="QMenu" name="menu_3">
-    <property name="title">
-     <string>设置</string>
-    </property>
-   </widget>
-   <widget class="QMenu" name="menu_4">
-    <property name="title">
-     <string>帮助</string>
-    </property>
-   </widget>
-   <addaction name="menu"/>
    <addaction name="menu_2"/>
-   <addaction name="menu_3"/>
-   <addaction name="menu_4"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -80,27 +65,71 @@ QWidget:checked {
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionDrawRect"/>
+   <addaction name="actionDrawSphere"/>
+   <addaction name="actionDrawCone"/>
+   <addaction name="actionDrawCube"/>
    <addaction name="actionWireframe"/>
-   <addaction name="actionClear"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="actionDrawRect">
-   <property name="text">
-    <string>绘制矩形</string>
-   </property>
-  </action>
   <action name="actionWireframe">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>线框渲染</string>
+    <string>Wireframe</string>
    </property>
   </action>
   <action name="actionClear">
    <property name="text">
     <string>清空图形</string>
+   </property>
+  </action>
+  <action name="actionDrawSphere">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Sphere</string>
+   </property>
+  </action>
+  <action name="actionDrawCone">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Cone</string>
+   </property>
+  </action>
+  <action name="actionDrawCube">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Cube</string>
+   </property>
+  </action>
+  <action name="actionSphere">
+   <property name="text">
+    <string>Sphere</string>
+   </property>
+  </action>
+  <action name="actionCone">
+   <property name="text">
+    <string>Cone</string>
+   </property>
+  </action>
+  <action name="actionCube">
+   <property name="text">
+    <string>Cube</string>
    </property>
   </action>
  </widget>
