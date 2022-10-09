@@ -3,6 +3,7 @@
 Cube::Cube()
 {
     _length = LENGTH;
+
     _genVectorVerticesAndIndices();
 }
 

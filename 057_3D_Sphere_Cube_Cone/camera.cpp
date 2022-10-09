@@ -62,10 +62,12 @@ void Camera::moveCamera(Camera_Movement direction, float delta_time)
 
     qDebug() <<"[INFO] Move camera: direction=" << direction << "delta_time=" << delta_time << " , velocity=" << velocity;
 
-    if      (Camera_Movement::FORWARD == direction)     position += (front * velocity);
-    else if (Camera_Movement::BACKWARD == direction)    position -= (front * velocity);
-    else if (Camera_Movement::RIGHT == direction)       position += (right * velocity);
-    else if (Camera_Movement::LEFT == direction)        position -= (right * velocity);
+    if      (Camera_Movement::FORWARD   == direction)    position += (front * velocity);
+    else if (Camera_Movement::BACKWARD  == direction)    position -= (front * velocity);
+    else if (Camera_Movement::RIGHT     == direction)    position += (right * velocity);
+    else if (Camera_Movement::LEFT      == direction)    position -= (right * velocity);
+    else if (Camera_Movement::UP        == direction)    position += QVector3D(0.0f, velocity, 0.0f);
+    else if (Camera_Movement::DOWN      == direction)    position -= QVector3D(0.0f, velocity, 0.0f);
     else    qDebug() << "[ERROR] When move camera";
 }
 

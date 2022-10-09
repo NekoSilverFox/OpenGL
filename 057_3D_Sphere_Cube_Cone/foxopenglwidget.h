@@ -54,6 +54,11 @@ signals:
 public slots:
     void updateGL();
 
+public:
+    bool is_draw_sphere;
+    bool is_draw_cone;
+    bool is_draw_cube;
+
 private:
     Shape current_shape_;  // 记录当前绘制的图形
 

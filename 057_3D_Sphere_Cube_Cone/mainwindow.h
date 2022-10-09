@@ -22,6 +22,12 @@ private slots:
 
     void on_actionClear_triggered();
 
+    void on_actionDrawSphere_triggered();
+
+    void on_actionDrawCone_triggered();
+
+    void on_actionDrawCube_triggered();
+
 private:
     Ui::MainWindow *ui;
 };

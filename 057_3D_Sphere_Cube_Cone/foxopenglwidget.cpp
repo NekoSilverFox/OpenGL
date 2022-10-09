@@ -27,6 +27,9 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
     this->_sphere = Sphere(X_SPHERE_SEGMENTS, Y_SPHERE_SEGMENTS);
     this->_cone = Cone(R, HEIGHT, 10.0);
     this->_cube = Cube(LENGTH);
+    is_draw_sphere = false;
+    is_draw_cone = false;
+    is_draw_cube = false;
 
     this->camera_ = Camera(QVector3D(0.0f, 0.0f, 3.0f), QVector3D(0.0f, 1.0f, 0.0f), 50.0f, -90.0f, 0.0f);
 
@@ -246,12 +249,10 @@ void FoxOpenGLWidget::paintGL()
 
     // 通过 this->current_shape_ 确定当前需要绘制的图形
     float time = this->time_.elapsed() / 1000.0;  // 注意是 1000.0
-    switch (this->current_shape_)
-    {
-    case Shape::None: break;
 
-    case Shape::Rect:
-        /****************************************************** 球体 ******************************************************/
+    /****************************************************** 球体 ******************************************************/
+    if (is_draw_sphere)
+    {
         glBindVertexArray(VAOs[0]);
 
         /* 【重点】使用 QOpenGLShaderProgram 进行着色器绑定 */
@@ -271,10 +272,11 @@ void FoxOpenGLWidget::paintGL()
 
         glDrawElements(GL_TRIANGLES, _sphere.getNumTrianglesinSphere(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
+    }
 
-
-
-        /****************************************************** 锥体 ******************************************************/
+    /****************************************************** 锥体 ******************************************************/
+    if (is_draw_cone)
+    {
         glBindVertexArray(VAOs[1]);
 
         _sp_cone.bind();
@@ -282,32 +284,28 @@ void FoxOpenGLWidget::paintGL()
         _sp_cone.setUniformValue("mat_projection", mat_projection);
 
         /* 模型操作 */
-        mat_model_cone.translate(0.0f, -1.0f, 0.0f);
+        mat_model_cone.translate(0.0f, 0.0f, 0.0f);
         _sp_cone.setUniformValue("mat_model", mat_model_cone);
 
         glDrawElements(GL_TRIANGLES, _cone.getNumTrianglesinSphere(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
+    }
 
-
-
-        /****************************************************** 立方体 ******************************************************/
+    /****************************************************** 立方体 ******************************************************/
+    if (is_draw_cube)
+    {
         glBindVertexArray(VAOs[2]);
         _sp_cube.bind();
         _sp_cube.setUniformValue("mat_view", mat_view);
         _sp_cube.setUniformValue("mat_projection", mat_projection);
 
         /* 模型操作 */
-        mat_model_cube.translate(1.5f, 0.0f, 0.0f);
+        mat_model_cube.translate(0.0f, -0.5f, 0.0f);
         _sp_cube.setUniformValue("mat_model", mat_model_cube);
 
         glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
 
-        break;
-
-    case Shape::Circle: break;
-    case Shape::Triangle: break;
-    default: break;
-    }   
 }
 
 
@@ -350,10 +348,12 @@ void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Plus: val_alpha -= 0.1; break;
 
     /* 键盘WASD移动摄像机 */
-    case Qt::Key_W: camera_.moveCamera(Camera_Movement::FORWARD, cameraSpeed);  break;
-    case Qt::Key_A: camera_.moveCamera(Camera_Movement::LEFT, cameraSpeed);     break;
-    case Qt::Key_S: camera_.moveCamera(Camera_Movement::BACKWARD, cameraSpeed); break;
-    case Qt::Key_D: camera_.moveCamera(Camera_Movement::RIGHT, cameraSpeed);    break;
+    case Qt::Key_W:     camera_.moveCamera(Camera_Movement::FORWARD, cameraSpeed);  break;
+    case Qt::Key_A:     camera_.moveCamera(Camera_Movement::LEFT, cameraSpeed);     break;
+    case Qt::Key_S:     camera_.moveCamera(Camera_Movement::BACKWARD, cameraSpeed); break;
+    case Qt::Key_D:     camera_.moveCamera(Camera_Movement::RIGHT, cameraSpeed);    break;
+    case Qt::Key_Space: camera_.moveCamera(Camera_Movement::UP, cameraSpeed);       break;
+    case Qt::Key_Shift: camera_.moveCamera(Camera_Movement::DOWN, cameraSpeed);     break;
 
     default: break;
     }

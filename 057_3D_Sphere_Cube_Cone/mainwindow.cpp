@@ -28,3 +28,21 @@ void MainWindow::on_actionClear_triggered()
 {
     ui->openGLWidget->drawShape(FoxOpenGLWidget::Shape::None);
 }
+
+void MainWindow::on_actionDrawSphere_triggered()
+{
+    ui->openGLWidget->is_draw_sphere = ui->actionDrawSphere->isChecked();
+    ui->openGLWidget->updateGL();
+}
+
+void MainWindow::on_actionDrawCone_triggered()
+{
+    ui->openGLWidget->is_draw_cone = ui->actionDrawCone->isChecked();
+    ui->openGLWidget->updateGL();
+}
+
+void MainWindow::on_actionDrawCube_triggered()
+{
+    ui->openGLWidget->is_draw_cube = ui->actionDrawCube->isChecked();
+    ui->openGLWidget->updateGL();
+}
