@@ -8,10 +8,10 @@
 #define TIMEOUT 50  // 50 毫秒更新一次
 
 /* 创建 VAO、VBO 对象并且赋予 ID */
-unsigned int VBOs[2], VAOs[2];
+unsigned int VBOs[3], VAOs[3];
 
 /* 创建 EBO 元素缓冲对象 */
-unsigned int EBO;
+unsigned int EBOs[2];
 
 /* 透明度 */
 float val_alpha = 0.5;
@@ -25,6 +25,7 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
     this->current_shape_ = Shape::None;
 
     this->_sphere = Sphere(X_SPHERE_SEGMENTS, Y_SPHERE_SEGMENTS);
+    this->_cone = Cone(R, HEIGHT, STEP_ANGLE);
     this->_cube = Cube(LENGTH);
 
     this->camera_ = Camera(QVector3D(0.0f, 0.0f, 3.0f), QVector3D(0.0f, 1.0f, 0.0f), 50.0f, -90.0f, 0.0f);
@@ -48,9 +49,9 @@ FoxOpenGLWidget::~FoxOpenGLWidget()
     makeCurrent();
 
     /* 对象的回收 */
-    glDeleteVertexArrays(2, VAOs);
-    glDeleteBuffers(2, VBOs);
-    glDeleteBuffers(1, &EBO);
+    glDeleteVertexArrays(3, VAOs);
+    glDeleteBuffers(3, VBOs);
+    glDeleteBuffers(2, EBOs);
 
     doneCurrent();
     update();
@@ -62,10 +63,11 @@ void FoxOpenGLWidget::initializeGL()
 {
     initializeOpenGLFunctions();  // 【重点】初始化OpenGL函数，将 Qt 里的函数指针指向显卡的函数（头文件 QOpenGLFunctions_X_X_Core）
 
-    // ------------------------ VAO | VBO ------------------------
+    // ------------------------ VAO | VBO  | EBO------------------------
     // VAO 和 VBO 对象赋予 ID
-    glGenVertexArrays(2, VAOs);
-    glGenBuffers(2, VBOs);
+    glGenVertexArrays(3, VAOs);
+    glGenBuffers(3, VBOs);
+    glGenBuffers(2, EBOs);  // 立方体没有使用 EBO
 
 
 
@@ -81,12 +83,12 @@ void FoxOpenGLWidget::initializeGL()
     bool success = _sp_sphere.link();
     if (!success)
     {
-        qDebug() << "ERROR: " << _sp_sphere.log();
+        qDebug() << "[ERROR-Sphere] " << _sp_sphere.log();
     }
 
     _sp_sphere.bind();
     _sp_sphere.setUniformValue("val_alpha", val_alpha);
-    // -------------------------------------------------------
+
 
     // ------------------------ VAO、VBO ------------------------
     glBindVertexArray(VAOs[0]);
@@ -111,15 +113,14 @@ void FoxOpenGLWidget::initializeGL()
                                     const void* offset  // 偏移量
         )
     */
-    this->_sp_sphere.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
-    GLint aPosLocation = this->_sp_sphere.attributeLocation("aPos");  // 获取顶点着色器中顶点属性 aPos 的位置
+    _sp_sphere.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
+    GLint aPosLocation = _sp_sphere.attributeLocation("aPos");  // 获取顶点着色器中顶点属性 aPos 的位置
     glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);  // 手动传入第几个属性
     glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
 
 
     // ------------------------ EBO ------------------------
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[0]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int)*_sphere.indices.size(), &_sphere.indices[0], GL_STATIC_DRAW);  // EBO/IBO 是储存顶点【索引】的
 
 
@@ -138,6 +139,49 @@ void FoxOpenGLWidget::initializeGL()
 
 
 
+    /****************************************************** 锥体 ******************************************************/
+    // ------------------------ 着色器 ------------------------
+    _sp_cone.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/cone.vert");
+    _sp_cone.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/cone.frag");
+    success = _sp_cone.link();
+    if (!success)
+    {
+        qDebug() << "[ERROR-Cone] " << _sp_cone.log();
+    }
+
+    _sp_cone.bind();
+    _sp_cone.setUniformValue("val_alpha", val_alpha);
+
+
+    // ------------------------ VAO、VBO ------------------------
+    glBindVertexArray(VAOs[1]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*_cone.vertices.size(), &_cone.vertices[0], GL_STATIC_DRAW);
+
+    _sp_cone.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
+    aPosLocation = _sp_cone.attributeLocation("aPos");  // 获取顶点着色器中顶点属性 aPos 的位置
+    glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);  // 手动传入第几个属性
+    glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
+
+
+    // ------------------------ EBO ------------------------
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[1]);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int)*_cone.indices.size(), &_cone.indices[0], GL_STATIC_DRAW);  // EBO/IBO 是储存顶点【索引】的
+
+
+    // ------------------------ 解绑 ------------------------
+    // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);  // 注意 VAO 不参与管理 VBO
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+
+
+
+
+
+
 
     /****************************************************** 立方体 ******************************************************/
     // ------------------------ 着色器 ------------------------
@@ -146,21 +190,21 @@ void FoxOpenGLWidget::initializeGL()
     success = _sp_cube.link();
     if (!success)
     {
-        qDebug() << "ERROR: " << _sp_cube.log();
+         qDebug() << "[ERROR-Cube] " << _sp_cube.log();
     }
 
     _sp_cube.bind();
     _sp_cube.setUniformValue("val_alpha", val_alpha);
-    // -------------------------------------------------------
+
 
     // 绑定 VAO、VBO 对象
-    glBindVertexArray(VAOs[1]);
-    glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
+    glBindVertexArray(VAOs[2]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBOs[2]);
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(float)*_cube.vertices.size(), &_cube.vertices[0], GL_STATIC_DRAW);
 
-    this->_sp_cube.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
-    aPosLocation = this->_sp_cube.attributeLocation("aPos");  // 获取顶点着色器中顶点属性 aPos 的位置
+    _sp_cube.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
+    aPosLocation = _sp_cube.attributeLocation("aPos");  // 获取顶点着色器中顶点属性 aPos 的位置
     glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);  // 手动传入第几个属性
     glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
 
@@ -189,6 +233,7 @@ void FoxOpenGLWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // use方法
 
     QMatrix4x4 mat_model_sphere; // QMatrix 默认生成的是一个单位矩阵（对角线上的元素为1）
+    QMatrix4x4 mat_model_cone;
     QMatrix4x4 mat_model_cube;
 
     QMatrix4x4 mat_view;  // 【重点】 view代表摄像机拍摄的物体，也就是全世界！！！
@@ -212,28 +257,46 @@ void FoxOpenGLWidget::paintGL()
         _sp_sphere.bind();
 
         /* 摄像机矩阵 */
-        this->_sp_sphere.setUniformValue("mat_view", mat_view);
+        _sp_sphere.setUniformValue("mat_view", mat_view);
 
         /* 透视 */
-        this->_sp_sphere.setUniformValue("mat_projection", mat_projection);
+        _sp_sphere.setUniformValue("mat_projection", mat_projection);
 
         /* 模型操作 */
+        mat_model_sphere.translate(-2.0f, 0.0f, 0.0f);
         mat_model_sphere.rotate(time * 10, 1.0f, 3.0f, 0.5f);  // 沿着转轴旋转图形
         mat_model_sphere.scale(0.5);
-        this->_sp_sphere.setUniformValue("mat_model", mat_model_sphere);
+        _sp_sphere.setUniformValue("mat_model", mat_model_sphere);
 
         glDrawElements(GL_TRIANGLES, _sphere.getNumTrianglesinSphere(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
 
-        /****************************************************** 立方体 ******************************************************/
+
+
+        /****************************************************** 锥体 ******************************************************/
         glBindVertexArray(VAOs[1]);
+
+        _sp_cone.bind();
+        _sp_cone.setUniformValue("mat_view", mat_view);
+        _sp_cone.setUniformValue("mat_projection", mat_projection);
+
+        /* 模型操作 */
+        _sp_cone.setUniformValue("mat_model", mat_model_cone);
+
+        glDrawElements(GL_TRIANGLES, _cone.getNumTrianglesinSphere(), GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+
+
+
+        /****************************************************** 立方体 ******************************************************/
+        glBindVertexArray(VAOs[2]);
         _sp_cube.bind();
-        this->_sp_cube.setUniformValue("mat_view", mat_view);
-        this->_sp_cube.setUniformValue("mat_projection", mat_projection);
+        _sp_cube.setUniformValue("mat_view", mat_view);
+        _sp_cube.setUniformValue("mat_projection", mat_projection);
 
         /* 模型操作 */
         mat_model_cube.translate(0.5f, 0.0f, 0.0f);
-        this->_sp_cube.setUniformValue("mat_model", mat_model_cube);
+        _sp_cube.setUniformValue("mat_model", mat_model_cube);
 
         glDrawArrays(GL_TRIANGLES, 0, 36);
 

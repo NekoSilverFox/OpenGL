@@ -10,7 +10,9 @@
 #include <QOpenGLTexture>
 #include "camera.hpp"
 #include "sphere.h"
+#include "cone.hpp"
 #include "cube.h"
+
 
 
 class FoxOpenGLWidget : public QOpenGLWidget, QOpenGLFunctions_4_5_Core
@@ -58,6 +60,10 @@ private:
     /* 球体 */
     Sphere _sphere;
     QOpenGLShaderProgram _sp_sphere;
+
+    /* 椎体 */
+    Cone _cone;
+    QOpenGLShaderProgram _sp_cone;
 
     /* 立方体 */
     Cube _cube;

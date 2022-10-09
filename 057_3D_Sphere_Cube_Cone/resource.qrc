@@ -4,6 +4,8 @@
         <file>ShaderSource/sphere.vert</file>
         <file>ShaderSource/cube.frag</file>
         <file>ShaderSource/cube.vert</file>
+        <file>ShaderSource/cone.frag</file>
+        <file>ShaderSource/cone.vert</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>
