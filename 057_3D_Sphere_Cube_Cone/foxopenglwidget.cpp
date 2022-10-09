@@ -25,7 +25,7 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
     this->current_shape_ = Shape::None;
 
     this->_sphere = Sphere(X_SPHERE_SEGMENTS, Y_SPHERE_SEGMENTS);
-    this->_cone = Cone(R, HEIGHT, STEP_ANGLE);
+    this->_cone = Cone(R, HEIGHT, 10.0);
     this->_cube = Cube(LENGTH);
 
     this->camera_ = Camera(QVector3D(0.0f, 0.0f, 3.0f), QVector3D(0.0f, 1.0f, 0.0f), 50.0f, -90.0f, 0.0f);
@@ -41,6 +41,7 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 
     this->time_.start();
 }
+
 
 FoxOpenGLWidget::~FoxOpenGLWidget()
 {
@@ -281,6 +282,7 @@ void FoxOpenGLWidget::paintGL()
         _sp_cone.setUniformValue("mat_projection", mat_projection);
 
         /* 模型操作 */
+        mat_model_cone.translate(0.0f, -1.0f, 0.0f);
         _sp_cone.setUniformValue("mat_model", mat_model_cone);
 
         glDrawElements(GL_TRIANGLES, _cone.getNumTrianglesinSphere(), GL_UNSIGNED_INT, 0);
@@ -295,7 +297,7 @@ void FoxOpenGLWidget::paintGL()
         _sp_cube.setUniformValue("mat_projection", mat_projection);
 
         /* 模型操作 */
-        mat_model_cube.translate(0.5f, 0.0f, 0.0f);
+        mat_model_cube.translate(1.5f, 0.0f, 0.0f);
         _sp_cube.setUniformValue("mat_model", mat_model_cube);
 
         glDrawArrays(GL_TRIANGLES, 0, 36);
