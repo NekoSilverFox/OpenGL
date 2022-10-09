@@ -355,6 +355,11 @@ void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Space: camera_.moveCamera(Camera_Movement::UP, cameraSpeed);       break;
     case Qt::Key_Shift: camera_.moveCamera(Camera_Movement::DOWN, cameraSpeed);     break;
 
+    case Qt::Key_Up:    break;
+    case Qt::Key_Down:    break;
+    case Qt::Key_Left:    break;
+    case Qt::Key_Right:    break;
+
     default: break;
     }
 

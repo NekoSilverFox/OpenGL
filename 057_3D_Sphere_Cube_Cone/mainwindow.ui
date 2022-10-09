@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>681</width>
-    <height>441</height>
+    <width>709</width>
+    <height>460</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,8 +31,8 @@ QWidget:checked {
    <widget class="FoxOpenGLWidget" name="openGLWidget">
     <property name="geometry">
      <rect>
-      <x>170</x>
-      <y>100</y>
+      <x>200</x>
+      <y>90</y>
       <width>300</width>
       <height>200</height>
      </rect>
@@ -44,7 +44,7 @@ QWidget:checked {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>681</width>
+     <width>709</width>
      <height>27</height>
     </rect>
    </property>
@@ -63,14 +63,30 @@ QWidget:checked {
     <enum>TopToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
-    <bool>false</bool>
+    <bool>true</bool>
    </attribute>
+   <addaction name="actionisDraw"/>
    <addaction name="actionDrawSphere"/>
    <addaction name="actionDrawCone"/>
    <addaction name="actionDrawCube"/>
    <addaction name="actionWireframe"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QToolBar" name="toolBarMove">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionMove"/>
+   <addaction name="actionMoveSphare"/>
+   <addaction name="actionMoveCone"/>
+   <addaction name="actionMoveCube"/>
+  </widget>
   <action name="actionWireframe">
    <property name="checkable">
     <bool>true</bool>
@@ -128,6 +144,55 @@ QWidget:checked {
    </property>
   </action>
   <action name="actionCube">
+   <property name="text">
+    <string>Cube</string>
+   </property>
+  </action>
+  <action name="actionisDraw">
+   <property name="text">
+    <string>DRAW:</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; color:#ffff00;&quot;&gt;Draw:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="autoRepeat">
+    <bool>true</bool>
+   </property>
+   <property name="visible">
+    <bool>true</bool>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="actionMove">
+   <property name="text">
+    <string>MOVE:</string>
+   </property>
+  </action>
+  <action name="actionMoveSphare">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Sphare</string>
+   </property>
+  </action>
+  <action name="actionMoveCone">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Cone</string>
+   </property>
+  </action>
+  <action name="actionMoveCube">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Cube</string>
    </property>
