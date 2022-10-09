@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/shaders">
+        <file>ShaderSource/sphere.frag</file>
+        <file>ShaderSource/sphere.vert</file>
+        <file>ShaderSource/cube.frag</file>
+        <file>ShaderSource/cube.vert</file>
+    </qresource>
+    <qresource prefix="/"/>
+</RCC>
