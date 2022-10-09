@@ -29,14 +29,16 @@ SOURCES += \
     foxopenglwidget.cpp \
     camera.cpp \
     sphere.cpp \
-    cube.cpp
+    cube.cpp \
+    cone.cpp
 
 HEADERS += \
         mainwindow.h \
     foxopenglwidget.h \
     camera.hpp \
     sphere.h \
-    cube.h
+    cube.h \
+    cone.hpp
 
 FORMS += \
         mainwindow.ui
