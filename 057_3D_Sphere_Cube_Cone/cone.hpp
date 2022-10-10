@@ -3,7 +3,7 @@
 
 
 #include <vector>
-
+#include <QMatrix4x4>
 
 const float R       =   0.5;
 const float HEIGHT  =   1.0;
@@ -28,6 +28,7 @@ public:
     std::vector<float> vertices;    // 顶点
     std::vector<int> indices;       // EBO 索引s
 
+    QMatrix4x4 mat_model;
 
 private:
     float _r;       // 半径

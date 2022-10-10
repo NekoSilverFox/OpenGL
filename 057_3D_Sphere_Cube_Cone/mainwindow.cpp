@@ -46,3 +46,18 @@ void MainWindow::on_actionDrawCube_triggered()
     ui->openGLWidget->is_draw_cube = ui->actionDrawCube->isChecked();
     ui->openGLWidget->updateGL();
 }
+
+void MainWindow::on_actionMoveSphare_triggered()
+{
+    ui->openGLWidget->is_move_sphere = ui->actionMoveSphare->isChecked();
+}
+
+void MainWindow::on_actionMoveCone_triggered()
+{
+    ui->openGLWidget->is_move_cone = ui->actionMoveCone->isChecked();
+}
+
+void MainWindow::on_actionMoveCube_triggered()
+{
+    ui->openGLWidget->is_move_cube = ui->actionMoveCube->isChecked();
+}

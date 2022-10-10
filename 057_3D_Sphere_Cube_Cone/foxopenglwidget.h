@@ -9,9 +9,9 @@
 #include <QTime>
 #include <QOpenGLTexture>
 #include "camera.hpp"
-#include "sphere.h"
+#include "sphere.hpp"
 #include "cone.hpp"
-#include "cube.h"
+#include "cube.hpp"
 
 
 
@@ -37,6 +37,9 @@ public:
     /* 设置线框模式是否开启 */
     void setWirefame(bool wirefame);
 
+    /* 移动图形 */
+    void move3DShape(QVector3D step);
+
 
 protected:
     /* 需要重载的 QOpenGLWidget 中的三个函数 */
@@ -47,7 +50,7 @@ protected:
     /* 处理键盘、鼠标事件 */
     void keyPressEvent(QKeyEvent* event);
     void mouseMoveEvent(QMouseEvent* event);    // 鼠标移动
-    void wheelEvent(QWheelEvent* event);        // 鼠标滚轮
+    void wheelEvent(QWheelEvent* event);        // 鼠标滚轮 
 
 signals:
 
@@ -56,8 +59,13 @@ public slots:
 
 public:
     bool is_draw_sphere;
+    bool is_move_sphere;
+
     bool is_draw_cone;
+    bool is_move_cone;
+
     bool is_draw_cube;
+    bool is_move_cube;
 
 private:
     Shape current_shape_;  // 记录当前绘制的图形

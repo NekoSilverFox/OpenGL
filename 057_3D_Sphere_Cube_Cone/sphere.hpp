@@ -3,7 +3,7 @@
 
 
 #include <vector>
-#include <QOpenGLShaderProgram>
+#include <QMatrix4x4>
 
 
 //将球横纵划分成50*50的网格
@@ -28,6 +28,7 @@ public:
     std::vector<float> vertices;  // 顶点
     std::vector<int> indices; // EBO 索引s
 
+    QMatrix4x4 mat_model;
 
 private:
     unsigned int _x_segments;
