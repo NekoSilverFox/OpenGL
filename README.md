@@ -135,6 +135,59 @@ target_link_libraries(
 
 
 
+**在使用 Qt 下，对于 M 系列芯片应该编写如下 .pro文件：**
+
+```properties
+QT       += core gui widgets opengl openglwidgets
+
+...
+
+
+```
+
+
+
+`main.cpp` 中加入：
+
+```c++
+    QSurfaceFormat format;
+    format.setMajorVersion(3);
+    format.setMinorVersion(3);
+    format.setProfile(QSurfaceFormat::CoreProfile);
+    QSurfaceFormat::setDefaultFormat(format);
+```
+
+`main.cpp` 整体：
+
+```c++
+#include "mainwindow.h"
+#include <QApplication>
+#include <QSurfaceFormat>
+
+int main(int argc, char *argv[])
+{
+    QApplication a(argc, argv);
+
+    /**
+     *  在 M1 的 Mac 要设置这里
+     *  ！！3.3 的版本可用，但是 4.5 用不了！，initializeOpenGLFunctions 返回 false
+    */
+    QSurfaceFormat format;
+    format.setMajorVersion(3);
+    format.setMinorVersion(3);
+    format.setProfile(QSurfaceFormat::CoreProfile);
+    QSurfaceFormat::setDefaultFormat(format);
+
+
+    MainWindow w;
+    w.show();
+
+    return a.exec();
+}
+```
+
+
+
 # 专有名词及解释
 
 | 名词                            | 英文                          | 解释                                                         |
@@ -2032,6 +2085,10 @@ case Qt::Key_D: this->camera_pos_ += cameraSpeed * this->camera_right_; break;
 注意，我们对**右向量**进行了标准化。如果我们没对这个向量进行标准化，最后的叉乘结果会根据cameraFront变量返回大小不同的向量。如果我们不对向量进行标准化，我们就得根据摄像机的朝向不同加速或减速移动了，但如果进行了标准化移动就是匀速的。
 
 现在你就应该能够移动摄像机了，虽然移动速度和系统有关，你可能会需要调整一下cameraSpeed。
+
+
+
+# 光照
 
 
 
