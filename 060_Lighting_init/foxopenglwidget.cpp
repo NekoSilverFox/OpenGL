@@ -8,7 +8,7 @@
 #define TIMEOUT 50  // 50 毫秒更新一次
 
 /* 创建 VAO、VBO 对象并且赋予 ID */
-unsigned int VBOs[3], VAOs[3];
+unsigned int VBOs[3], VAOs[3], light_VAO;
 
 /* 创建 EBO 元素缓冲对象 */
 unsigned int EBOs[2];
@@ -18,6 +18,11 @@ float val_alpha = 0.5;
 
 /* 鼠标位置偏移量 */
 QPoint delta_pos;
+
+/* 光源 */
+QVector3D light_pos(1.2f, 1.0f, 2.0f);  // 光源位置
+QVector3D light_color(1.0f, 1.0f, 1.0f);  // 光源万色
+QVector3D object_color(1.0f, 0.5f, 0.31f);  // 物体颜色
 
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
@@ -39,7 +44,7 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 
     /* 暂时用于键盘点击事件 */
     setFocusPolicy(Qt::StrongFocus);
-    setMouseTracking(true);
+//    setMouseTracking(true);
 
     /* 计时器（时钟）每隔 TIMEOUT毫秒 取一次时间（发送一次信号） */
     this->timer_.start(TIMEOUT);
@@ -220,12 +225,28 @@ void FoxOpenGLWidget::initializeGL()
     glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);  // 手动传入第几个属性
     glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
 
+    _sp_cube.setUniformValue("light_color", light_color);
+    _sp_cube.setUniformValue("object_color", object_color);
+
     _cube.mat_model.translate(0.0f, -0.5f, 0.0f);
 
     // ------------------------ 解绑 ------------------------
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);  // 注意 VAO 不参与管理 VBO
+
+
+    /****************************************************** 光源 ******************************************************/
+    _sp_light.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/light.vert");
+    _sp_light.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/light.frag");
+    success = _sp_light.link();
+    if (!success)
+    {
+         qDebug() << "[ERROR-Light] " << _sp_light.log();
+    }
+    _sp_light.bind();
+    _sp_light.setUniformValue("light_color", light_color);
+
 }
 
 
@@ -252,9 +273,6 @@ void FoxOpenGLWidget::paintGL()
     mat_projection.perspective(camera_.zoom_fov, (float)width()/(float)height(), 0.1f, 100.0f);
 
 
-    // 通过 this->current_shape_ 确定当前需要绘制的图形
-    float time = this->time_.elapsed() / 1000.0;  // 注意是 1000.0
-
     /****************************************************** 球体 ******************************************************/
     if (is_draw_sphere)
     {
@@ -266,9 +284,7 @@ void FoxOpenGLWidget::paintGL()
         _sp_sphere.setUniformValue("mat_view", mat_view);
         /* 透视 */
         _sp_sphere.setUniformValue("mat_projection", mat_projection);
-
         /* 模型操作 */
-//        _sphere.mat_model.rotate(time, 1.0f, 3.0f, 0.5f);  // 沿着转轴旋转图形
         _sp_sphere.setUniformValue("mat_model", _sphere.mat_model);
 
         glDrawElements(GL_TRIANGLES, _sphere.getNumTrianglesinSphere(), GL_UNSIGNED_INT, 0);
@@ -302,6 +318,24 @@ void FoxOpenGLWidget::paintGL()
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
     }
+
+    /****************************************************** 光源 ******************************************************/
+    glBindVertexArray(VAOs[2]);
+
+    float time = this->time_.elapsed() / 1000.0;  // 注意是 .0
+    QMatrix4x4 mat_model_light;
+    mat_model_light.setToIdentity();
+    mat_model_light.translate(light_pos);
+    mat_model_light.rotate(time/10, 1.0f, 5.0f, 0.5f);
+    mat_model_light.scale(0.2);
+
+    _sp_light.bind();
+    _sp_light.setUniformValue("mat_view", mat_view);
+    _sp_light.setUniformValue("mat_projection", mat_projection);
+    _sp_light.setUniformValue("mat_model", mat_model_light);
+
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
 
 }
 
@@ -399,14 +433,17 @@ void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
 /* 处理鼠标移动事件 */
 void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    static QPoint last_pos(width()/2, height()/2);
-    auto current_pos = event->pos();
-    delta_pos = current_pos - last_pos;
-    last_pos = current_pos;
+    if (event->buttons() && Qt::RightButton)
+    {
+        static QPoint last_pos(width()/2, height()/2);
+        auto current_pos = event->pos();
+        delta_pos = current_pos - last_pos;
+        last_pos = current_pos;
 
-    camera_.changeCameraFront(delta_pos.x(), delta_pos.y(), true);
+        camera_.changeCameraFront(delta_pos.x(), delta_pos.y(), true);
 
-    update();
+        update();
+    }
 }
 
 
@@ -421,5 +458,10 @@ void FoxOpenGLWidget::wheelEvent(QWheelEvent *event)
 
 void FoxOpenGLWidget::updateGL()
 {
+    float time = this->time_.elapsed() / 1000.0;  // 注意是 .0
+
+    _sp_cube.bind();
+    _cube.mat_model.rotate(0.15, 0.0f, 0.2f, 0.0f);
+    _sp_cube.setUniformValue("mat_model", _cube.mat_model);
     update();
 }

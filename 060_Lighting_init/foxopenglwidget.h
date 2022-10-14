@@ -69,6 +69,7 @@ public:
 
 private:
     Shape current_shape_;  // 记录当前绘制的图形
+    QOpenGLShaderProgram _sp_light;
 
     /* 球体 */
     Sphere _sphere;

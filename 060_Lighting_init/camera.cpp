@@ -75,7 +75,7 @@ void Camera::moveCamera(Camera_Movement direction, float delta_time)
 /* 改变摄像机指向，需要x和y方向上的偏移量 */
 void Camera::changeCameraFront(float x_offset, float y_offset, bool constrain_pitch = true)
 {
-    yaw += x_offset * mouse_sensitivity;
+    yaw   += x_offset * mouse_sensitivity;
     pitch -= y_offset * mouse_sensitivity;
 
     /* 确保超出边界时，屏幕不会被翻转 */
