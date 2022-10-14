@@ -4,9 +4,9 @@
 #
 #-------------------------------------------------
 
-QT       += core gui widgets opengl openglwidgets
+QT       += core gui widgets opengl # openglwidgets
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets opengl openglwidgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = 002_Triangle_VAO_VBO
 TEMPLATE = app
