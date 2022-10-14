@@ -50,11 +50,24 @@
 | [002_Triangle_VAO_VBO](https://github.com/NekoSilverFox/OpenGL/tree/main/002_Triangle_VAO_VBO) | 基于 `001` 的初始化控件后，增加使用 VAO、VBO 代码绘制三角形的代码<br />顶点和片段着色器的编写、编译、链接和使用 |
 | [003_Triangle_EBO](https://github.com/NekoSilverFox/OpenGL/tree/main/003_Triangle_EBO) | 通过 EBO（元素/索引缓冲对象）进行了 2 个三角形的绘制（绘制为 1 个矩形） |
 | [005_Two_triangle_exercise](https://github.com/NekoSilverFox/OpenGL/tree/main/005_Two_triangle_exercise) | 小练习：使用 VAO 和 VBO 数组进行对不同三角形的绘制；使用 2 个片段着色器进行分别着色 |
+|                                                              |                                                              |
 | [010_Qt_UI_with_OpenGL](https://github.com/NekoSilverFox/OpenGL/tree/main/010_Qt_UI_with_OpenGL) | Qt UI 调用 OpenGL 功能：通过 QOpenGLWidget 上的按钮实现三角形的绘制、清除、是否开启线框模式<br />Qt`update()` 函数的注意事项及使用 |
 | [011_QOpenGLShaderProgram](https://github.com/NekoSilverFox/OpenGL/tree/main/011_QOpenGLShaderProgram) | 使用 Qt 提供的 QOpenGLShaderProgram 类，进行顶点和片段着色器的编译链接和使用。并且将 GLSL 代码以 Qt 资源文件的方式传入和使用 |
 |                                                              |                                                              |
+| [020_GLSL_in_out](https://github.com/NekoSilverFox/OpenGL/tree/main/020_GLSL_in_out) | 讲解了 GLSL 代码中 `in` 和 `out` 关键字                      |
+| [021_GLSL_layout](https://github.com/NekoSilverFox/OpenGL/tree/main/021_GLSL_layout) | 讲解了 GLSL 代码中 `layout` 关键字，比如 `layout (location = 2) in vec3 aPos;` 定义了顶点属性 `aPos` 的位置是 2 |
+| [022_GLSL_uniform](https://github.com/NekoSilverFox/OpenGL/tree/main/022_GLSL_uniform) | 讲解了 GLSL 代码中 `uniform` 关键字，使用 `uniform` 是一种从 CPU 向 GPU 传送数据的方式 |
+| [023_GLSL_more_Attrib](https://github.com/NekoSilverFox/OpenGL/tree/main/023_GLSL_more_Attrib) | 使用 `layout` 关键字实现了更多的顶点属性（增加颜色值）       |
+| [024_GLSL_exercise](https://github.com/NekoSilverFox/OpenGL/tree/main/024_GLSL_exercise) | GLSL 小练习                                                  |
 |                                                              |                                                              |
+| [030_Texel](https://github.com/NekoSilverFox/OpenGL/tree/main/030_Texel) | 纹理                                                         |
+| [031_Texel_wrap](https://github.com/NekoSilverFox/OpenGL/tree/main/031_Texel_wrap) | 设置纹理环绕方式（重复、镜像、颜色填充等）                   |
+| [032_Texture_Filtering](https://github.com/NekoSilverFox/OpenGL/tree/main/032_Texture_Filtering) | 纹理的过滤方式（`GL_LINEAR` - 线性过滤；`GL_NEAREST` - 临近过滤） |
+| [033_Texture_exercise](https://github.com/NekoSilverFox/OpenGL/tree/main/033_Texture_exercise) | 纹理小练习                                                   |
 |                                                              |                                                              |
+| [040_Rotate_and_Move](https://github.com/NekoSilverFox/OpenGL/tree/main/040_Rotate_and_Move) | 使用矩阵移动和缩放                                           |
+| [045_3D](https://github.com/NekoSilverFox/OpenGL/tree/main/045_3D) | 实现 3D 立方体效果                                           |
+| [046_3D_exercise](https://github.com/NekoSilverFox/OpenGL/tree/main/046_3D_exercise) | 3D 小练习                                                    |
 |                                                              |                                                              |
 
 
@@ -118,6 +131,59 @@ target_link_libraries(
         OpenGL  # 这个是工程的名字
         glfw
 )
+```
+
+
+
+**在使用 Qt 下，对于 M 系列芯片应该编写如下 .pro文件：**
+
+```properties
+QT       += core gui widgets opengl openglwidgets
+
+...
+
+
+```
+
+
+
+`main.cpp` 中加入：
+
+```c++
+    QSurfaceFormat format;
+    format.setMajorVersion(3);
+    format.setMinorVersion(3);
+    format.setProfile(QSurfaceFormat::CoreProfile);
+    QSurfaceFormat::setDefaultFormat(format);
+```
+
+`main.cpp` 整体：
+
+```c++
+#include "mainwindow.h"
+#include <QApplication>
+#include <QSurfaceFormat>
+
+int main(int argc, char *argv[])
+{
+    QApplication a(argc, argv);
+
+    /**
+     *  在 M1 的 Mac 要设置这里
+     *  ！！3.3 的版本可用，但是 4.5 用不了！，initializeOpenGLFunctions 返回 false
+    */
+    QSurfaceFormat format;
+    format.setMajorVersion(3);
+    format.setMinorVersion(3);
+    format.setProfile(QSurfaceFormat::CoreProfile);
+    QSurfaceFormat::setDefaultFormat(format);
+
+
+    MainWindow w;
+    w.show();
+
+    return a.exec();
+}
 ```
 
 
@@ -1707,7 +1773,7 @@ glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)width/(float)heigh
 
 同样，`glm::perspective`所做的其实就是创建了一个定义了可视空间的大**平截头体**，任何在这个==平截头体以外的东西最后都不会出现在裁剪空间体积内，并且将会受到裁剪==。一个透视平截头体可以被看作一个不均匀形状的箱子，在这个箱子内部的每个坐标都会被映射到裁剪空间上的一个点。下面是一张透视平截头体的图片：
 
-![ perspective_frustum](https://learnopengl-cn.github.io/img/01/08/perspective_frustum.png)
+![image-20220925164252267](doc/pic/README/image-20220925164252267.png)
 
 - 它的第一个参数定义了**fov的值**，它表示的是**视野(Field of View)**，并且设置了观察空间的大小。如果想要一个真实的观察效果，它的值通常设置为45.0f，但想要一个末日风格的结果你可以将其设置一个更大的值。
 - 第二个参数设置了**宽高比**，由视口的宽除以高所得
@@ -1727,8 +1793,31 @@ glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)width/(float)heigh
 
 我们为上述的每一个步骤都创建了一个变换矩阵：模型矩阵、观察矩阵和投影矩阵。一个顶点坐标将会根据以下过程被变换到裁剪坐标：
 $$
+运算方向：<——————————
+\\
 V_{clip}=M_{projection}⋅M_{view}⋅M_{model}⋅V_{local}
 $$
+他们默认都是 4x4 单位矩阵：
+
+- **$V_{local}$ 由顶点构成的（3D）图形**
+
+- **$M_{model}$ 模型**
+
+- **$M_{view}$ 观察矩阵（摄像机）**，注意：观察矩阵移动的是整个世界，而摄像机不动！
+
+- **$M_{projection}$ 投影矩阵**
+
+    运算的结果，也就是 $V_{clip}$ 我们可以将它传给顶点着色器中的 `gl_Position`
+
+    如果是 `QMatrix4x4` 单位矩阵，那么他们都可以调用方法：
+
+    - **缩放**：`matrix.scale(float factor)`
+    - **旋转**：`matrix.rotate(float angle, float x, float y, float z = 0.0f)`，`angle` 是旋转量，后面 3 个参数是转轴
+    - **位移**：`matrix.translate(float x, float y, float z)`
+    - **恢复成单位矩阵**：`matrix.setToIdentity()`
+
+    
+
 ==注意矩阵运算的顺序是相反的（记住我们需要从右往左阅读矩阵的乘法）==。最后的顶点应该被赋值到顶点着色器中的 gl_Position，OpenGL将会自动进行透视除法和裁剪。
 
 > **然后呢？**
@@ -1741,9 +1830,265 @@ $$
 
 
 
+# 3D
+
+## 右手坐标系
+
+**右手坐标系(Right-handed System)**
+
+按照惯例，OpenGL是一个右手坐标系。简单来说，就是正x轴在你的右手边，正y轴朝上，而正z轴是朝向后方的。想象你的屏幕处于三个轴的中心，则正z轴穿过你的屏幕朝向你。坐标系画起来如下：
+
+![coordinate_systems_right_handed](https://learnopengl-cn.github.io/img/01/08/coordinate_systems_right_handed.png)
+
+为了理解为什么被称为右手坐标系，按如下的步骤做：
+
+- 沿着正y轴方向伸出你的右臂，手指着上方。
+- 大拇指指向右方。
+- 食指指向上方。
+- 中指向下弯曲90度。 
+
+如果你的动作正确，那么你的大拇指指向正x轴方向，食指指向正y轴方向，中指指向正z轴方向。如果你用左臂来做这些动作，你会发现z轴的方向是相反的。这个叫做左手坐标系，它被DirectX广泛地使用。注意在标准化设备坐标系中OpenGL实际上使用的是左手坐标系（投影矩阵交换了左右手）。
 
 
 
+## 矩阵定义
+
+我们想要在场景里面稍微往后移动，以使得物体变成可见的（当在世界空间时，我们位于原点(0,0,0)）。要想在场景里面移动，先仔细想一想下面这个句子：
+
+- ***将摄像机向后移动，和将整个场景向前移动是一样的。***
+
+这正是观察矩阵所做的，我们以相反于摄像机移动的方向移动整个场景。因为我们想要往后移动，并且OpenGL是一个**右手坐标系(Right-handed System)**，所以我们需要沿着z轴的正方向移动。我们会通过将场景沿着z轴负方向平移来实现。它会给我们一种我们在往后移动的感觉。
+
+
+
+**使用 Qt 提供的 `QMatrix4x4` 进行：**
+
+- **顶点着色器**
+
+    注意：我们这里的运算是在顶点着色器，也就是 GPU 中进行的。因为 GPU 对于矩阵运算很在手
+
+    ```glsl
+    #version 330 core
+    layout (location = 0) in vec3 aPos;   // 位置变量的属性位置值为 0
+    layout (location = 1) in vec2 aTexel; // 存储2D纹理坐标s、t
+    
+    out vec2 ourTexel; // 向片段着色器输出2D纹理坐标s、t
+    
+    uniform mat4 mat_model;
+    uniform mat4 mat_view;
+    uniform mat4 mat_projection;
+    
+    void main()
+    {
+        gl_Position = mat_projection * mat_view * mat_model * vec4(aPos, 1.0);  // 【重点】实现最终的效果
+    
+        ourTexel = vec2(aTexel.s, aTexel.t);
+    }
+    ```
+
+
+    而这三个矩阵的定义是使用 `QMatrix4x4` 定义的，然后通过 `QShaderProgram.setUniformValue("val", val)` 将定义的数据传入着色器
+
+- **旋转模型**
+
+    ```c++
+    QMatrix4x4 mat_model; // QMatrix 默认生成的是一个单位矩阵（对角线上的元素为1）
+    mat_model.rotate(角度, 1.0f, 3.0f, 0.5f);  // 沿着转轴旋转图形
+    this->shader_program_.setUniformValue("mat_model", mat_model);  // 图形矩阵
+    ```
+
+    
+
+- **移动场景（世界）**
+
+    ```c++
+    QMatrix4x4 mat_view;
+    mat_view.translate(0.0f, 0.0f, -3.0f);  // 移动世界，【重点】这个位置是世界原点相对于摄像机而言的！！所以这里相当于世界沿着 z 轴对于摄像机向后退 3 个单位
+    this->shader_program_.setUniformValue("mat_view", mat_view);
+    ```
+
+    
+
+- **投影矩阵（透视投影）**
+
+    ```c++
+    /* 透视（焦距）一般设置一次就好了，之后不变。如果放在PaintGL() 里会导致每次重绘都调用，增加资源消耗 */
+    QMatrix4x4 mat_projection;
+    mat_projection.perspective(45, (float)width()/(float)height(), 0.1f, 100.0f);  // 透视
+    this->shader_program_.setUniformValue("mat_projection", mat_projection);
+    ```
+
+
+
+## Z缓冲
+
+**OpenGL存储它的所有深度信息于一个Z缓冲(Z-buffer)中，也被称为深度缓冲(Depth Buffer)**。GLFW 会自动为你生成这样一个缓冲（就像它也有一个颜色缓冲来存储输出图像的颜色）。深度值存储在每个片段里面（作为片段的**z**值），当片段想要输出它的颜色时，OpenGL会将它的深度值和z缓冲进行比较，如果当前的片段在其它片段之后，它将会被丢弃，否则将会覆盖。这个过程称为**深度测试(Depth Testing)**，它是由OpenGL自动完成的。
+
+
+
+如果不开启深度测试，绘制出来的立方体就好像没有盖子：
+
+![image-20220926130550452](doc/pic/README/image-20220926130550452.png)
+
+
+
+然而，如果我们想要确定OpenGL真的执行了深度测试，首先我们要告诉OpenGL我们想要启用深度测试；它默认是关闭的。我们可以通过glEnable函数来开启深度测试。`glEnable`和`glDisable`函数允许我们启用或禁用某个OpenGL功能。这个功能会一直保持启用/禁用状态，直到另一个调用来禁用/启用它。现在我们想**启用深度测试，需要开启`GL_DEPTH_TEST`**：
+
+```c++
+glEnable(GL_DEPTH_TEST);
+```
+
+因为我们使用了深度测试，我们也想要在每次渲染迭代之前清除深度缓冲（否则前一帧的深度信息仍然保存在缓冲中）。就像清除颜色缓冲一样，我们可以通过在glClear函数中指定DEPTH_BUFFER_BIT位来清除深度缓冲：
+
+```c++
+glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+```
+
+我们来重新运行下程序看看OpenGL是否执行了深度测试：
+
+![image-20220926130652221](doc/pic/README/image-20220926130652221.png)
+
+
+
+## 摄像机
+
+OpenGL 本身没有摄像机（Camera）的概念，但是我们可以通过把场景中的所有物体往相反的方向移动的方式来模拟出摄像机，产生一种我们在移动的感觉
+
+![img](https://learnopengl-cn.github.io/img/01/09/camera_axes.png)
+
+
+
+### 摄像机位置
+
+获取摄像机位置很简单。摄像机位置简单来说就是世界空间中一个指向摄像机位置的向量。我们把摄像机位置设置为上一节中的那个相同的位置：
+
+```c++
+this->camera_pos_ = QVector3D(0.0f, 0.0f, 2.0f);
+```
+
+> 不要忘记正z轴是从屏幕指向你的，如果我们希望摄像机向后移动，我们就沿着z轴的正方向移动。
+
+
+
+### 摄像机方向
+
+下一个需要的向量是摄像机的方向，这里指的是**摄像机指向哪个方向**。现在我们让摄像机指向场景原点：(0, 0, 0)。还记得**如果将两个矢量相减，我们就能得到这两个矢量的差**吗？**用场景原点向量减去摄像机位置向量的结果就是摄像机的指向向量**。由于我们知道摄像机指向z轴负方向，但我们希望**方向向量(Direction Vector)**指向摄像机的z轴正方向。如果我们交换相减的顺序，我们就会获得一个指向摄像机正z轴方向的向量：
+
+```c++
+this->camera_target_ = QVector3D(0.0f, 0.0f, 0.0f);
+this->camera_direction_ = QVector3D(this->camera_pos_ - this->camera_target_);
+this->camera_direction_.normalize();  // 标准化
+```
+
+> **方向**向量(Direction Vector)并不是最好的名字，因为它实际上指向从它到目标向量的相反方向（译注：注意看前面的那个图，蓝色的方向向量大概指向z轴的正方向，与摄像机实际指向的方向是正好相反的）。
+
+
+
+
+
+### 右轴
+
+我们需要的另一个向量是一个**右向量**(Right Vector)，**它代表摄像机空间的x轴的正方向**。为获取右向量我们需要先使用一个小技巧：先定义一个**上向量**(Up Vector)。接下来把上向量和第二步得到的方向向量进行叉乘。两个向量叉乘的结果会同时垂直于两向量，因此我们会得到指向x轴正方向的那个向量（如果我们交换两个向量叉乘的顺序就会得到相反的指向x轴负方向的向量）：
+
+```c++
+this->up_ = QVector3D(0.0f, 1.0f, 0.0f);
+this->camera_right_ = QVector3D::crossProduct(this->up_, this->camera_direction_);
+this->camera_right_.normalize();
+```
+
+
+
+### 上轴
+
+现在我们已经有了x轴向量和z轴向量，**获取一个指向摄像机的正y轴向量就相对简单了：我们把右向量和方向向量进行叉乘**：
+
+```c++
+this->camera_up_ = QVector3D::crossProduct(this->camera_direction_, this->camera_right_);
+```
+
+
+
+
+
+
+
+### Look At
+
+使用矩阵的好处之一是如果你使用3个相互垂直（或非线性）的轴定义了一个坐标空间，你可以用这3个轴外加一个平移向量来创建一个矩阵，并且你可以用这个矩阵乘以任何向量来将其变换到那个坐标空间。这正是**LookAt**矩阵所做的，现在我们有了3个相互垂直的轴和一个定义摄像机空间的位置坐标，我们可以创建我们自己的LookAt矩阵了：
+
+![image-20221002231151376](doc/pic/README/image-20221002231151376.png)
+
+其中R是右向量，U是上向量，D是方向向量P是摄像机位置向量。注意，位置向量是相反的，因为我们最终希望把世界平移到与我们自身移动的相反方向。把这个LookAt矩阵作为观察矩阵可以很高效地把所有世界坐标变换到刚刚定义的观察空间。LookAt矩阵就像它的名字表达的那样：它会创建一个看着(Look at)给定目标的观察矩阵。
+
+幸运的是，GLM已经提供了这些支持。我们要做的只是定义一个摄像机位置，一个目标位置和一个表示世界空间中的上向量的向量（我们计算右向量使用的那个上向量）。接着GLM就会创建一个LookAt矩阵，我们可以把它当作我们的观察矩阵：
+
+```c++
+QMatrix4x4 mat_view;  // 【重点】 view代表摄像机拍摄的物体，也就是全世界！！！
+mat_view.lookAt(this->camera_direction_, this->camera_target_, this->up_);
+```
+
+glm::LookAt函数需要一个位置、目标和上向量。它会创建一个和在上一节使用的一样的观察矩阵。
+
+在讨论用户输入之前，我们先来做些有意思的事，把我们的摄像机在场景中旋转。我们会将摄像机的注视点保持在(0, 0, 0)。
+
+我们需要用到一点三角学的知识来在每一帧创建一个x和z坐标，它会代表圆上的一点，我们将会使用它作为摄像机的位置。通过重新计算x和y坐标，我们会遍历圆上的所有点，这样摄像机就会绕着场景旋转了。我们预先定义这个圆的半径radius，在每次渲染迭代中使用 Qt 的 timeelapsed() 函数重新创建观察矩阵，来扩大这个圆。
+
+```c++
+const float radius = 10.0f;
+float time = this->time_.elapsed() / 1000.0;  // 注意是 1000.0
+float cam_x = sin(time) * radius;
+float cam_z = cos(time) * radius;
+
+mat_view.lookAt(QVector3D(cam_x, 0.0f, cam_z), this->camera_target_, this->up_);
+```
+
+如果你运行代码，应该会得到下面的结果：
+
+<video src="https://learnopengl-cn.github.io/img/01/09/camera_circle.mp4" controls="controls" style="box-sizing: border-box; display: block; margin-left: auto; margin-right: auto; caret-color: rgb(34, 34, 34); color: rgb(34, 34, 34); font-family: &quot;Microsoft Yahei&quot;, Lato, proxima-nova, &quot;Helvetica Neue&quot;, Arial, sans-serif; font-size: 15px; font-style: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: auto; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; text-decoration: none;"></video>
+
+通过这一小段代码，摄像机现在会随着时间流逝围绕场景转动了。自己试试改变半径和位置/方向参数，看看**LookAt**矩阵是如何工作的。同时，如果你在哪卡住的话，这里有[源码](https://learnopengl.com/code_viewer_gh.php?code=src/1.getting_started/7.1.camera_circle/camera_circle.cpp)。
+
+
+
+
+
+## 自由移动
+
+让摄像机绕着场景转的确很有趣，但是让我们自己移动摄像机会更有趣！首先我们必须设置一个摄像机系统，所以在我们的程序前面定义一些摄像机变量很有用：
+
+```c++
+QVectex3D cameraPos   = QVectex3D(0.0f, 0.0f,  3.0f);
+QVectex3D cameraFront = QVectex3D(0.0f, 0.0f, -1.0f);  // 摄像机看的方向， -1 代表向前看
+QVectex3D cameraUp    = QVectex3D(0.0f, 1.0f,  0.0f);
+```
+
+`LookAt`函数现在成了：
+
+```c++
+mat_view.lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+```
+
+我们首先将摄像机位置设置为之前定义的cameraPos。方向是当前的位置加上我们刚刚定义的方向向量。这样能保证无论我们怎么移动，摄像机都会注视着目标方向。让我们摆弄一下这些向量，在按下某些按钮时更新cameraPos向量。
+
+新添加几个需要检查的按键命令：
+
+```c++
+float cameraSpeed = 2.5 * 50;
+case Qt::Key_W: this->camera_pos_ += cameraSpeed * this->camera_front; break;
+case Qt::Key_A: this->camera_pos_ -= cameraSpeed * this->camera_right_; break;
+case Qt::Key_S: this->camera_pos_ -= cameraSpeed * this->camera_front; break;
+case Qt::Key_D: this->camera_pos_ += cameraSpeed * this->camera_right_; break;
+```
+
+当我们按下**WASD**键的任意一个，摄像机的位置都会相应更新。如果我们希望向前或向后移动，我们就把位置向量加上或减去方向向量。如果我们希望向左右移动，我们使用叉乘来创建一个**右向量**(Right Vector)，并沿着它相应移动就可以了。这样就创建了使用摄像机时熟悉的横移(Strafe)效果。
+
+注意，我们对**右向量**进行了标准化。如果我们没对这个向量进行标准化，最后的叉乘结果会根据cameraFront变量返回大小不同的向量。如果我们不对向量进行标准化，我们就得根据摄像机的朝向不同加速或减速移动了，但如果进行了标准化移动就是匀速的。
+
+现在你就应该能够移动摄像机了，虽然移动速度和系统有关，你可能会需要调整一下cameraSpeed。
+
+
+
+# 光照
 
 
 
