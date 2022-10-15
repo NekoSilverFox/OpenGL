@@ -16,9 +16,6 @@ unsigned int EBOs[2];
 /* 透明度 */
 float val_alpha = 0.5;
 
-/* 鼠标位置偏移量 */
-QPoint delta_pos;
-
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
@@ -69,7 +66,7 @@ FoxOpenGLWidget::~FoxOpenGLWidget()
 /* 首要要执行初始化过程，将函数指针指向显卡内的函数 */
 void FoxOpenGLWidget::initializeGL()
 {
-    qDebug() << "[INFO] " << initializeOpenGLFunctions();  // 【重点】初始化OpenGL函数，将 Qt 里的函数指针指向显卡的函数（头文件 QOpenGLFunctions_X_X_Core）
+    qDebug() << "[INFO] initializeOpenGLFunctions(): " << initializeOpenGLFunctions();  // 【重点】初始化OpenGL函数，将 Qt 里的函数指针指向显卡的函数（头文件 QOpenGLFunctions_X_X_Core）
 
     // ------------------------ VAO | VBO  | EBO------------------------
     // VAO 和 VBO 对象赋予 ID
@@ -395,15 +392,27 @@ void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
 
 /* 处理鼠标移动事件 */
 void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent *event)
-{
-    static QPoint last_pos(width()/2, height()/2);
-    auto current_pos = event->pos();
-    delta_pos = current_pos - last_pos;
-    last_pos = current_pos;
+{  
+    /* 鼠标位置偏移量 */
+    static QPoint delta_pos = QPoint(0.0f, 0.0f);
+    static QPoint last_pos(event->pos());
 
-    camera_.changeCameraFront(delta_pos.x(), delta_pos.y(), true);
+    /* 鼠标没点击时的位置，当鼠标按键按下后停止记录 */
+    if (!event->buttons())
+    {
+        last_pos = event->pos();
+    }
 
-    update();
+    /* 鼠标按键点击后 */
+    if (event->buttons() && Qt::RightButton)
+    {
+        auto current_pos = event->pos();
+        delta_pos = current_pos - last_pos;
+
+        camera_.changeCameraFront(delta_pos.x(), delta_pos.y(), true);
+        last_pos = current_pos;
+        update();
+    }
 }
 
 
@@ -423,3 +432,4 @@ void FoxOpenGLWidget::updateGL()
     _sphere.mat_model.rotate(0.5f, 0.0f, 1.0f, 0.3f);
     update();
 }
+;
