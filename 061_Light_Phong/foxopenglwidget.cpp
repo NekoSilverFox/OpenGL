@@ -25,8 +25,8 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
     this->_sphere = Sphere(X_SPHERE_SEGMENTS, Y_SPHERE_SEGMENTS);
     this->_cone = Cone(R, HEIGHT, 10.0);
-    this->_cube = Cube(LENGTH);
-    this->_light = Light(1.0f, QVector3D(1.0f, 1.0f, 1.0f), QVector3D(1.2f, 1.0f, 2.0f));
+    this->_cube = Cube(LENGTH, COLOR_CUBE);
+    this->_light = Light(1.0f, QVector3D(1.0f, 1.0f, 1.0f), QVector3D(1.2f, 0.5f, 2.0f));
 
     is_draw_sphere = false;
     is_draw_cone = false;
@@ -216,19 +216,20 @@ void FoxOpenGLWidget::initializeGL()
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(float)*_cube.vertices.size(), &_cube.vertices[0], GL_STATIC_DRAW);
 
-    _sp_cube.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
-    aPosLocation = _sp_cube.attributeLocation("aPos");  // 获取顶点着色器中顶点属性 aPos 的位置
-    glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);  // 手动传入第几个属性
-    glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
+    _sp_cube.bind();
+    aPosLocation = _sp_cube.attributeLocation("aPos");
+    glVertexAttribPointer(aPosLocation,     3,  GL_FLOAT,   GL_FALSE,   6 * sizeof(float),  (void*)0);
+    glEnableVertexAttribArray(aPosLocation);
 
     _sp_cube.bind();
     int aNormalLocation = _sp_cube.attributeLocation("aNormal");
-    glVertexAttribPointer(aNormalLocation, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3*sizeof(float)));  // 手动传入第几个属性
-    glEnableVertexAttribArray(aNormalLocation); // 开始 VAO 管理的第一个属性值
+    glVertexAttribPointer(aNormalLocation,  3,  GL_FLOAT,   GL_FALSE,   6 * sizeof(float),  (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(aNormalLocation);
 
-    _sp_cube.setUniformValue("object_color", QVector3D(1.0f, 0.5f, 0.31f));
+    _sp_cube.setUniformValue("object_color", _cube.color);
     _sp_cube.setUniformValue("light_color", _light.color);
     _sp_cube.setUniformValue("light_pos", _light.postion);
+    _sp_cube.setUniformValue("view_pos", camera_.position);
 
     _cube.mat_model.translate(0.0f, -0.5f, 0.0f);
 
@@ -287,7 +288,7 @@ void FoxOpenGLWidget::resizeGL(int w, int h)
 
 void FoxOpenGLWidget::paintGL()
 {
-    glViewport(0, 0, width(), height());
+//    glViewport(0, 0, width(), height());
 
     /* 设置 OpenGLWidget 控件背景颜色为深青色，并且设置深度信息（Z-缓冲） */
     glClearColor(0.1f, 0.2f, 0.2f, 1.0f);  // set方法【重点】如果没有 initializeGL，目前是一个空指针状态，没有指向显卡里面的函数，会报错
@@ -491,8 +492,10 @@ void FoxOpenGLWidget::wheelEvent(QWheelEvent *event)
 void FoxOpenGLWidget::updateGL()
 {
 //    _cone.mat_model.rotate(-0.5f, 0.0f, 1.0f, 0.0f);
-    _cube.mat_model.rotate( 0.5f, 0.0f, 1.0f, 0.0f);
-    _sphere.mat_model.rotate(0.5f, 0.0f, 1.0f, 0.3f);
+    _cube.mat_model.rotate( 0.7f, 0.0f, 1.0f, 0.0f);
+    _sphere.mat_model.rotate(0.5f, 0.0f, 1.0f, 0.4f);
+
+
     _light.mat_model.rotate(1.5f, 0.0f, 1.0f, 0.0f);
     update();
 }

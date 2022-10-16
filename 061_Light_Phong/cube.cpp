@@ -3,12 +3,14 @@
 Cube::Cube()
 {
     _length = LENGTH;
+    color = COLOR_CUBE;
 
     _genVectorVerticesAndIndices();
 }
 
 
-Cube::Cube(const float length) :
+Cube::Cube(const float length, QVector3D color) :
+    color(color),
     _length(length)
 {
     _genVectorVerticesAndIndices();

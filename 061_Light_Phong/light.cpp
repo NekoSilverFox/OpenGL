@@ -21,7 +21,7 @@ Light::Light(const float length, QVector3D color, QVector3D postion) :
 void Light::_genVectorVerticesAndIndices()
 {
     float r = _length / 2;
-//    qDebug() << r;
+
     vertices = {
                 -r, -r, -r,
                  r, -r, -r,
