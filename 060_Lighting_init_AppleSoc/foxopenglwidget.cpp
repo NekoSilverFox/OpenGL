@@ -224,7 +224,10 @@ void FoxOpenGLWidget::initializeGL()
     glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);  // 手动传入第几个属性
     glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
 
+    _sp_cube.setUniformValue("object_color", QVector3D(0.5f, 0.5f, 0.5f));
+    _sp_cube.setUniformValue("light_color", _light.color);
     _cube.mat_model.translate(0.0f, -0.5f, 0.0f);
+
 
     // ------------------------ 解绑 ------------------------
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
