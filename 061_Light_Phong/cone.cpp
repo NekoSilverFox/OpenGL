@@ -54,7 +54,7 @@ void Cone::_genVectorVerticesAndIndices()
     }
 
     /* 生成索引数据 */
-    for (int i = 0; i < vertices.size() - 2; i++)
+    for (unsigned int i = 0; i < vertices.size() - 2; i++)
     {
         indices.push_back(0);  // 锥体顶点
         indices.push_back(i + 2);

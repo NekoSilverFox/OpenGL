@@ -9,7 +9,8 @@ Light::Light()
 }
 
 
-Light::Light(const float length, QVector3D color) :
+Light::Light(const float length, QVector3D color, QVector3D postion) :
+    postion(postion),
     color(color),
     _length(length)
 {

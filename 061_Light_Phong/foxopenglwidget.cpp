@@ -26,7 +26,7 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
     this->_sphere = Sphere(X_SPHERE_SEGMENTS, Y_SPHERE_SEGMENTS);
     this->_cone = Cone(R, HEIGHT, 10.0);
     this->_cube = Cube(LENGTH);
-    this->_light = Light(1.0f, QVector3D(1.0f, 1.0f, 1.0f));
+    this->_light = Light(1.0f, QVector3D(1.0f, 1.0f, 1.0f), QVector3D(1.2f, 1.0f, 2.0f));
 
     is_draw_sphere = false;
     is_draw_cone = false;
@@ -209,9 +209,6 @@ void FoxOpenGLWidget::initializeGL()
          qDebug() << "[ERROR-Cube] " << _sp_cube.log();
     }
 
-    _sp_cube.bind();
-    _sp_cube.setUniformValue("val_alpha", val_alpha);
-
 
     // 绑定 VAO、VBO 对象
     glBindVertexArray(VAOs[2]);
@@ -221,8 +218,17 @@ void FoxOpenGLWidget::initializeGL()
 
     _sp_cube.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
     aPosLocation = _sp_cube.attributeLocation("aPos");  // 获取顶点着色器中顶点属性 aPos 的位置
-    glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);  // 手动传入第几个属性
+    glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);  // 手动传入第几个属性
     glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
+
+    _sp_cube.bind();
+    int aNormalLocation = _sp_cube.attributeLocation("aNormal");
+    glVertexAttribPointer(aNormalLocation, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3*sizeof(float)));  // 手动传入第几个属性
+    glEnableVertexAttribArray(aNormalLocation); // 开始 VAO 管理的第一个属性值
+
+    _sp_cube.setUniformValue("object_color", QVector3D(1.0f, 0.5f, 0.31f));
+    _sp_cube.setUniformValue("light_color", _light.color);
+    _sp_cube.setUniformValue("light_pos", _light.postion);
 
     _cube.mat_model.translate(0.0f, -0.5f, 0.0f);
 
@@ -261,7 +267,7 @@ void FoxOpenGLWidget::initializeGL()
     glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
 
-    _light.mat_model.translate(1.2f, 1.0f, -2.0f);
+    _light.mat_model.translate(_light.postion);
     _light.mat_model.scale(0.2);
 
     // ------------------------ 解绑 ------------------------
@@ -284,7 +290,7 @@ void FoxOpenGLWidget::paintGL()
     glViewport(0, 0, width(), height());
 
     /* 设置 OpenGLWidget 控件背景颜色为深青色，并且设置深度信息（Z-缓冲） */
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);  // set方法【重点】如果没有 initializeGL，目前是一个空指针状态，没有指向显卡里面的函数，会报错
+    glClearColor(0.1f, 0.2f, 0.2f, 1.0f);  // set方法【重点】如果没有 initializeGL，目前是一个空指针状态，没有指向显卡里面的函数，会报错
     glEnable(GL_DEPTH_TEST);  // 深度信息，如果不设置立方体就像没有盖子
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // use方法
 
@@ -440,8 +446,6 @@ void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
     _sp_sphere.bind();
     _sp_sphere.setUniformValue("val_alpha", val_alpha);
 
-    _sp_cube.bind();
-    _sp_cube.setUniformValue("val_alpha", val_alpha);
     qDebug() << "[INFO] val_alpha=" << val_alpha;
     doneCurrent();
     update();
@@ -463,7 +467,7 @@ void FoxOpenGLWidget::mouseMoveEvent(QMouseEvent *event)
     }
 
     /* 鼠标按键点击后 */
-    if (event->buttons() && Qt::RightButton)
+    if (event->buttons() == Qt::LeftButton)
     {
         auto current_pos = event->pos();
         delta_pos = current_pos - last_pos;

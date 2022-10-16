@@ -11,7 +11,7 @@ class Light
 {
 public:
     Light();
-    Light(const float length, QVector3D color);
+    Light(const float length, QVector3D color, QVector3D postion);
 
 
 private:
@@ -20,6 +20,7 @@ private:
 
 public:
     QMatrix4x4 mat_model;
+    QVector3D postion;
     QVector3D color;
     std::vector<float> vertices;  // 顶点
 

@@ -23,9 +23,9 @@ Camera::Camera(QVector3D position   ,
                float pitch          ) noexcept :
     position(position),
     world_up(up),
-    zoom_fov(zoom_fov),
     yaw(yaw),
-    pitch(pitch)
+    pitch(pitch),
+    zoom_fov(zoom_fov)
 {
     Q_ASSERT_X((zoom_fov>=MIN_ZOOM_FOV && zoom_fov<=MAX_ZOOM_FOV), "init Camera", "zoom_fov should between [MIN_ZOOM_FOV, MAX_ZOOM_FOV]");
 
@@ -41,9 +41,9 @@ Camera::Camera(float pos_x, float pos_y, float pos_z,
                float zoom_fov, float yaw, float pitch) noexcept :
     position(QVector3D(pos_x, pos_y, pos_z)),
     world_up(QVector3D(up_x, up_y, up_z)),
-    zoom_fov(zoom_fov),
     yaw(yaw),
-    pitch(pitch)
+    pitch(pitch),
+    zoom_fov(zoom_fov)
 {
     Q_ASSERT_X((zoom_fov>=MIN_ZOOM_FOV && zoom_fov<=MAX_ZOOM_FOV), "init Camera", "zoom_fov should between [MIN_ZOOM_FOV, MAX_ZOOM_FOV]");
 
