@@ -2124,31 +2124,168 @@ case Qt::Key_D: this->camera_pos_ += cameraSpeed * this->camera_right_; break;
 ```glsl
 void main()
 {
-    float ambientStrength = 0.1; // 环境强度
-    vec3 ambient = ambientStrength * lightColor;
+    float ambient_strength = 0.1; // 环境光强度因子，表示物体最终只能反射 0.1
+    vec3 ambient = ambient_strength * light_color;  // 环境光及强度
 
-    vec3 result = ambient * objectColor;
+    vec3 result = ambient * object_color;  // 叠加物体颜色
+
     FragColor = vec4(result, 1.0);
 }
 ```
 
 
 
+### 漫反射光照
+
+环境光照本身不能提供最有趣的结果，但是漫反射光照就能开始对物体产生显著的视觉影响了。**漫反射光照使物体上与光线方向越接近的片段能从光源处获得更多的亮度。**为了能够更好的理解漫反射光照，请看下图：
+
+![img](https://learnopengl-cn.github.io/img/02/02/diffuse_light.png)
+
+图左上方有一个光源，它所发出的光线落在物体的一个片段上。**我们需要测量这个光线是以什么角度接触到这个片段的**。**如果光线垂直于物体表面，这束光对物体的影响会最大化（译注：更亮）。**为了测量光线和片段的角度，我们使用一个叫做**==法向量(Normal Vector)==**的东西，**它是垂直于片段表面的一个向量（这里以黄色箭头表示）**，我们在后面再讲这个东西。这两个向量之间的角度很容易就能够通过点乘计算出来。
+
+你可能记得在[变换](https://learnopengl-cn.github.io/01 Getting started/07 Transformations/)那一节教程里，我们知道两个单位向量的夹角越小，它们点乘的结果越倾向于1。当两个向量的夹角为90度的时候，点乘会变为0。这同样适用于 $θ$，$θ$ 越大，光对片段颜色的影响就应该越小。
+
+> 注意，为了（只）得到两个向量夹角的余弦值，我们使用的是单位向量（长度为1的向量），所以我们需要确保所有的向量都是标准化的，否则点乘返回的就不仅仅是余弦值了（见[变换](https://learnopengl-cn.github.io/01 Getting started/07 Transformations/)）。
+
+**点乘返回一个标量，我们可以用它计算光线对片段颜色的影响。不同片段朝向光源的方向的不同，这些片段被照亮的情况也不同。**
 
 
 
+所以，**计算漫反射光照需要什么**？
+
+- 法向量：一个垂直于顶点表面的向量。
+- 定向的光线：作为光源的位置与片段的位置之间向量差的方向向量。为了计算这个光线，我们需要光的位置向量和片段的位置向量。
 
 
 
+#### 法向量
+
+法向量是一个垂直于顶点表面的（单位）向量。由于顶点本身并没有表面（它只是空间中一个独立的点），我们利用它周围的顶点来计算出这个顶点的表面。我们能够使用一个小技巧，**使用叉乘对立方体所有的顶点计算法向量**，但是由于3D立方体不是一个复杂的形状，所以我们可以简单地把法线数据手工添加到顶点数据中。更新后的顶点数据数组可以在[这里](https://learnopengl.com/code_viewer.php?code=lighting/basic_lighting_vertex_data)找到。试着去想象一下，这些法向量真的是垂直于立方体各个平面的表面的（一个立方体由6个平面组成）。
+
+由于我们向顶点数组添加了额外的数据，所以我们应该更新光照的顶点着色器：
+
+```glsl
+#version 330 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aNormal;
+...
+```
+
+现在我们已经向==每个顶点==添加了一个法向量并更新了顶点着色器，我们还要更新顶点属性指针。注意，灯使用同样的顶点数组作为它的顶点数据，然而灯的着色器并没有使用新添加的法向量。我们不需要更新灯的着色器或者是属性的配置，但是我们必须至少修改一下顶点属性指针来适应新的顶点数组的大小：
+
+```c++
+glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+glEnableVertexAttribArray(0);
+```
+
+我们只想使用每个顶点的前三个float，并且忽略后三个float，所以我们只需要把**步长**参数改成`float`大小的6倍就行了。
 
 
 
+所有光照的计算都是在片段着色器里进行，所以我们需要将法向量由顶点着色器传递到片段着色器。我们这么做：
+
+```glsl
+out vec3 Normal;
+
+void main()
+{
+    gl_Position = projection * view * model * vec4(aPos, 1.0);
+    Normal = aNormal;
+}
+```
+
+接下来，在片段着色器中定义相应的输入变量：
+
+```glsl
+in vec3 Normal;
+```
 
 
 
+#### 计算漫反射光照
+
+1. **光源位置**
+
+    我们现在对每个顶点都有了法向量，但是我们仍然需要**光源的位置向量和片段的位置向量**。由于光源的位置是一个静态变量，我们可以简单地在片段着色器中把它声明为uniform：
+
+    ```glsl
+    uniform vec3 lightPos;
+    ```
+
+    然后在渲染循环中（渲染循环的外面也可以，因为它不会改变）更新uniform。我们使用在前面声明的lightPos向量作为光源位置：
+
+    ```glsl
+    lightingShader.setVec3("lightPos", lightPos);
+    ```
 
 
 
+2. **片段位置**
+
+    最后，我们还需要片段的位置。我们会在世界空间中进行所有的光照计算，因此我们需要一个在**世界空间中的顶点位置**。我们可以通过把**顶点位置属性乘以模型矩阵（不是观察和投影矩阵）来把它变换到世界空间坐标。**这个在顶点着色器中很容易完成，所以我们声明一个输出变量，并**计算它的世界空间坐标**：
+
+    ```glsl
+    out vec3 FragPos;  
+    out vec3 Normal;
+    
+    void main()
+    {
+        gl_Position = projection * view * model * vec4(aPos, 1.0);
+        FragPos = vec3(model * vec4(aPos, 1.0));  // 计算它的世界空间坐标
+        Normal = aNormal;
+    }
+    ```
+
+    最后，在片段着色器中添加相应的输入变量。
+
+    ```glsl
+    in vec3 FragPos;
+    ```
+
+
+
+3. **添加光照计算**
+
+    现在，所有需要的变量都设置好了，我们可以在片段着色器中添加光照计算了。
+
+    我们需要做的第一件事是**计算光源和片段位置之间的==方向向量==**。前面提到，**光的方向向量是光源位置向量与片段位置向量之间的向量差**。你可能记得在[变换](https://learnopengl-cn.github.io/01 Getting started/07 Transformations/)教程中，我们能够简单地通过让两个向量相减的方式计算向量差。我们同样希望确保所有相关向量最后都转换为单位向量，所以我们把法线和最终的方向向量都进行标准化：
+
+    ```glsl
+    vec3 norm = normalize(Normal);  // 法线
+    vec3 lightDir = normalize(lightPos - FragPos);  // 光源位置和片段位置的 向量差
+    ```
+
+    > **当计算光照时我们通常不关心一个向量的模长或它的位置，我们只关心它们的方向。**所以，几乎所有的计算都使用单位向量完成，因为这简化了大部分的计算（比如点乘）。所以当进行光照计算时，确保你总是对相关向量进行标准化，来保证它们是真正地单位向量。**忘记对向量进行标准化是一个十分常见的错误。**
+    
+    
+    
+    **下一步，我们对`法线 norm`和`光源对于片段位置的方向向量 lightDir`进行点乘，计算光源对当前片段实际的漫反射影响。结果值再乘以光的颜色，得到漫反射分量。两个向量之间的角度越大，漫反射分量就会越小**：
+    
+    ```glsl
+    float diff = max(dot(norm, lightDir), 0.0);  // 光源对当前片段实际的漫反射影响
+    vec3 diffuse = diff * lightColor;  // 漫反射分量
+    ```
+    
+    如果两个向量之间的角度大于90度，点乘的结果就会变成负数，这样会导致漫反射分量变为负数。为此，我们使用max函数返回两个参数之间较大的参数，从而保证漫反射分量不会变成负数。负数颜色的光照是没有定义的，所以最好避免它，除非你是那种古怪的艺术家。
+    
+    
+    
+    现在我们有了**环境光分量和漫反射分量，我们把它们相加，然后把结果乘以物体的颜色，来获得片段最后的输出颜色。**
+    
+    ```glsl
+    vec3 result = (ambient + diffuse) * objectColor;
+    FragColor = vec4(result, 1.0);
+    ```
+    
+    
+    
+    如果你的应用(和着色器)编译成功了，你可能看到类似的输出：
+    
+    ![img](https://learnopengl-cn.github.io/img/02/02/basic_lighting_diffuse.png)
+    
+    你可以看到使用了漫反射光照，立方体看起来就真的像个立方体了。尝试在你的脑中想象一下法向量，并在立方体周围移动，注意观察法向量和光的方向向量之间的夹角越大，片段就会越暗。
+    
+    如果你在哪卡住了，可以在[这里](https://learnopengl.com/code_viewer_gh.php?code=src/2.lighting/2.1.basic_lighting_diffuse/basic_lighting_diffuse.cpp)对比一下完整的源代码
 
 
 
