@@ -1,5 +1,5 @@
 #version 330 core
-layout (location = 0) in vec3 aPos;   // 位置变量的属性位置值为 0
+layout (location = 0) in vec3 aPos;
 
 uniform mat4 mat_model;
 uniform mat4 mat_view;

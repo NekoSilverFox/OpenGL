@@ -129,7 +129,7 @@ void FoxOpenGLWidget::initializeGL()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int)*_sphere.indices.size(), &_sphere.indices[0], GL_STATIC_DRAW);  // EBO/IBO 是储存顶点【索引】的
 
     _sphere.mat_model.translate(-2.0f, 0.0f, 0.0f);
-    _sphere.mat_model.scale(0.7);
+    _sphere.mat_model.scale(0.5);
 
     // ------------------------ 解绑 ------------------------
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
