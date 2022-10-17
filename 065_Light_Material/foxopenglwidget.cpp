@@ -29,7 +29,7 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
     this->_sphere = Sphere(X_SPHERE_SEGMENTS, Y_SPHERE_SEGMENTS);
     this->_cone = Cone(R, HEIGHT, 10.0);
     this->_cube = Cube(LENGTH, COLOR_CUBE);
-    this->_light = Light(1.0f, QVector3D(1.0f, 1.0f, 1.0f), QVector3D(1.2f, 0.5f, 2.0f));
+    this->_light = Light(1.0f, QVector3D(1.0f, 1.0f, 1.0f));
 
     is_draw_sphere = false;
     is_draw_cone = false;
@@ -253,7 +253,7 @@ void FoxOpenGLWidget::initializeGL()
     }
 
     _sp_light.bind();
-    _sp_light.setUniformValue("light_color", _light.color);
+    _sp_light.setUniformValue("light_color", _light.color_specular);
 
     // 绑定 VAO、VBO 对象
     glBindVertexArray(VAOs[3]);
@@ -343,8 +343,18 @@ void FoxOpenGLWidget::paintGL()
         _sp_cube.setUniformValue("mat_projection", mat_projection);
         _sp_cube.setUniformValue("mat_model", _cube.mat_model);
 
-        _sp_cube.setUniformValue("object_color", _cube.color);
-        _sp_cube.setUniformValue("light_color", _light.color);
+        /* 材质颜色 */
+        _sp_cube.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
+        _sp_cube.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
+        _sp_cube.setUniformValue("material.specular",   QVector3D(0.5f, 0.5f, 0.5f));
+        _sp_cube.setUniformValue("material.shininess",  128.0f);
+
+        /* 光源颜色 */
+        _sp_cube.setUniformValue("light.ambient",    _light.color_ambient);
+        _sp_cube.setUniformValue("light.diffuse",    _light.color_diffuse);
+        _sp_cube.setUniformValue("light.specular",   _light.color_specular);
+        _sp_cube.setUniformValue("light.shininess",  _light.color_shininess);
+
         _sp_cube.setUniformValue("light_pos", _light.postion);
         _sp_cube.setUniformValue("view_pos", camera_.position);
 
