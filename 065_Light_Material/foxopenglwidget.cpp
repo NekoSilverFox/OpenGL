@@ -269,6 +269,8 @@ void FoxOpenGLWidget::initializeGL()
     _light.mat_model.translate(_light.postion);
     _light.mat_model.scale(0.2);
 
+    _light.color_shininess = 32.0f;
+
     // ------------------------ 解绑 ------------------------
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
     glBindVertexArray(0);
@@ -371,6 +373,8 @@ void FoxOpenGLWidget::paintGL()
         _sp_light.setUniformValue("mat_view", mat_view);
         _sp_light.setUniformValue("mat_projection", mat_projection);
         _sp_light.setUniformValue("mat_model", _light.mat_model);
+
+        _sp_light.setUniformValue("light_color", _light.color_specular);
 
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
@@ -519,6 +523,18 @@ void FoxOpenGLWidget::updateGL()
     _light.mat_model.translate(_light.postion);
     _light.mat_model.scale(0.2);
 //    _light.mat_model.rotate(1.5f, 0.0f, 1.0f, 0.0f);
+
+
+
+    /* 改变光源颜色光源 */
+    float color_x = sin(gl_time / 50.0 * 2.0f);
+    float color_y = sin(gl_time / 50.0 * 0.7f);
+    float color_z = sin(gl_time / 50.0 * 1.3f);
+    QVector3D new_color = QVector3D(color_x, color_y, color_z);
+
+    _light.color_ambient = new_color * 0.2f;  // 乘以一个数来减少影响
+    _light.color_diffuse = new_color * 0.5f;
+    _light.color_specular = new_color;
     update();
 }
 
