@@ -2575,9 +2575,30 @@ lightingShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
 
 
+## 不同的光源颜色
 
+到目前为止，我们都只对光源设置了从白到灰到黑范围内的颜色，这样只会改变物体各个分量的强度，而不是它的真正颜色。由于现在能够非常容易地访问光照的属性了，我们可以随着时间改变它们的颜色，从而获得一些非常有意思的效果。由于所有的东西都在片段着色器中配置好了，修改光源的颜色非常简单，并立刻创造一些很有趣的效果：
 
+<video src="https://learnopengl-cn.github.io/img/02/03/materials.mp4" controls="controls" class="mtz-vlc-dpfdi" style="box-sizing: border-box; display: block; margin-left: auto; margin-right: auto; color: rgb(34, 34, 34); font-family: &quot;Microsoft Yahei&quot;, Lato, proxima-nova, &quot;Helvetica Neue&quot;, Arial, sans-serif; font-size: 15px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"></video>
 
+你可以看到，不同的光照颜色能够极大地影响物体的最终颜色输出。由于光照颜色能够直接影响物体能够反射的颜色（回想[颜色](https://learnopengl-cn.github.io/02 Lighting/01 Colors/)这一节），这对视觉输出有着显著的影响。
+
+我们可以利用sin和glfwGetTime函数改变光源的环境光和漫反射颜色，从而很容易地让光源的颜色随着时间变化：
+
+```
+glm::vec3 lightColor;
+lightColor.x = sin(glfwGetTime() * 2.0f);
+lightColor.y = sin(glfwGetTime() * 0.7f);
+lightColor.z = sin(glfwGetTime() * 1.3f);
+
+glm::vec3 diffuseColor = lightColor   * glm::vec3(0.5f); // 降低影响
+glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f); // 很低的影响
+
+lightingShader.setVec3("light.ambient", ambientColor);
+lightingShader.setVec3("light.diffuse", diffuseColor);
+```
+
+尝试并实验一些光照和材质值，看看它们是怎样影响视觉输出的。你可以在[这里](https://learnopengl.com/code_viewer_gh.php?code=src/2.lighting/3.1.materials/materials.cpp)找到应用的源码。
 
 
 
