@@ -2436,9 +2436,142 @@ uniform Material material;
 
 
 
+## 设置材质
+
+我们在片段着色器中创建了一个材质结构体的uniform，所以下面我们希望修改一下光照的计算来遵从新的材质属性。由于所有材质变量都储存在一个结构体中，我们可以**从uniform变量material中访问它们**：
+
+```glsl
+#version 330 core
+out vec4 FragColor;
+
+
+in vec3 g_axis_normal;
+in vec3 g_axis_fragPos;
+
+/* 材质颜色 */
+struct Material {
+    vec3 ambient;		// 环境光颜色
+    vec3 diffuse;		// 漫反射颜色
+    vec3 specular;      // 镜面光颜色
+    float shininess;    // 镜面光高光的散射/半径
+};
+
+uniform Material material;
+uniform vec3 light_color;
+uniform vec3 light_pos;   // 光源位置
+uniform vec3 view_pos;
+
+void main()
+{
+    /* 环境光 */
+    vec3 res_ambient = light_color * material.ambient;  // 环境光及强度
+
+    /* 漫反射光 - diffuse */
+    vec3 normal     = normalize(g_axis_normal);  // 标准化法线
+    vec3 light_dir  = normalize(light_pos - g_axis_fragPos); // 片段指向光源的方向向量
+    float diff      = max(dot(normal, light_dir), 0.0);  // 光源对当前片段实际的漫反射影响系数
+    vec3 res_diff   = diff * material.diffuse * light_color;
+
+    /* 反射光 - specular */
+    float specular_strength = 0.5;
+    vec3 view_dir = normalize(view_pos - g_axis_fragPos);
+    vec3 reflect_dir = reflect(-light_dir, normal);
+    float spec = pow(max(dot(view_dir, reflect_dir), 0.0f), material.shininess);
+    vec3 res_specular = material.specular * spec * light_color;
+
+    vec3 result = res_ambient + res_diff + res_specular;  // 叠加物体颜色
+
+    FragColor = vec4(result, 1.0);
+}
+```
+
+可以看到，我们现在在需要的地方访问了材质结构体中的所有属性，并且这次是根据材质的颜色来计算最终的输出颜色的。物体的每个材质属性都乘上了它们各自对应的光照分量。
+
+我们现在可以通过设置适当的uniform来设置应用中物体的材质了。GLSL中一个结构体在设置uniform时并无任何区别，结构体只是充当uniform变量们的一个命名空间。所以如果想填充这个结构体的话，我们必须设置每个单独的uniform，但要以结构体名为前缀：
+
+```c++
+_sp_cube.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
+_sp_cube.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
+_sp_cube.setUniformValue("material.specular",   QVector3D(0.5f, 0.5f, 0.5f));
+_sp_cube.setUniformValue("material.shininess",  128.0f);
+```
+
+我们将环境光和漫反射分量设置成我们想要让物体所拥有的颜色，而将镜面分量设置为一个中等亮度的颜色，我们不希望镜面分量过于强烈。我们仍将反光度保持为32。
+
+现在我们能够轻松地在应用中影响物体的材质了。运行程序，你会得到像这样的结果：
+
+![image-20221017155258815](doc/pic/README/image-20221017155258815.png)
+
+不过看起来真的不太对劲（太亮了）？
 
 
 
+## 光的属性
+
+这个物体太亮了。**物体过亮的原因是环境光、漫反射和镜面光这三个颜色对任何一个光源都全力反射（也就是因为我们的`uniform vec3 light_color;` 是 `1.0, 1.0, 1.0`）。**
+
+**光源对环境光、漫反射和镜面光分量也应该分别具有不同的强度。**前面的章节中，我们通过使用一个强度值改变环境光和镜面光强度的方式解决了这个问题。我们想做类似的事情，但是**这次是要为每个光照分量分别指定一个强度向量**。如果我们假设lightColor是`vec3(1.0)`，代码会看起来像这样：
+
+```glsl
+vec3 ambient  = vec3(1.0) * material.ambient;
+vec3 diffuse  = vec3(1.0) * (diff * material.diffuse);
+vec3 specular = vec3(1.0) * (spec * material.specular);
+```
+
+所以物体的每个材质属性对每一个光照分量都返回了最大的强度。对单个光源来说，这些`vec3(1.0)`值同样可以对每种光源分别改变，而这通常就是我们想要的。现在，物体的环境光分量完全地影响了立方体的颜色，可是环境光分量实际上不应该对最终的颜色有这么大的影响，所以我们会将光源的环境光强度设置为一个小一点的值，从而限制环境光颜色：
+
+```glsl
+vec3 ambient = vec3(0.1) * material.ambient;
+```
+
+
+
+我们可以用同样的方式影响光源的漫反射和镜面光强度。这和我们在[上一节](https://learnopengl-cn.github.io/02 Lighting/02 Basic Lighting/)中所做的极为相似，你可以认为我们已经创建了一些光照属性来影响各个光照分量。我们希望为光照属性创建类似材质结构体的东西：
+
+> 也就是对于环境光、漫反射光、镜面反射光都有不同的**颜色/强度**
+
+```glsl
+struct Light {
+    vec3 position;
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};
+
+uniform Light light;
+```
+
+
+
+**如何设置：**
+
+**一个光源对它的`ambient`、`diffuse`和`specular`光照分量有着不同的强度。**
+
+- 环境光照`ambient`通常被设置为一个比较**低**的强度，因为我们不希望环境光颜色太过主导。
+- 光源的漫反射分量`diffuse`通常被设置为我们希望**光所具有的那个颜色**，通常是一个比较明亮的白色。
+- 镜面光分量`specular`通常会保持为`vec3(1.0)`，以**最大强度发光**。注意我们也将光源的位置向量加入了结构体。
+
+和材质uniform一样，我们需要更新片段着色器：
+
+```glsl
+vec3 ambient  = light.ambient * material.ambient;
+vec3 diffuse  = light.diffuse * (diff * material.diffuse);
+vec3 specular = light.specular * (spec * material.specular);
+```
+
+我们接下来在应用中设置光照强度：
+
+```glsl
+lightingShader.setVec3("light.ambient",  0.2f, 0.2f, 0.2f);
+lightingShader.setVec3("light.diffuse",  0.5f, 0.5f, 0.5f); // 将光照调暗了一些以搭配场景
+lightingShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f); 
+```
+
+现在我们已经调整了光照对物体材质的影响，我们得到了一个与上一节很相似的视觉效果。但这次我们有了对光照和物体材质的完全掌控：
+
+![image-20221017161540264](doc/pic/README/image-20221017161540264.png)
+
+改变物体的视觉效果现在变得相对容易了。让我们做点更有趣的事！
 
 
 
