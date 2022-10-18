@@ -1,5 +1,6 @@
 #include <QDebug>
 #include <QTime>
+#include <QTimer>
 #include <QKeyEvent>
 #include "foxopenglwidget.h"
 #include "sphere.hpp"
@@ -19,6 +20,8 @@ unsigned int EBOs[NUM_EBO];
 
 /* 透明度 */
 float val_alpha = 0.5;
+
+unsigned long long gl_time = 0;
 
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
@@ -134,7 +137,7 @@ void FoxOpenGLWidget::initializeGL()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int)*_sphere.indices.size(), &_sphere.indices[0], GL_STATIC_DRAW);  // EBO/IBO 是储存顶点【索引】的
 
     _sphere.mat_model.translate(-2.0f, 0.0f, 0.0f);
-    _sphere.mat_model.scale(0.7);
+    _sphere.mat_model.scale(0.5);
 
     // ------------------------ 解绑 ------------------------
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
@@ -225,11 +228,6 @@ void FoxOpenGLWidget::initializeGL()
     int aNormalLocation = _sp_cube.attributeLocation("aNormal");
     glVertexAttribPointer(aNormalLocation,  3,  GL_FLOAT,   GL_FALSE,   6 * sizeof(float),  (void*)(3*sizeof(float)));
     glEnableVertexAttribArray(aNormalLocation);
-
-    _sp_cube.setUniformValue("object_color", _cube.color);
-    _sp_cube.setUniformValue("light_color", _light.color);
-    _sp_cube.setUniformValue("light_pos", _light.postion);
-    _sp_cube.setUniformValue("view_pos", camera_.position);
 
     _cube.mat_model.translate(0.0f, -0.5f, 0.0f);
 
@@ -344,6 +342,11 @@ void FoxOpenGLWidget::paintGL()
         _sp_cube.setUniformValue("mat_view", mat_view);
         _sp_cube.setUniformValue("mat_projection", mat_projection);
         _sp_cube.setUniformValue("mat_model", _cube.mat_model);
+
+        _sp_cube.setUniformValue("object_color", _cube.color);
+        _sp_cube.setUniformValue("light_color", _light.color);
+        _sp_cube.setUniformValue("light_pos", _light.postion);
+        _sp_cube.setUniformValue("view_pos", camera_.position);
 
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
@@ -491,12 +494,21 @@ void FoxOpenGLWidget::wheelEvent(QWheelEvent *event)
 
 void FoxOpenGLWidget::updateGL()
 {
-//    _cone.mat_model.rotate(-0.5f, 0.0f, 1.0f, 0.0f);
-    _cube.mat_model.rotate( 0.7f, 0.0f, 1.0f, 0.0f);
+    gl_time += 1;
+
+
+    _cone.mat_model.rotate(-0.5f, 0.0f, 1.0f, 0.0f);
+    _cube.mat_model.rotate( 0.7f, 0.0f, 1.0f, 0.5f);
     _sphere.mat_model.rotate(0.5f, 0.0f, 1.0f, 0.4f);
 
 
-    _light.mat_model.rotate(1.5f, 0.0f, 1.0f, 0.0f);
+    /* 旋转光源 */
+    _light.postion.setX(cos(gl_time / 50.0) * 2.5);
+    _light.postion.setZ(sin(gl_time / 50.0) * 2.5);
+    _light.mat_model.setToIdentity();
+    _light.mat_model.translate(_light.postion);
+    _light.mat_model.scale(0.2);
+//    _light.mat_model.rotate(1.5f, 0.0f, 1.0f, 0.0f);
     update();
 }
 

@@ -1,5 +1,6 @@
 #include <QDebug>
 #include <QTime>
+#include <QTimer>
 #include <QKeyEvent>
 #include "foxopenglwidget.h"
 #include "sphere.hpp"
@@ -20,13 +21,15 @@ unsigned int EBOs[NUM_EBO];
 /* 透明度 */
 float val_alpha = 0.5;
 
+unsigned long long gl_time = 0;
+
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
     this->_sphere = Sphere(X_SPHERE_SEGMENTS, Y_SPHERE_SEGMENTS);
     this->_cone = Cone(R, HEIGHT, 10.0);
     this->_cube = Cube(LENGTH, COLOR_CUBE);
-    this->_light = Light(1.0f, QVector3D(1.0f, 1.0f, 1.0f), QVector3D(1.2f, 0.5f, 2.0f));
+    this->_light = Light(1.0f, QVector3D(1.0f, 1.0f, 1.0f));
 
     is_draw_sphere = false;
     is_draw_cone = false;
@@ -134,7 +137,7 @@ void FoxOpenGLWidget::initializeGL()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int)*_sphere.indices.size(), &_sphere.indices[0], GL_STATIC_DRAW);  // EBO/IBO 是储存顶点【索引】的
 
     _sphere.mat_model.translate(-2.0f, 0.0f, 0.0f);
-    _sphere.mat_model.scale(0.7);
+    _sphere.mat_model.scale(0.5);
 
     // ------------------------ 解绑 ------------------------
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
@@ -226,11 +229,6 @@ void FoxOpenGLWidget::initializeGL()
     glVertexAttribPointer(aNormalLocation,  3,  GL_FLOAT,   GL_FALSE,   6 * sizeof(float),  (void*)(3*sizeof(float)));
     glEnableVertexAttribArray(aNormalLocation);
 
-    _sp_cube.setUniformValue("object_color", _cube.color);
-    _sp_cube.setUniformValue("light_color", _light.color);
-    _sp_cube.setUniformValue("light_pos", _light.postion);
-    _sp_cube.setUniformValue("view_pos", camera_.position);
-
     _cube.mat_model.translate(0.0f, -0.5f, 0.0f);
 
     // ------------------------ 解绑 ------------------------
@@ -255,7 +253,7 @@ void FoxOpenGLWidget::initializeGL()
     }
 
     _sp_light.bind();
-    _sp_light.setUniformValue("light_color", _light.color);
+    _sp_light.setUniformValue("light_color", _light.color_specular);
 
     // 绑定 VAO、VBO 对象
     glBindVertexArray(VAOs[3]);
@@ -270,6 +268,8 @@ void FoxOpenGLWidget::initializeGL()
 
     _light.mat_model.translate(_light.postion);
     _light.mat_model.scale(0.2);
+
+    _light.color_shininess = 32.0f;
 
     // ------------------------ 解绑 ------------------------
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
@@ -345,6 +345,21 @@ void FoxOpenGLWidget::paintGL()
         _sp_cube.setUniformValue("mat_projection", mat_projection);
         _sp_cube.setUniformValue("mat_model", _cube.mat_model);
 
+        /* 材质颜色 */
+        _sp_cube.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
+        _sp_cube.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
+        _sp_cube.setUniformValue("material.specular",   QVector3D(0.5f, 0.5f, 0.5f));
+        _sp_cube.setUniformValue("material.shininess",  128.0f);
+
+        /* 光源颜色 */
+        _sp_cube.setUniformValue("light.ambient",    _light.color_ambient);
+        _sp_cube.setUniformValue("light.diffuse",    _light.color_diffuse);
+        _sp_cube.setUniformValue("light.specular",   _light.color_specular);
+        _sp_cube.setUniformValue("light.shininess",  _light.color_shininess);
+
+        _sp_cube.setUniformValue("light_pos", _light.postion);
+        _sp_cube.setUniformValue("view_pos", camera_.position);
+
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
     }
@@ -358,6 +373,8 @@ void FoxOpenGLWidget::paintGL()
         _sp_light.setUniformValue("mat_view", mat_view);
         _sp_light.setUniformValue("mat_projection", mat_projection);
         _sp_light.setUniformValue("mat_model", _light.mat_model);
+
+        _sp_light.setUniformValue("light_color", _light.color_specular);
 
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
@@ -491,12 +508,33 @@ void FoxOpenGLWidget::wheelEvent(QWheelEvent *event)
 
 void FoxOpenGLWidget::updateGL()
 {
-//    _cone.mat_model.rotate(-0.5f, 0.0f, 1.0f, 0.0f);
-    _cube.mat_model.rotate( 0.7f, 0.0f, 1.0f, 0.0f);
+    gl_time += 1;
+
+
+    _cone.mat_model.rotate(-0.5f, 0.0f, 1.0f, 0.0f);
+    _cube.mat_model.rotate( 0.7f, 0.0f, 1.0f, 0.5f);
     _sphere.mat_model.rotate(0.5f, 0.0f, 1.0f, 0.4f);
 
 
-    _light.mat_model.rotate(1.5f, 0.0f, 1.0f, 0.0f);
+    /* 旋转光源 */
+    _light.postion.setX(cos(gl_time / 50.0) * 2.5);
+    _light.postion.setZ(sin(gl_time / 50.0) * 2.5);
+    _light.mat_model.setToIdentity();
+    _light.mat_model.translate(_light.postion);
+    _light.mat_model.scale(0.2);
+//    _light.mat_model.rotate(1.5f, 0.0f, 1.0f, 0.0f);
+
+
+
+    /* 改变光源颜色光源 */
+    float color_x = sin(gl_time / 50.0 * 2.0f);
+    float color_y = sin(gl_time / 50.0 * 0.7f);
+    float color_z = sin(gl_time / 50.0 * 1.3f);
+    QVector3D new_color = QVector3D(color_x, color_y, color_z);
+
+    _light.color_ambient = new_color * 0.2f;  // 乘以一个数来减少影响
+    _light.color_diffuse = new_color * 0.5f;
+    _light.color_specular = new_color;
     update();
 }
 

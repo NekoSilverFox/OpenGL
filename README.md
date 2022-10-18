@@ -2281,7 +2281,7 @@ in vec3 Normal;
     
     如果你的应用(和着色器)编译成功了，你可能看到类似的输出：
     
-    ![img](https://learnopengl-cn.github.io/img/02/02/basic_lighting_diffuse.png)
+    ![image-20221017130117822](doc/pic/README/image-20221017130117822.png)
     
     你可以看到使用了漫反射光照，立方体看起来就真的像个立方体了。尝试在你的脑中想象一下法向量，并在立方体周围移动，注意观察法向量和光的方向向量之间的夹角越大，片段就会越暗。
     
@@ -2289,45 +2289,394 @@ in vec3 Normal;
 
 
 
+#### 不等比缩放
+
+现在我们已经把法向量从顶点着色器传到了片段着色器。可是，目前片段着色器里的计算都是在世界空间坐标中进行的。所以，我们是不是应该把法向量也转换为世界空间坐标？基本正确，但是这不是简单地把它乘以一个模型矩阵就能搞定的。
+
+首先，法向量只是一个方向向量，不能表达空间中的特定位置。同时，法向量没有齐次坐标（顶点位置中的w分量）。这意味着，位移不应该影响到法向量。因此，如果我们打算把法向量乘以一个模型矩阵，我们就要从矩阵中移除位移部分，只选用模型矩阵左上角3×3的矩阵（注意，我们也可以把法向量的w分量设置为0，再乘以4×4矩阵；这同样可以移除位移）。对于法向量，我们只希望对它实施缩放和旋转变换。
+
+其次，如果模型矩阵执行了不等比缩放，顶点的改变会导致法向量不再垂直于表面了。因此，我们不能用这样的模型矩阵来变换法向量。下面的图展示了应用了不等比缩放的模型矩阵对法向量的影响：
+
+![img](https://learnopengl-cn.github.io/img/02/02/basic_lighting_normal_transformation.png)
+
+每当我们应用一个不等比缩放时（注意：等比缩放不会破坏法线，因为法线的方向没被改变，仅仅改变了法线的长度，而这很容易通过标准化来修复），法向量就不会再垂直于对应的表面了，这样光照就会被破坏。
+
+修复这个行为的诀窍是使用一个为法向量专门定制的模型矩阵。这个矩阵称之为法线矩阵(Normal Matrix)，它使用了一些线性代数的操作来移除对法向量错误缩放的影响。如果你想知道这个矩阵是如何计算出来的，建议去阅读这个[文章](http://www.lighthouse3d.com/tutorials/glsl-tutorial/the-normal-matrix/)。
+
+法线矩阵被定义为「模型矩阵左上角3x3部分的逆矩阵的转置矩阵」。真是拗口，如果你不明白这是什么意思，别担心，我们还没有讨论逆矩阵(Inverse Matrix)和转置矩阵(Transpose Matrix)。注意，大部分的资源都会将法线矩阵定义为应用到模型-观察矩阵(Model-view Matrix)上的操作，但是由于我们只在世界空间中进行操作（不是在观察空间），我们只使用模型矩阵。
+
+在顶点着色器中，我们可以使用inverse和transpose函数自己生成这个法线矩阵，这两个函数对所有类型矩阵都有效。注意我们还要把被处理过的矩阵强制转换为3×3矩阵，来保证它失去了位移属性以及能够乘以`vec3`的法向量。
+
+```
+Normal = mat3(transpose(inverse(model))) * aNormal;
+```
+
+矩阵求逆是一项对于着色器开销很大的运算，因为它必须在场景中的每一个顶点上进行，所以应该尽可能地避免在着色器中进行求逆运算。以学习为目的的话这样做还好，但是对于一个高效的应用来说，你最好先在CPU上计算出法线矩阵，再通过uniform把它传递给着色器（就像模型矩阵一样）。
+
+在漫反射光照部分，光照表现并没有问题，这是因为我们没有对物体进行任何缩放操作，所以我们并不真的需要使用一个法线矩阵，而是仅以模型矩阵乘以法线就可以。但是如果你会进行不等比缩放，使用法线矩阵去乘以法向量就是必须的了。
+
+
+
+### 镜面光照
+
+和漫反射光照一样，**镜面光照也决定于光的方向向量和物体的法向量，但是它也决定于观察方向，例如玩家是从什么方向看向这个片段的。**镜面光照决定于表面的反射特性。如果我们把物体表面设想为一面镜子，那么镜面光照最强的地方就是我们看到表面上反射光的地方。你可以在下图中看到效果：
+
+![img](https://learnopengl-cn.github.io/img/02/02/basic_lighting_specular_theory.png)
+
+我们通过根据法向量翻折入射光的方向来计算反射向量。然后我们计算反射向量与观察方向的角度差，它们之间夹角越小，镜面光的作用就越大。由此产生的效果就是，我们看向在入射光在表面的反射方向时，会看到一点高光。
+
+观察向量是我们计算镜面光照时需要的一个额外变量，我们可以使用观察者的世界空间位置和片段的位置来计算它。之后我们计算出镜面光照强度，用它乘以光源的颜色，并将它与环境光照和漫反射光照部分加和。
+
+我们选择在世界空间进行光照计算，但是大多数人趋向于更偏向在观察空间进行光照计算。在观察空间计算的优势是，观察者的位置总是在(0, 0, 0)，所以你已经零成本地拿到了观察者的位置。然而，若以学习为目的，我认为在世界空间中计算光照更符合直觉。如果你仍然希望在观察空间计算光照的话，你需要将所有相关的向量也用观察矩阵进行变换（不要忘记也修改法线矩阵）。
+
+要得到观察者的世界空间坐标，我们直接使用摄像机的位置向量即可（它当然就是那个观察者）。那么让我们把另一个uniform添加到片段着色器中，并把摄像机的位置向量传给着色器：
+
+```
+uniform vec3 viewPos;
+lightingShader.setVec3("viewPos", camera.Position);
+```
+
+现在我们已经获得所有需要的变量，可以计算高光强度了。首先，我们定义一个镜面强度(Specular Intensity)变量，给镜面高光一个中等亮度颜色，让它不要产生过度的影响。
+
+```
+float specularStrength = 0.5;
+```
+
+如果我们把它设置为1.0f，我们会得到一个非常亮的镜面光分量，这对于一个珊瑚色的立方体来说有点太多了。下一节教程中我们会讨论如何合理设置这些光照强度，以及它们是如何影响物体的。下一步，我们计算视线方向向量，和对应的沿着法线轴的反射向量：
+
+```
+vec3 viewDir = normalize(viewPos - FragPos);
+vec3 reflectDir = reflect(-lightDir, norm);
+```
+
+需要注意的是我们对`lightDir`向量进行了取反。`reflect`函数要求第一个向量是**从**光源指向片段位置的向量，但是`lightDir`当前正好相反，是从片段**指向**光源（由先前我们计算`lightDir`向量时，减法的顺序决定）。为了保证我们得到正确的`reflect`向量，我们通过对`lightDir`向量取反来获得相反的方向。第二个参数要求是一个法向量，所以我们提供的是已标准化的`norm`向量。
+
+剩下要做的是计算镜面分量。下面的代码完成了这件事：
+
+```
+float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+vec3 specular = specularStrength * spec * lightColor;
+```
+
+我们先计算视线方向与反射方向的点乘（并确保它不是负值），然后取它的32次幂。这个32是高光的==反光度(Shininess)==。**一个物体的反光度越高，反射光的能力越强，散射得越少，高光点就会越小。在下面的图片里，你会看到不同反光度的视觉效果影响：**
+
+![img](https://learnopengl-cn.github.io/img/02/02/basic_lighting_specular_shininess.png)
+
+我们不希望镜面成分过于显眼，所以我们把指数保持为32。剩下的最后一件事情是把它加到环境光分量和漫反射分量里，再用结果乘以物体的颜色：
+
+```
+vec3 result = (ambient + diffuse + specular) * objectColor;
+FragColor = vec4(result, 1.0);
+```
+
+我们现在为冯氏光照计算了全部的光照分量。根据你的视角，你可以看到类似下面的画面：
+
+![image-20221017144440108](doc/pic/README/image-20221017144440108.png)
+
+你可以在[这里](https://learnopengl.com/code_viewer_gh.php?code=src/2.lighting/2.2.basic_lighting_specular/basic_lighting_specular.cpp)找到完整源码。
+
+在光照着色器的早期，开发者曾经在顶点着色器中实现冯氏光照模型。在顶点着色器中做光照的优势是，相比片段来说，顶点要少得多，因此会更高效，所以（开销大的）光照计算频率会更低。然而，顶点着色器中的最终颜色值是仅仅只是那个顶点的颜色值，片段的颜色值是由插值光照颜色所得来的。结果就是这种光照看起来不会非常真实，除非使用了大量顶点。
+
+![img](https://learnopengl-cn.github.io/img/02/02/basic_lighting_gouruad.png)
+
+在顶点着色器中实现的冯氏光照模型叫做Gouraud着色(Gouraud Shading)，而不是冯氏着色(Phong Shading)。记住，由于插值，这种光照看起来有点逊色。冯氏着色能产生更平滑的光照效果。
+
+现在你应该能够看到着色器的强大之处了。只用很少的信息，着色器就能计算出光照如何影响到所有物体的片段颜色。[下一节](https://learnopengl-cn.github.io/02 Lighting/03 Materials/)中，我们会更深入的研究光照模型，看看我们还能做些什么。
 
 
 
 
 
+# 材质
+
+在现实世界里，每个物体会对光产生不同的反应。比如，钢制物体看起来通常会比陶土花瓶更闪闪发光，一个木头箱子也不会与一个钢制箱子反射同样程度的光。有些物体反射光的时候不会有太多的**散射(Scatter)**，因而产生较小的高光点，而有些物体则会散射很多，产生一个有着更大半径的高光点。如果我们想要在OpenGL中模拟多种类型的物体，我们必须针对每种表面定义不同的**材质(Material)**属性。
+
+在上一节中，我们定义了一个物体和光的颜色，并结合环境光与镜面强度分量，来决定物体的视觉输出。
+
+**当描述一个表面时，我们可以分别为三个光照分量定义一个材质颜色(Material Color)**：
+
+- 环境光照(Ambient Lighting)
+- 漫反射光照(Diffuse Lighting)
+- 镜面光照(Specular Lighting)
+
+通过为每个分量指定**一个颜色，我们就能够对表面的颜色输出有细粒度的控制了。**现在，我们再添加一个==反光度(Shininess)==分量，**结合上述的三个颜色，我们就有了全部所需的材质属性了：**
+
+> 也就是替换之前的 `object_color`
+
+```glsl
+#version 330 core
+struct Material {
+    vec3 ambient;			// 环境光
+    vec3 diffuse;			// 漫反射
+    vec3 specular;		// 镜面光
+    float shininess;	// 镜面光高光的散射/半径
+}; 
+
+uniform Material material;
+```
+
+在片段着色器中，我们创建一个==结构体(Struct)==来储存物体的材质属性。我们也可以把它们储存为独立的uniform值，但是作为一个结构体来储存会更有条理一些。我们首先定义结构体的布局(Layout)，然后简单地以刚创建的结构体作为类型声明一个uniform变量。
+
+如你所见，我们为冯氏光照模型的每个分量都定义一个颜色向量。
+
+- `ambient 材质向量`定义了在环境光照下这个表面反射的是什么颜色，通常与表面的颜色相同。
+- `diffuse 材质向量`定义了在漫反射光照下表面的颜色。漫反射颜色（和环境光照一样）也被设置为我们期望的物体颜色。
+- `specular 材质向量`设置的是表面上镜面高光的颜色（或者甚至可能反映一个特定表面的颜色）。
+- `shininess`影响镜面**高光的散射/半径**。
+
+有这4个元素定义一个物体的材质，我们能够模拟很多现实世界中的材质。[devernay.free.fr](http://devernay.free.fr/cours/opengl/materials.html)中的一个表格展示了一系列材质属性，它们模拟了现实世界中的真实材质。下图展示了几组现实世界的材质参数值对我们的立方体的影响：
+
+![img](https://learnopengl-cn.github.io/img/02/03/materials_real_world.png)
+
+可以看到，通过正确地指定一个物体的材质属性，我们对这个物体的感知也就不同了。效果非常明显，但是要想获得更真实的效果，我们需要以更复杂的形状替换这个立方体。在[模型加载](https://learnopengl-cn.github.io/03 Model Loading/01 Assimp/)章节中，我们会讨论更复杂的形状。
+
+搞清楚一个物体正确的材质设定是个困难的工程，这主要需要实验和丰富的经验。用了不合适的材质而毁了物体的视觉质量是件经常发生的事。
+
+让我们试着在着色器中实现这样的一个材质系统。
 
 
 
+## 设置材质
+
+我们在片段着色器中创建了一个材质结构体的uniform，所以下面我们希望修改一下光照的计算来遵从新的材质属性。由于所有材质变量都储存在一个结构体中，我们可以**从uniform变量material中访问它们**：
+
+```glsl
+#version 330 core
+out vec4 FragColor;
+
+
+in vec3 g_axis_normal;
+in vec3 g_axis_fragPos;
+
+/* 材质颜色 */
+struct Material {
+    vec3 ambient;		// 环境光颜色
+    vec3 diffuse;		// 漫反射颜色
+    vec3 specular;      // 镜面光颜色
+    float shininess;    // 镜面光高光的散射/半径
+};
+
+uniform Material material;
+uniform vec3 light_color;
+uniform vec3 light_pos;   // 光源位置
+uniform vec3 view_pos;
+
+void main()
+{
+    /* 环境光 */
+    vec3 res_ambient = light_color * 【material.ambient】;  // 环境光及强度
+
+    /* 漫反射光 - diffuse */
+    vec3 normal     = normalize(g_axis_normal);  // 标准化法线
+    vec3 light_dir  = normalize(light_pos - g_axis_fragPos); // 片段指向光源的方向向量
+    float diff      = max(dot(normal, light_dir), 0.0);  // 光源对当前片段实际的漫反射影响系数
+    vec3 res_diff   = diff * 【material.diffuse】 * light_color;
+
+    /* 反射光 - specular */
+    float specular_strength = 0.5;
+    vec3 view_dir = normalize(view_pos - g_axis_fragPos);
+    vec3 reflect_dir = reflect(-light_dir, normal);
+    float spec = pow(max(dot(view_dir, reflect_dir), 0.0f), 【material.shininess】);
+    vec3 res_specular = 【material.specular】 * spec * light_color;
+
+    vec3 result = res_ambient + res_diff + res_specular;  // 叠加物体颜色
+
+    FragColor = vec4(result, 1.0);
+}
+```
+
+可以看到，我们现在在需要的地方访问了材质结构体中的所有属性，并且这次是根据材质的颜色来计算最终的输出颜色的。物体的每个材质属性都乘上了它们各自对应的光照分量。
+
+我们现在可以通过设置适当的uniform来设置应用中物体的材质了。GLSL中一个结构体在设置uniform时并无任何区别，结构体只是充当uniform变量们的一个命名空间。所以如果想填充这个结构体的话，我们必须设置每个单独的uniform，但要以结构体名为前缀：
+
+```c++
+_sp_cube.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
+_sp_cube.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
+_sp_cube.setUniformValue("material.specular",   QVector3D(0.5f, 0.5f, 0.5f));
+_sp_cube.setUniformValue("material.shininess",  128.0f);
+```
+
+我们将环境光和漫反射分量设置成我们想要让物体所拥有的颜色，而将镜面分量设置为一个中等亮度的颜色，我们不希望镜面分量过于强烈。我们仍将反光度保持为32。
+
+现在我们能够轻松地在应用中影响物体的材质了。运行程序，你会得到像这样的结果：
+
+![image-20221017155258815](doc/pic/README/image-20221017155258815.png)
+
+不过看起来真的不太对劲（太亮了）？
 
 
 
+## 光的属性
+
+这个物体太亮了。**物体过亮的原因是环境光、漫反射和镜面光这三个颜色对任何一个光源都全力反射（也就是因为我们的`uniform vec3 light_color;` 是 `1.0, 1.0, 1.0`）。**
+
+**光源对环境光、漫反射和镜面光分量也应该分别具有不同的强度。**前面的章节中，我们通过使用一个强度值改变环境光和镜面光强度的方式解决了这个问题。我们想做类似的事情，但是**这次是要为每个光照分量分别指定一个强度向量**。如果我们假设lightColor是`vec3(1.0)`，代码会看起来像这样：
+
+```glsl
+vec3 ambient  = vec3(1.0) * material.ambient;
+vec3 diffuse  = vec3(1.0) * (diff * material.diffuse);
+vec3 specular = vec3(1.0) * (spec * material.specular);
+```
+
+所以物体的每个材质属性对每一个光照分量都返回了最大的强度。对单个光源来说，这些`vec3(1.0)`值同样可以对每种光源分别改变，而这通常就是我们想要的。现在，物体的环境光分量完全地影响了立方体的颜色，可是环境光分量实际上不应该对最终的颜色有这么大的影响，所以我们会将光源的环境光强度设置为一个小一点的值，从而限制环境光颜色：
+
+```glsl
+vec3 ambient = vec3(0.1) * material.ambient;
+```
 
 
 
+我们可以用同样的方式影响光源的漫反射和镜面光强度。这和我们在[上一节](https://learnopengl-cn.github.io/02 Lighting/02 Basic Lighting/)中所做的极为相似，你可以认为我们已经创建了一些光照属性来影响各个光照分量。我们希望为光照属性创建类似材质结构体的东西：
+
+> 也就是对于环境光、漫反射光、镜面反射光都有不同的**颜色/强度**
+
+```glsl
+struct Light {
+    vec3 position;
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};
+
+uniform Light light;
+```
 
 
 
+**如何设置：**
+
+**一个光源对它的`ambient`、`diffuse`和`specular`光照分量有着不同的强度。**
+
+- 环境光照`ambient`通常被设置为一个比较**低**的强度，因为我们不希望环境光颜色太过主导。
+- 光源的漫反射分量`diffuse`通常被设置为我们希望**光所具有的那个颜色**，通常是一个比较明亮的白色。
+- 镜面光分量`specular`通常会保持为`vec3(1.0)`，以**最大强度发光**。注意我们也将光源的位置向量加入了结构体。
+
+和材质uniform一样，我们需要更新片段着色器：
+
+```glsl
+vec3 ambient  = light.ambient * material.ambient;
+vec3 diffuse  = light.diffuse * (diff * material.diffuse);
+vec3 specular = light.specular * (spec * material.specular);
+```
+
+我们接下来在应用中设置光照强度：
+
+```glsl
+lightingShader.setVec3("light.ambient",  0.2f, 0.2f, 0.2f);
+lightingShader.setVec3("light.diffuse",  0.5f, 0.5f, 0.5f); // 将光照调暗了一些以搭配场景
+lightingShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f); 
+```
+
+现在我们已经调整了光照对物体材质的影响，我们得到了一个与上一节很相似的视觉效果。但这次我们有了对光照和物体材质的完全掌控：
+
+![image-20221017161540264](doc/pic/README/image-20221017161540264.png)
+
+改变物体的视觉效果现在变得相对容易了。让我们做点更有趣的事！
 
 
 
+## 不同的光源颜色
+
+到目前为止，我们都只对光源设置了从白到灰到黑范围内的颜色，这样只会改变物体各个分量的强度，而不是它的真正颜色。由于现在能够非常容易地访问光照的属性了，我们可以随着时间改变它们的颜色，从而获得一些非常有意思的效果。由于所有的东西都在片段着色器中配置好了，修改光源的颜色非常简单，并立刻创造一些很有趣的效果：
+
+<video src="https://learnopengl-cn.github.io/img/02/03/materials.mp4" controls="controls" class="mtz-vlc-dpfdi" style="box-sizing: border-box; display: block; margin-left: auto; margin-right: auto; color: rgb(34, 34, 34); font-family: &quot;Microsoft Yahei&quot;, Lato, proxima-nova, &quot;Helvetica Neue&quot;, Arial, sans-serif; font-size: 15px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"></video>
+
+你可以看到，不同的光照颜色能够极大地影响物体的最终颜色输出。由于光照颜色能够直接影响物体能够反射的颜色（回想[颜色](https://learnopengl-cn.github.io/02 Lighting/01 Colors/)这一节），这对视觉输出有着显著的影响。
+
+我们可以利用sin和glfwGetTime函数改变光源的环境光和漫反射颜色，从而很容易地让光源的颜色随着时间变化：
+
+```
+glm::vec3 lightColor;
+lightColor.x = sin(glfwGetTime() * 2.0f);
+lightColor.y = sin(glfwGetTime() * 0.7f);
+lightColor.z = sin(glfwGetTime() * 1.3f);
+
+glm::vec3 diffuseColor = lightColor   * glm::vec3(0.5f); // 降低影响
+glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f); // 很低的影响
+
+lightingShader.setVec3("light.ambient", ambientColor);
+lightingShader.setVec3("light.diffuse", diffuseColor);
+```
+
+尝试并实验一些光照和材质值，看看它们是怎样影响视觉输出的。你可以在[这里](https://learnopengl.com/code_viewer_gh.php?code=src/2.lighting/3.1.materials/materials.cpp)找到应用的源码。
 
 
 
+## 光照贴图
 
+在[上一节](https://learnopengl-cn.github.io/02 Lighting/03 Materials/)中，我们讨论了让每个物体都拥有自己独特的材质从而对光照做出不同的反应的方法。这样子能够很容易在一个光照的场景中给每个物体一个独特的外观，但是这仍不能对一个物体的视觉输出提供足够多的灵活性。
 
+在上一节中，我们将整个物体的材质定义为一个整体，但现实世界中的物体通常并不只包含有一种材质，而是由多种材质所组成。想想一辆汽车：它的外壳非常有光泽，车窗会部分反射周围的环境，轮胎不会那么有光泽，所以它没有镜面高光，轮毂非常闪亮（如果你洗车了的话）。汽车同样会有漫反射和环境光颜色，它们在整个物体上也不会是一样的，汽车有着许多种不同的环境光/漫反射颜色。总之，这样的物体在不同的部件上都有不同的材质属性。
 
+所以，上一节中的那个材质系统是肯定不够的，它只是一个最简单的模型，所以我们需要拓展之前的系统，引入**漫反射**和**镜面光**==贴图(Map)==。这允许我们对物体的漫反射分量（以及间接地对环境光分量，它们几乎总是一样的）和镜面光分量有着更精确的控制。
 
+> 雪狸注：
+>
+> 其实这里的关照贴图就是将原本内每个像素该反射什么颜色的光，通过贴图（Texture）上的对应像素的颜色决定
 
+### 漫反射贴图
 
+我们希望通过某种方式对物体的每个片段单独设置漫反射颜色。有能够让我们根据片段在物体上的位置来获取颜色值的系统吗？
 
+这可能听起来很熟悉，而且事实上这个系统我们已经使用很长时间了。这听起来很像在[之前](https://learnopengl-cn.github.io/01 Getting started/06 Textures/)教程中详细讨论过的**纹理**，而这基本就是这样：一个纹理。我们仅仅是对同样的原理使用了不同的名字：其实都是使用一张覆盖物体的图像，**让我们能够逐片段索引其==没个像素==独立的颜色值**。在光照场景中，它通常叫做一个==漫反射贴图(Diffuse Map)==（3D艺术家通常都这么叫它），它是一个表现了物体所有的漫反射颜色的纹理图像。
 
+为了演示漫反射贴图，我们将会使用[下面的图片](https://learnopengl-cn.github.io/img/02/04/container2.png)，它是一个有钢边框的木箱：
 
+<img src="doc/pic/README/wood_box.png" alt="wood_box" style="zoom:33%;" />
 
+在着色器中使用漫反射贴图的方法和纹理教程中是完全一样的。但这次我们会将纹理储存为着色器中`Material`结构体中的一个`sampler2D`。**我们将之前定义的`vec3`漫反射颜色向量替换为漫反射贴图。**
 
+> 注意`sampler2D`是所谓的==不透明类型(Opaque Type)==，也就是说我们不能将它实例化，只能通过uniform来定义它。如果我们使用除uniform以外的方法（比如函数的参数）实例化这个结构体，GLSL会抛出一些奇怪的错误。这同样也适用于任何封装了不透明类型的结构体。
 
+我们也**移除了环境光材质颜色向量，因为环境光颜色在几乎所有情况下都等于漫反射颜色，所以我们不需要将它们分开储存：**
 
+> 如果你非常固执，仍想将环境光颜色设置为一个（漫反射值之外）不同的值，你也可以保留这个环境光的`vec3`，但整个物体仍只能拥有一个环境光颜色。如果想要对不同片段有不同的环境光值，你需要对环境光值单独使用另外一个纹理。
 
+注意我们将在**片段着色器中再次需要纹理坐标**，所以我们声明一个额外的输入变量。接下来我们只需要**从纹理中采样片段的漫反射颜色值即可**：
 
+```glsl
+vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
+```
 
+不要忘记将环境光的材质颜色设置为漫反射材质颜色同样的值。
+
+```glsl
+vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
+```
+
+这就是使用漫反射贴图的全部步骤了。你可以看到，这并不是什么新的东西，但这能够极大地提高视觉品质。为了让它正常工作，我们**还需要使用纹理坐标更新顶点数据，将它们作为顶点属性传递到片段着色器，加载材质并绑定材质到合适的纹理单元。**
+
+更新后的顶点数据可以在[这里](https://learnopengl.com/code_viewer.php?code=lighting/vertex_data_textures)找到。顶点数据现在包含了顶点位置、法向量和立方体顶点处的纹理坐标。让我们更新顶点着色器来以顶点属性的形式接受纹理坐标，并将它们传递到片段着色器中：
+
+```glsl
+#version 330 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aNormal;
+layout (location = 2) in vec2 aTexCoords;
+...
+out vec2 TexCoords;
+
+void main()
+{
+    ...
+    TexCoords = aTexCoords;
+}
+```
+
+记得去更新两个VAO的顶点属性指针来匹配新的顶点数据，并加载箱子图像为一个纹理。在绘制箱子之前，我们希望将要用的纹理单元赋值到material.diffuse这个uniform采样器，并绑定箱子的纹理到这个纹理单元：
+
+```glsl
+lightingShader.setInt("material.diffuse", 0);
+...
+glActiveTexture(GL_TEXTURE0);
+glBindTexture(GL_TEXTURE_2D, diffuseMap);
+```
+
+使用了漫反射贴图之后，细节再一次得到惊人的提升，这次箱子有了光照开始闪闪发光（字面意思也是）了。你的箱子看起来可能像这样：
+
+![image-20221019001455414](doc/pic/README/image-20221019001455414.png)
+
+但是我们可以看到，这里箱子边框的金属和木头的反射还是一样的，所以这里就是之后需要改进点地方（金属边框的反射率应该高于木头），我们**将会对箱子的金属边框进行镜面光贴图**
 
 
 
