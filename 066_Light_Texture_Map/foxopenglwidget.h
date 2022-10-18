@@ -84,6 +84,8 @@ private:
     QOpenGLShaderProgram _sp_cube;
     QOpenGLTexture* _texWoodBox;
     int _indexTexWoodBoox;
+    QOpenGLTexture* _texWoodBoxSpecular;
+    int _indexTexWoodBoxSpecular;
 
     /* 时钟及计时器 */
     QTimer timer_;  // 【重点】 这里是 Timer - 计时器类
