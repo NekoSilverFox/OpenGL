@@ -82,6 +82,8 @@ private:
     /* 立方体 */
     Cube _cube;
     QOpenGLShaderProgram _sp_cube;
+    QOpenGLTexture* _texWoodBox;
+    int _indexTexWoodBoox;
 
     /* 时钟及计时器 */
     QTimer timer_;  // 【重点】 这里是 Timer - 计时器类

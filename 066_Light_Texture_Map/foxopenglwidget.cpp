@@ -221,13 +221,23 @@ void FoxOpenGLWidget::initializeGL()
 
     _sp_cube.bind();
     aPosLocation = _sp_cube.attributeLocation("aPos");
-    glVertexAttribPointer(aPosLocation,     3,  GL_FLOAT,   GL_FALSE,   6 * sizeof(float),  (void*)0);
+    glVertexAttribPointer(aPosLocation,     3,  GL_FLOAT,   GL_FALSE,   8 * sizeof(float),  (void*)0);
     glEnableVertexAttribArray(aPosLocation);
 
     _sp_cube.bind();
     int aNormalLocation = _sp_cube.attributeLocation("aNormal");
-    glVertexAttribPointer(aNormalLocation,  3,  GL_FLOAT,   GL_FALSE,   6 * sizeof(float),  (void*)(3*sizeof(float)));
+    glVertexAttribPointer(aNormalLocation,  3,  GL_FLOAT,   GL_FALSE,   8 * sizeof(float),  (void*)(3*sizeof(float)));
     glEnableVertexAttribArray(aNormalLocation);
+
+    _sp_cube.bind();
+    int aTexColorLocation = _sp_cube.attributeLocation("aTexColor");
+    glVertexAttribPointer(aTexColorLocation,2,  GL_FLOAT,   GL_FALSE,   8 * sizeof(float),  (void*)(6*sizeof(float)));
+    glEnableVertexAttribArray(aTexColorLocation);
+
+    // ------------------------ 纹理 ------------------------
+    _texWoodBox = new QOpenGLTexture(QImage(":/pic/Picture/wood_box.png").mirrored());
+    _indexTexWoodBoox = 0;  // 设置为第 0 个纹理单元
+    _sp_cube.setUniformValue("material.diffuse", _indexTexWoodBoox);
 
     _cube.mat_model.translate(0.0f, -0.5f, 0.0f);
 
@@ -340,14 +350,16 @@ void FoxOpenGLWidget::paintGL()
     {
         glBindVertexArray(VAOs[2]);
 
+        _texWoodBox->bind(_indexTexWoodBoox);  // 绑定纹理
+
         _sp_cube.bind();
         _sp_cube.setUniformValue("mat_view", mat_view);
         _sp_cube.setUniformValue("mat_projection", mat_projection);
         _sp_cube.setUniformValue("mat_model", _cube.mat_model);
 
         /* 材质颜色 */
-        _sp_cube.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
-        _sp_cube.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
+//        _sp_cube.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
+//        _sp_cube.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
         _sp_cube.setUniformValue("material.specular",   QVector3D(0.5f, 0.5f, 0.5f));
         _sp_cube.setUniformValue("material.shininess",  128.0f);
 

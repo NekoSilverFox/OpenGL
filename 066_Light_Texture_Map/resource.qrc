@@ -9,5 +9,7 @@
         <file>ShaderSource/light.frag</file>
         <file>ShaderSource/light.vert</file>
     </qresource>
-    <qresource prefix="/"/>
+    <qresource prefix="/pic">
+        <file>Picture/wood_box.png</file>
+    </qresource>
 </RCC>
