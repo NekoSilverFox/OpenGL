@@ -86,6 +86,8 @@ private:
     int _indexTexWoodBoox;
     QOpenGLTexture* _texWoodBoxSpecular;
     int _indexTexWoodBoxSpecular;
+    QOpenGLTexture* _texEmissionMatrix;
+    int _indexTexEmissionMatrix;
 
     /* 时钟及计时器 */
     QTimer timer_;  // 【重点】 这里是 Timer - 计时器类

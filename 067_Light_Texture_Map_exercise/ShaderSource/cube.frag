@@ -12,6 +12,7 @@ struct Material {
     // vec3 ambient;		// 环境光颜色
     sampler2D diffuse;		// 漫反射颜色
     sampler2D specular;      // 镜面高光颜色
+    sampler2D emission;
     float shininess;    // 镜面光高光的散射/半径
 };
 
@@ -34,7 +35,8 @@ void main()
 {
     /* 纹理坐标对应的颜色 */
     vec3 tex_color_ambient = vec3(texture(material.diffuse, g_tex_color));
-    vec3 tex_color_specular = vec3(texture(material.specular, g_tex_color));
+    vec3 tex_color_specular = /*vec3(1.0)反转高光 - */vec3(texture(material.specular, g_tex_color));
+    vec3 tex_color_emission = texture(material.emission, g_tex_color).rgb;
 
     /* 环境光 */
     vec3 res_ambient = light.ambient * tex_color_ambient;  // 环境光及强度
@@ -52,6 +54,6 @@ void main()
     vec3 res_specular = light.specular * tex_color_specular * spec;
 
 
-    vec3 result = res_ambient + res_diff + res_specular;  // 叠加物体颜色
+    vec3 result = res_ambient + res_diff + res_specular + tex_color_emission;  // 叠加物体颜色
     FragColor = vec4(result, 1.0);
 }

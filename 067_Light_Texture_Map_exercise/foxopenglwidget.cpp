@@ -239,9 +239,14 @@ void FoxOpenGLWidget::initializeGL()
     _indexTexWoodBoox = 0;  // 设置为第 0 个纹理单元
     _sp_cube.setUniformValue("material.diffuse", _indexTexWoodBoox);  // 【复习 | 重点】一个着色器内可以绑定多个纹理，只需要不同纹理对应不同的索引即可
 
-    _texWoodBoxSpecular = new QOpenGLTexture(QImage(":/pic/Picture/wood_box_specular_map.png").mirrored());
+    //_texWoodBoxSpecular = new QOpenGLTexture(QImage(":/pic/Picture/wood_box_specular_map.png").mirrored());
+    _texWoodBoxSpecular = new QOpenGLTexture(QImage(":/pic/Picture/lighting_maps_specular_color.png").mirrored());
     _indexTexWoodBoxSpecular = 1;
     _sp_cube.setUniformValue("material.specular", _indexTexWoodBoxSpecular);  // 为他绑定第二个纹理单元
+
+    _texEmissionMatrix = new QOpenGLTexture(QImage(":/pic/Picture/matrix.jpg").mirrored());
+    _indexTexEmissionMatrix = 2;
+    _sp_cube.setUniformValue("material.emission", _indexTexEmissionMatrix);  // 为他绑定第二个纹理单元
 
     _cube.mat_model.translate(0.0f, -0.5f, 0.0f);
 
@@ -356,6 +361,7 @@ void FoxOpenGLWidget::paintGL()
 
         _texWoodBox->bind(_indexTexWoodBoox);  // 绑定纹理
         _texWoodBoxSpecular->bind(_indexTexWoodBoxSpecular);
+        _texEmissionMatrix->bind(_indexTexEmissionMatrix);
 
         _sp_cube.bind();
         _sp_cube.setUniformValue("mat_view", mat_view);
