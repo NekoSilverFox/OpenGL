@@ -11,5 +11,6 @@
     </qresource>
     <qresource prefix="/pic">
         <file>Picture/wood_box.png</file>
+        <file>Picture/wood_box_specular_map.png</file>
     </qresource>
 </RCC>

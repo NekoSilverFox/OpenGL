@@ -2680,23 +2680,69 @@ glBindTexture(GL_TEXTURE_2D, diffuseMap);
 
 
 
+### 镜面光贴图
+
+你可能会注意到，镜面高光看起来有些奇怪，因为我们的物体大部分都是木头，我们知道木头不应该有这么强的镜面高光的。我们可以将物体的镜面光材质设置为`vec3(0.0)`来解决这个问题，但这也意味着箱子钢制的边框将不再能够显示镜面高光了，我们知道钢铁**应该**是有一些镜面高光的。所以，我们想要让物体的某些部分以不同的强度显示镜面高光。这个问题看起来和漫反射贴图非常相似。是巧合吗？我想不是。
+
+我们同样可以**使用一个专门用于镜面高光的纹理贴图。这也就意味着我们需要生成一个黑白的（如果你想得话也可以是彩色的）纹理，来定义物体每部分的镜面光强度。**
+
+> 也就是需要高反射的地方保留一定的灰度，而不反射的地方尽量设置为黑色
+
+下面是一个[镜面光贴图](https://learnopengl-cn.github.io/img/02/04/container2_specular.png)(Specular Map)的例子：
+
+<img src="doc/pic/README/wood_box_specular_map.png" alt="wood_box_specular_map" style="zoom:50%;" />
+
+**这样镜面高光的强度可以通过图像每个像素的亮度来获取**。镜面光贴图上的每个像素都可以由一个颜色向量来表示，比如说黑色代表颜色向量`vec3(0.0)`，灰色代表颜色向量`vec3(0.5)`。**在片段着色器中，我们接下来会取样对应的颜色值并将它乘以光源的==镜面强度==。一个像素越「白」，乘积就会越大，物体的镜面光分量就会越亮。**
+
+由于箱子大部分都由木头所组成，而且木头材质应该没有镜面高光，所以漫反射纹理的整个木头部分全部都转换成了黑色。箱子钢制边框的镜面光强度是有细微变化的，钢铁本身会比较容易受到镜面高光的影响，而裂缝则不会。
+
+> 从实际角度来说，木头其实也有镜面高光，尽管它的反光度(Shininess)很小（更多的光被散射），影响也比较小，但是为了教学目的，我们可以假设木头不会对镜面光有任何反应。
+
+使用**Photoshop**或**Gimp**之类的工具，将漫反射纹理转换为镜面光纹理还是比较容易的，只需要剪切掉一些部分，将图像转换为黑白的，**并增加亮度/对比度就好了**。
 
 
 
+**采样镜面光贴图：**
 
+镜面光贴图和其它的纹理非常类似，所以代码也和漫反射贴图的代码很类似。记得要保证正确地加载图像并生成一个纹理对象。由于我们正在**同一个片段着色器中使用另一个纹理采样器**，我们必须**要对镜面光贴图使用一个不同的纹理单元**（见[纹理](https://learnopengl-cn.github.io/01 Getting started/06 Textures/)），**所以我们在渲染之前先把它绑定到合适的纹理单元上**：
 
+```glsl
+lightingShader.setInt("material.specular", 1);
+...
+glActiveTexture(GL_TEXTURE1);
+glBindTexture(GL_TEXTURE_2D, specularMap);
+```
 
+接下来更新片段着色器的材质属性，让其接受一个`sampler2D`而不是`vec3`作为镜面光分量：
 
+```glsl
+struct Material {
+    sampler2D diffuse;
+    sampler2D specular;
+    float     shininess;
+};
+```
 
+最后我们希望采样镜面光贴图，来获取片段所对应的镜面光强度：
 
+```glsl
+vec3 ambient  = light.ambient  * vec3(texture(material.diffuse, TexCoords));
+vec3 diffuse  = light.diffuse  * diff * vec3(texture(material.diffuse, TexCoords));  
+vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
+FragColor = vec4(ambient + diffuse + specular, 1.0);
+```
 
+通过使用镜面光贴图我们可以可以对物体设置大量的细节，比如物体的哪些部分需要有**闪闪发光**的属性，我们甚至可以设置它们对应的强度。镜面光贴图能够在漫反射贴图之上给予我们更高一层的控制。
 
+如果你想另辟蹊径，你也可以在镜面光贴图中使用真正的颜色，不仅设置每个片段的镜面光强度，还设置了镜面高光的颜色。从现实角度来说，**镜面高光的颜色大部分（甚至全部）都是由光源本身所决定的，所以这样并不能生成非常真实的视觉效果**（这也是为什么图像通常是黑白的，我们只关心强度）。
 
+如果你现在运行程序的话，你可以清楚地看到箱子的材质现在和真实的钢制边框箱子非常类似了：
 
+![image-20221019005611230](doc/pic/README/image-20221019005611230.png)
 
+你可以在[这里](https://learnopengl.com/code_viewer_gh.php?code=src/2.lighting/4.2.lighting_maps_specular_map/lighting_maps_specular.cpp)找到程序的全部源码。
 
-
-
+通过使用漫反射和镜面光贴图，我们可以给相对简单的物体添加大量的细节。我们甚至**可以使用法线/凹凸贴图(Normal/Bump Map)或者反射贴图(Reflection Map)给物体添加更多的细节**，但这些将会留到之后的教程中。把你的箱子给你的朋友或者家人看看，并且坚信我们的箱子有一天会比现在更加漂亮！
 
 
 
