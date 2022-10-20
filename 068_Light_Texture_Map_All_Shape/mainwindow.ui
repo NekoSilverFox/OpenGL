@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>709</width>
-    <height>460</height>
+    <width>1110</width>
+    <height>693</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,8 +31,8 @@ QWidget:checked {
    <widget class="FoxOpenGLWidget" name="openGLWidget">
     <property name="geometry">
      <rect>
-      <x>200</x>
-      <y>90</y>
+      <x>400</x>
+      <y>220</y>
       <width>300</width>
       <height>200</height>
      </rect>
@@ -44,7 +44,7 @@ QWidget:checked {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>709</width>
+     <width>1110</width>
      <height>24</height>
     </rect>
    </property>

@@ -1,7 +1,7 @@
 #version 330 core
 layout (location = 0) in vec3 aPos;   // 位置变量的属性位置值为 0
 layout (location = 1) in vec3 aNormal;   // 法线值
-layout (location = 2) in vec2 aTexColor;   // 法线值
+layout (location = 2) in vec2 aTexColor;   // 贴图值
 
 out vec3 g_axis_normal;
 out vec3 g_axis_fragPos;

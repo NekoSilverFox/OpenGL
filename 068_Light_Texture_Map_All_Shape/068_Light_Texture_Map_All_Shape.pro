@@ -34,6 +34,7 @@ SOURCES += \
     cone.cpp
 
 HEADERS += \
+    foxmath.h \
     light.h \
         mainwindow.h \
     foxopenglwidget.h \

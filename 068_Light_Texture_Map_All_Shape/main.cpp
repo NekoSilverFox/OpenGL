@@ -1,6 +1,10 @@
 #include "mainwindow.h"
 #include <QApplication>
 #include <QSurfaceFormat>
+#include <QVector3D>
+
+#include "foxmath.h"
+
 
 int main(int argc, char *argv[])
 {

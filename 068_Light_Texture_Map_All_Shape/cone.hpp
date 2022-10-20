@@ -25,8 +25,7 @@ private:
 
 
 public:
-    std::vector<float> vertices;    // 顶点
-    std::vector<int> indices;       // EBO 索引s
+    std::vector<float> vertices;    // 最终的顶点数据（位置1：3x 顶点数据；位置2：3x 法线数据）
 
     QMatrix4x4 mat_model;
 

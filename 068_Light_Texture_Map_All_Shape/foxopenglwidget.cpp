@@ -10,7 +10,7 @@
 
 const unsigned int NUM_VBO = 4;
 const unsigned int NUM_VAO = 4;
-const unsigned int NUM_EBO = 2;
+const unsigned int NUM_EBO = 1;
 
 /* 创建 VAO、VBO 对象并且赋予 ID */
 unsigned int VBOs[NUM_VBO], VAOs[NUM_VAO];
@@ -83,10 +83,9 @@ void FoxOpenGLWidget::initializeGL()
 
 
 
-
-
-
-
+    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ \\
+    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ void FoxOpenGLWidget::initializeGL() @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ \\
+    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ \\
 
 /****************************************************** 球体 ******************************************************/
     // ------------------------ 着色器 ------------------------
@@ -177,13 +176,13 @@ void FoxOpenGLWidget::initializeGL()
 
     _sp_cone.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
     aPosLocation = _sp_cone.attributeLocation("aPos");  // 获取顶点着色器中顶点属性 aPos 的位置
-    glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);  // 手动传入第几个属性
+    glVertexAttribPointer(aPosLocation,     3,  GL_FLOAT,   GL_FALSE,    6 * sizeof(float),     (void*)0);  // 手动传入第几个属性
     glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
 
-
-    // ------------------------ EBO ------------------------
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[1]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int)*_cone.indices.size(), &_cone.indices[0], GL_STATIC_DRAW);  // EBO/IBO 是储存顶点【索引】的
+    _sp_cone.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
+    int aNormalLocation = _sp_cone.attributeLocation("aNormal");  // 获取顶点着色器中顶点属性 aPos 的位置
+    glVertexAttribPointer(aNormalLocation,  3,  GL_FLOAT,   GL_FALSE,   6 * sizeof(float),      (void*)(3*sizeof(float)));  // 手动传入第几个属性
+    glEnableVertexAttribArray(aNormalLocation); // 开始 VAO 管理的第一个属性值
 
 
     _cone.mat_model.translate(0.0f, 0.0f, 0.0f);
@@ -192,8 +191,6 @@ void FoxOpenGLWidget::initializeGL()
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);  // 注意 VAO 不参与管理 VBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
 
 
 
@@ -225,7 +222,7 @@ void FoxOpenGLWidget::initializeGL()
     glEnableVertexAttribArray(aPosLocation);
 
     _sp_cube.bind();
-    int aNormalLocation = _sp_cube.attributeLocation("aNormal");
+    aNormalLocation = _sp_cube.attributeLocation("aNormal");
     glVertexAttribPointer(aNormalLocation,  3,  GL_FLOAT,   GL_FALSE,   8 * sizeof(float),  (void*)(3*sizeof(float)));
     glEnableVertexAttribArray(aNormalLocation);
 
@@ -277,7 +274,7 @@ void FoxOpenGLWidget::initializeGL()
 
     _sp_light.bind();
     aPosLocation = _sp_light.attributeLocation("aPos");
-    glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(aPosLocation,     3,  GL_FLOAT,   GL_FALSE,       3 * sizeof(float),  (void*)0);
     glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
 
     _light.mat_model.translate(_light.postion);
@@ -300,6 +297,11 @@ void FoxOpenGLWidget::resizeGL(int w, int h)
 }
 
 
+
+
+/// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+/// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ void FoxOpenGLWidget::paintGL() @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+/// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 void FoxOpenGLWidget::paintGL()
 {
 //    glViewport(0, 0, width(), height());
@@ -345,7 +347,22 @@ void FoxOpenGLWidget::paintGL()
         _sp_cone.setUniformValue("mat_projection", mat_projection);
         _sp_cone.setUniformValue("mat_model", _cone.mat_model);
 
-        glDrawElements(GL_TRIANGLES, _cone.getNumTrianglesinSphere(), GL_UNSIGNED_INT, 0);
+        /* 材质颜色 */
+        _sp_cone.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
+        _sp_cone.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
+        _sp_cone.setUniformValue("material.specular",   QVector3D(0.5f, 0.5f, 0.5f));
+        _sp_cone.setUniformValue("material.shininess",  128.0f);
+
+        /* 光源颜色 */
+        _sp_cone.setUniformValue("light.ambient",    _light.color_ambient);
+        _sp_cone.setUniformValue("light.diffuse",    _light.color_diffuse);
+        _sp_cone.setUniformValue("light.specular",   _light.color_specular);
+        _sp_cone.setUniformValue("light.shininess",  _light.color_shininess);
+
+        _sp_cone.setUniformValue("light_pos", _light.postion);
+        _sp_cone.setUniformValue("view_pos", camera_.position);
+
+        glDrawArrays(GL_TRIANGLES, 0, _cone.vertices.size() / 3);
         glBindVertexArray(0);
     }
 
@@ -528,18 +545,18 @@ void FoxOpenGLWidget::updateGL()
     gl_time += 1;
 
 
-    _cone.mat_model.rotate(-0.5f, 0.0f, 1.0f, 0.0f);
+    _cone.mat_model.rotate( 0.7f, 0.0f, 1.0f, 0.1f);
     _cube.mat_model.rotate( 0.7f, 0.0f, 1.0f, 0.1f);
     _sphere.mat_model.rotate(0.5f, 0.0f, 1.0f, 0.4f);
 
 
     /* 旋转光源 */
     _light.postion.setX(cos(gl_time / 50.0) * 2.5);
+    _light.postion.setY(0.5);
     _light.postion.setZ(sin(gl_time / 50.0) * 2.5);
     _light.mat_model.setToIdentity();
     _light.mat_model.translate(_light.postion);
     _light.mat_model.scale(0.2);
-//    _light.mat_model.rotate(1.5f, 0.0f, 1.0f, 0.0f);
 
 
 #if 0
