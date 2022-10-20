@@ -10,13 +10,9 @@
 
 const unsigned int NUM_VBO = 4;
 const unsigned int NUM_VAO = 4;
-const unsigned int NUM_EBO = 1;
 
 /* 创建 VAO、VBO 对象并且赋予 ID */
 unsigned int VBOs[NUM_VBO], VAOs[NUM_VAO];
-
-/* 创建 EBO 元素缓冲对象 */
-unsigned int EBOs[NUM_EBO];
 
 /* 透明度 */
 float val_alpha = 0.5;
@@ -26,8 +22,8 @@ unsigned long long gl_time = 0;
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
-    this->_sphere = Sphere(X_SPHERE_SEGMENTS, Y_SPHERE_SEGMENTS);
-    this->_cone = Cone(R, HEIGHT, 10.0);
+    this->_sphere = Sphere(1.0f, 2.0f);
+    this->_cone = Cone(R, HEIGHT, 1.10f);
     this->_cube = Cube(LENGTH, COLOR_CUBE);
     this->_light = Light(1.0f, QVector3D(1.0f, 1.0f, 1.0f));
 
@@ -63,7 +59,6 @@ FoxOpenGLWidget::~FoxOpenGLWidget()
     /* 对象的回收 */
     glDeleteVertexArrays(NUM_VAO, VAOs);
     glDeleteBuffers(NUM_VBO, VBOs);
-    glDeleteBuffers(NUM_EBO, EBOs);
 
     doneCurrent();
     update();
@@ -79,7 +74,6 @@ void FoxOpenGLWidget::initializeGL()
     // VAO 和 VBO 对象赋予 ID
     glGenVertexArrays(NUM_VAO, VAOs);
     glGenBuffers(NUM_VBO, VBOs);
-    glGenBuffers(NUM_EBO, EBOs);  // 立方体没有使用 EBO
 
 
 
@@ -131,18 +125,11 @@ void FoxOpenGLWidget::initializeGL()
     glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
 
 
-    // ------------------------ EBO ------------------------
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[0]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int)*_sphere.indices.size(), &_sphere.indices[0], GL_STATIC_DRAW);  // EBO/IBO 是储存顶点【索引】的
-
-    _sphere.mat_model.translate(-2.0f, 0.0f, 0.0f);
-    _sphere.mat_model.scale(0.5);
-
     // ------------------------ 解绑 ------------------------
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);  // 注意 VAO 不参与管理 VBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 
 
 
@@ -333,7 +320,7 @@ void FoxOpenGLWidget::paintGL()
         /* 模型操作 */
         _sp_sphere.setUniformValue("mat_model", _sphere.mat_model);
 
-        glDrawElements(GL_TRIANGLES, _sphere.getNumTrianglesinSphere(), GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_POINTS, 0, _sphere.getNumTrianglesinSphere());
         glBindVertexArray(0);
     }
 
