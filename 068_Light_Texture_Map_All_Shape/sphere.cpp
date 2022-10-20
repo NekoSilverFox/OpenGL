@@ -28,13 +28,44 @@ unsigned int Sphere::getNumTrianglesinSphere()
 
 void Sphere::_genVectorVerticesAndIndices()
 {
+    std::vector<float> top_half_vetices;
+    std::vector<float> bottom_half_vetices;
+
+
+    /* 绘制上半球的所有顶点 */
+    const unsigned int num_point_circle = 360.0f / _step_angle; // 每个圈要绘制几个点
+    const unsigned int num_circle = 360.0 / _step_angle;  // 半球上需要绘制圈圈的个数
+
+    /* 开始从最底部处一圈一圈的向上绘制，注意：最底部的点都是重叠了的 */
+    float current_xy_angle = -180.0f;
+    for (int i = 0; i < num_circle; i++)
+    {
+        float current_xz_angle = 0.0f;  // 水平角度
+
+        /* 圈上的点 */
+        for (int j = 0; j <= num_point_circle; j++)
+        {
+            top_half_vetices.push_back(_r * sin(current_xz_angle*M_PI/180) * cos(current_xy_angle*M_PI/180)); // x，【重点】sin() 默认是弧度！！，不是角度！！
+            top_half_vetices.push_back(_r * sin(current_xy_angle*M_PI/180));                                     // y
+            top_half_vetices.push_back(_r * cos(current_xz_angle*M_PI/180) * cos(current_xy_angle*M_PI/180)); // z
+            current_xz_angle += _step_angle;
+        }
+
+        current_xy_angle += _step_angle;
+    }
+
+
+
+
+    this->vertices = top_half_vetices;
+
 #if 0
     std::vector<float> tmp_vetices;
 
 
     /* 绘制上半球的所有顶点 */
-    const unsigned int num_point_circle = 360.0f / _angle_step; // 每个圈要绘制几个点
-    const unsigned int num_circle = 180.0 / _angle_step;  // 半球上需要绘制圈圈的个数
+    const unsigned int num_point_circle = 360.0f / _step_angle; // 每个圈要绘制几个点
+    const unsigned int num_circle = 180.0 / _step_angle;  // 半球上需要绘制圈圈的个数
     const float step_r = _r / (float)num_circle;    // 每向上一圈，需要缩小半径的步长
 
     /* 开始从赤道处一圈一圈的向上绘制 */
@@ -51,7 +82,7 @@ void Sphere::_genVectorVerticesAndIndices()
             tmp_vetices.push_back(current_r*cos(current_angle*M_PI/180)); // x，【重点】sin() 默认是弧度！！，不是角度！！
             tmp_vetices.push_back(current_y);                           // y
             tmp_vetices.push_back(current_r*sin(current_angle*M_PI/180)); // z
-            current_angle += _angle_step;
+            current_angle += _step_angle;
         }
 
         current_r -= step_r;
