@@ -22,7 +22,7 @@ unsigned long long gl_time = 0;
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
-    this->_sphere = Sphere(1.0f, 2.0f);
+    this->_sphere = Sphere(1.0f, 30.0f);
     this->_cone = Cone(R, HEIGHT, 1.10f);
     this->_cube = Cube(LENGTH, COLOR_CUBE);
     this->_light = Light(1.0f, QVector3D(1.0f, 1.0f, 1.0f));
@@ -121,8 +121,13 @@ void FoxOpenGLWidget::initializeGL()
     */
     _sp_sphere.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
     GLint aPosLocation = _sp_sphere.attributeLocation("aPos");  // 获取顶点着色器中顶点属性 aPos 的位置
-    glVertexAttribPointer(aPosLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);  // 手动传入第几个属性
+    glVertexAttribPointer(aPosLocation,     3,  GL_FLOAT, GL_FALSE,     6 * sizeof(float),      (void*)0);  // 手动传入第几个属性
     glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
+
+    _sp_sphere.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
+    GLint aNormalLocation = _sp_sphere.attributeLocation("aNormal");  // 获取顶点着色器中顶点属性 aPos 的位置
+    glVertexAttribPointer(aNormalLocation,  3,  GL_FLOAT,   GL_FALSE,   6 * sizeof(float),      (void*)(3*sizeof(float)));  // 手动传入第几个属性
+    glEnableVertexAttribArray(aNormalLocation); // 开始 VAO 管理的第一个属性值
 
 
     // ------------------------ 解绑 ------------------------
@@ -167,7 +172,7 @@ void FoxOpenGLWidget::initializeGL()
     glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
 
     _sp_cone.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
-    int aNormalLocation = _sp_cone.attributeLocation("aNormal");  // 获取顶点着色器中顶点属性 aPos 的位置
+    aNormalLocation = _sp_cone.attributeLocation("aNormal");  // 获取顶点着色器中顶点属性 aPos 的位置
     glVertexAttribPointer(aNormalLocation,  3,  GL_FLOAT,   GL_FALSE,   6 * sizeof(float),      (void*)(3*sizeof(float)));  // 手动传入第几个属性
     glEnableVertexAttribArray(aNormalLocation); // 开始 VAO 管理的第一个属性值
 
@@ -320,7 +325,7 @@ void FoxOpenGLWidget::paintGL()
         /* 模型操作 */
         _sp_sphere.setUniformValue("mat_model", _sphere.mat_model);
 
-        glDrawArrays(GL_POINTS, 0, _sphere.getNumTrianglesinSphere());
+        glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumTrianglesinSphere());
         glBindVertexArray(0);
     }
 

@@ -1,4 +1,5 @@
 #include "sphere.hpp"
+#include "foxmath.h"
 #include <math.h>
 
 
@@ -28,8 +29,8 @@ unsigned int Sphere::getNumTrianglesinSphere()
 
 void Sphere::_genVectorVerticesAndIndices()
 {
-    std::vector<float> top_half_vetices;
-    std::vector<float> bottom_half_vetices;
+    /* 储存球上的所有的点 */
+    std::vector<float> points;
 
 
     /* 绘制上半球的所有顶点 */
@@ -45,9 +46,9 @@ void Sphere::_genVectorVerticesAndIndices()
         /* 圈上的点 */
         for (int j = 0; j <= num_point_circle; j++)
         {
-            top_half_vetices.push_back(_r * sin(current_xz_angle*M_PI/180) * cos(current_xy_angle*M_PI/180)); // x，【重点】sin() 默认是弧度！！，不是角度！！
-            top_half_vetices.push_back(_r * sin(current_xy_angle*M_PI/180));                                     // y
-            top_half_vetices.push_back(_r * cos(current_xz_angle*M_PI/180) * cos(current_xy_angle*M_PI/180)); // z
+            points.push_back(_r * sin(current_xz_angle*M_PI/180) * cos(current_xy_angle*M_PI/180)); // x，【重点】sin() 默认是弧度！！，不是角度！！
+            points.push_back(_r * sin(current_xy_angle*M_PI/180));                                     // y
+            points.push_back(_r * cos(current_xz_angle*M_PI/180) * cos(current_xy_angle*M_PI/180)); // z
             current_xz_angle += _step_angle;
         }
 
@@ -55,9 +56,92 @@ void Sphere::_genVectorVerticesAndIndices()
     }
 
 
+    for (int i = 0; i <= 3 * (num_point_circle * num_circle - num_point_circle); i += 3)
+    {
+        /* 正三角 */
+        float current_x = points[i + 0];
+        float current_y = points[i + 1];
+        float current_z = points[i + 2];
 
 
-    this->vertices = top_half_vetices;
+        float next_x = points[i + 3];
+        float next_y = points[i + 4];
+        float next_z = points[i + 5];
+
+
+        float next_top_x = points[i + 3 * num_point_circle + 3];
+        float next_top_y = points[i + 3 * num_point_circle + 4];
+        float next_top_z = points[i + 3 * num_point_circle + 5];
+
+        QVector3D current_normal = -getNormalVector(QVector3D(current_x,    current_y,      current_z),
+                                                    QVector3D(next_x,       next_y,         next_z),
+                                                    QVector3D(next_top_x,   next_top_y,     next_top_z));  // 法线
+
+        vertices.push_back(current_x);
+        vertices.push_back(current_y);
+        vertices.push_back(current_z);
+        vertices.push_back(current_normal.x());
+        vertices.push_back(current_normal.y());
+        vertices.push_back(current_normal.z());
+
+        vertices.push_back(next_x);
+        vertices.push_back(next_y);
+        vertices.push_back(next_z);
+        vertices.push_back(current_normal.x());
+        vertices.push_back(current_normal.y());
+        vertices.push_back(current_normal.z());
+
+        vertices.push_back(next_top_x);
+        vertices.push_back(next_top_y);
+        vertices.push_back(next_top_z);
+        vertices.push_back(current_normal.x());
+        vertices.push_back(current_normal.y());
+        vertices.push_back(current_normal.z());
+
+        /* 倒三角 */
+        current_x = points[i + 0];
+        current_y = points[i + 1];
+        current_z = points[i + 2];
+
+        float current_top_x = points[i + 3 * num_point_circle + 0];
+        float current_top_y = points[i + 3 * num_point_circle + 1];
+        float current_top_z = points[i + 3 * num_point_circle + 2];
+
+
+        float current_top_right_x = points[i + 3 * num_point_circle + 3];
+        float current_top_right_y = points[i + 3 * num_point_circle + 4];
+        float current_top_right_z = points[i + 3 * num_point_circle + 5];
+
+        current_normal = -getNormalVector(QVector3D(current_x,              current_y,              current_z),
+                                          QVector3D(current_top_x,          current_top_y,          current_top_z),
+                                          QVector3D(current_top_right_x,    current_top_right_y,    current_top_right_z));
+
+
+        vertices.push_back(current_x);
+        vertices.push_back(current_y);
+        vertices.push_back(current_z);
+        vertices.push_back(current_normal.x());
+        vertices.push_back(current_normal.y());
+        vertices.push_back(current_normal.z());
+
+        vertices.push_back(current_top_x);
+        vertices.push_back(current_top_y);
+        vertices.push_back(current_top_z);
+        vertices.push_back(current_normal.x());
+        vertices.push_back(current_normal.y());
+        vertices.push_back(current_normal.z());
+
+        vertices.push_back(current_top_right_x);
+        vertices.push_back(current_top_right_y);
+        vertices.push_back(current_top_right_z);
+        vertices.push_back(current_normal.x());
+        vertices.push_back(current_normal.y());
+        vertices.push_back(current_normal.z());
+    }
+
+
+
+
 
 #if 0
     std::vector<float> tmp_vetices;
