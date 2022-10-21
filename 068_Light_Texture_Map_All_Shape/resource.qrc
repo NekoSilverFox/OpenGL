@@ -12,5 +12,7 @@
     <qresource prefix="/pic">
         <file>Picture/wood_box.png</file>
         <file>Picture/wood_box_specular_map.png</file>
+        <file>Picture/poly_specular_map.png</file>
+        <file>Picture/poly_tex.png</file>
     </qresource>
 </RCC>

@@ -25,7 +25,10 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
     this->_sphere = Sphere(1.0f, 30.0f);
     this->_cone = Cone(R, HEIGHT, 1.10f);
     this->_cube = Cube(LENGTH, COLOR_CUBE);
-    this->_light = Light(1.0f, QVector3D(1.0f, 1.0f, 1.0f));
+    this->_light = Light(1.0f, QVector3D(1.0f, 1.0f, 1.0f),
+                               QVector3D(0.2f, 0.2f, 0.2f),
+                               QVector3D(0.5f, 0.5f, 0.5f),
+                               QVector3D(1.0f, 1.0f, 1.0f));
 
     is_draw_sphere = false;
     is_draw_cone = false;
@@ -45,8 +48,6 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
     this->timer_.start(TIMEOUT);
     connect(&this->timer_, SIGNAL(timeout()),
             this, SLOT(updateGL()));
-
-//    this->time_.start();
 }
 
 
@@ -100,28 +101,12 @@ void FoxOpenGLWidget::initializeGL()
     glBindVertexArray(VAOs[0]);
     glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
 
-    /* 为当前绑定到 target 的缓冲区对象创建一个新的数据存储（在 GPU 上创建对应的存储区域，并将内存中的数据发送过去）
-        如果 data 不是 NULL，则使用来自此指针的数据初始化数据存储
-        void glBufferData(GLenum target,  // 需要在 GPU 上创建的目标
-                                            GLsizeipter size,  // 创建的显存大小
-                                            const GLvoid* data,  // 数据
-                                            GLenum usage)  // 创建在 GPU 上的哪一片区域（显存上的每个区域的性能是不一样的）https://registry.khronos.org/OpenGL-Refpages/es3.0/
-    */
+
     glBufferData(GL_ARRAY_BUFFER, sizeof(float)*_sphere.vertices.size(), &_sphere.vertices[0], GL_STATIC_DRAW);
 
-    /* 告知显卡如何解析缓冲区里面的属性值
-        void glVertexAttribPointer(
-                                    GLuint index,  // VAO 中的第几个属性（VAO 属性的索引）
-                                    GLint size,  // VAO 中的第几个属性中对应的位置放几份数据
-                                    GLEnum type,  // 存放数据的数据类型
-                                    GLboolean normalized,  // 是否标准化
-                                    GLsizei stride,  // 步长
-                                    const void* offset  // 偏移量
-        )
-    */
     _sp_sphere.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
     GLint aPosLocation = _sp_sphere.attributeLocation("aPos");  // 获取顶点着色器中顶点属性 aPos 的位置
-    glVertexAttribPointer(aPosLocation,     3,  GL_FLOAT, GL_FALSE,     6 * sizeof(float),      (void*)0);  // 手动传入第几个属性
+    glVertexAttribPointer(aPosLocation,     3,  GL_FLOAT,   GL_FALSE,   6 * sizeof(float),      (void*)0);  // 手动传入第几个属性
     glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
 
     _sp_sphere.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
@@ -224,13 +209,13 @@ void FoxOpenGLWidget::initializeGL()
     glEnableVertexAttribArray(aTexColorLocation);
 
     // ------------------------ 纹理 ------------------------
-    _texWoodBox = new QOpenGLTexture(QImage(":/pic/Picture/wood_box.png").mirrored());
-    _indexTexWoodBoox = 0;  // 设置为第 0 个纹理单元
-    _sp_cube.setUniformValue("material.diffuse", _indexTexWoodBoox);  // 【复习 | 重点】一个着色器内可以绑定多个纹理，只需要不同纹理对应不同的索引即可
+    _texPoly = new QOpenGLTexture(QImage(":/pic/Picture/poly_tex.png").mirrored());
+    _indexPoly = 0;  // 设置为第 0 个纹理单元
+    _sp_cube.setUniformValue("material.diffuse", _indexPoly);  // 【复习 | 重点】一个着色器内可以绑定多个纹理，只需要不同纹理对应不同的索引即可
 
-    _texWoodBoxSpecular = new QOpenGLTexture(QImage(":/pic/Picture/wood_box_specular_map.png").mirrored());
-    _indexTexWoodBoxSpecular = 1;
-    _sp_cube.setUniformValue("material.specular", _indexTexWoodBoxSpecular);  // 为他绑定第二个纹理单元
+    _texPolySpecular = new QOpenGLTexture(QImage(":/pic/Picture/poly_specular_map.png").mirrored());
+    _indexTexPolySpecular = 1;
+    _sp_cube.setUniformValue("material.specular", _indexTexPolySpecular);  // 为他绑定第二个纹理单元
 
     _cube.mat_model.translate(0.0f, -0.5f, 0.0f);
 
@@ -299,7 +284,7 @@ void FoxOpenGLWidget::paintGL()
 //    glViewport(0, 0, width(), height());
 
     /* 设置 OpenGLWidget 控件背景颜色为深青色，并且设置深度信息（Z-缓冲） */
-    glClearColor(0.1f, 0.2f, 0.2f, 1.0f);  // set方法【重点】如果没有 initializeGL，目前是一个空指针状态，没有指向显卡里面的函数，会报错
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);  // set方法【重点】如果没有 initializeGL，目前是一个空指针状态，没有指向显卡里面的函数，会报错
     glEnable(GL_DEPTH_TEST);  // 深度信息，如果不设置立方体就像没有盖子
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // use方法
 
@@ -321,6 +306,21 @@ void FoxOpenGLWidget::paintGL()
         _sp_sphere.setUniformValue("mat_view", mat_view);
         /* 透视 */
         _sp_sphere.setUniformValue("mat_projection", mat_projection);
+
+        /* 材质颜色 */
+        _sp_sphere.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
+        _sp_sphere.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
+        _sp_sphere.setUniformValue("material.specular",   QVector3D(0.5f, 0.5f, 0.5f));
+        _sp_sphere.setUniformValue("material.shininess",  128.0f);
+
+        /* 光源颜色 */
+        _sp_sphere.setUniformValue("light.ambient",    _light.color_ambient);
+        _sp_sphere.setUniformValue("light.diffuse",    _light.color_diffuse);
+        _sp_sphere.setUniformValue("light.specular",   _light.color_specular);
+        _sp_sphere.setUniformValue("light.shininess",  _light.color_shininess);
+
+        _sp_sphere.setUniformValue("light_pos", _light.postion);
+        _sp_sphere.setUniformValue("view_pos", camera_.position);
 
         /* 模型操作 */
         _sp_sphere.setUniformValue("mat_model", _sphere.mat_model);
@@ -363,8 +363,8 @@ void FoxOpenGLWidget::paintGL()
     {
         glBindVertexArray(VAOs[2]);
 
-        _texWoodBox->bind(_indexTexWoodBoox);  // 绑定纹理
-        _texWoodBoxSpecular->bind(_indexTexWoodBoxSpecular);
+        _texPoly->bind(_indexPoly);  // 绑定纹理
+        _texPolySpecular->bind(_indexTexPolySpecular);
 
         _sp_cube.bind();
         _sp_cube.setUniformValue("mat_view", mat_view);

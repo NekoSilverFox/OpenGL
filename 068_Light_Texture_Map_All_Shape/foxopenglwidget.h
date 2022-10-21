@@ -82,19 +82,14 @@ private:
     /* 立方体 */
     Cube _cube;
     QOpenGLShaderProgram _sp_cube;
-    QOpenGLTexture* _texWoodBox;
-    int _indexTexWoodBoox;
-    QOpenGLTexture* _texWoodBoxSpecular;
-    int _indexTexWoodBoxSpecular;
+    QOpenGLTexture* _texPoly;
+    int _indexPoly;
+    QOpenGLTexture* _texPolySpecular;
+    int _indexTexPolySpecular;
 
     /* 时钟及计时器 */
     QTimer timer_;  // 【重点】 这里是 Timer - 计时器类
     QTime time_;
-
-    /* 纹理对象 */
-    QOpenGLTexture* texture_wall_;  // 存储砖墙那张图片数据
-    QOpenGLTexture* texture_nekosilverfox_;
-    QOpenGLTexture* texture_nekosilverfox_bk_;
 
     /* 封装的摄像机类 */
     Camera camera_;
