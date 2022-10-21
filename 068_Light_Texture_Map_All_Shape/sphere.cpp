@@ -66,11 +66,12 @@ void Sphere::_genVectorVerticesAndIndices()
     for (int i = 0; i < points.size(); i++)
     {
 //        qDebug() << "当前 i = " << i << "取模：" << i % (num_point_circle + 1) << "真实顶点数量：" << points.size();
-        if ((i % (num_point_circle + 1) == 0) && (i != 0))
-        {
-            qDebug() << "->跳过 i = " << i;
-            continue;
-        }
+//        if ((i % (num_point_circle + 1) == 0) && (i != 0))
+//        {
+//            qDebug() << "->跳过 i = " << i;
+//            continue;
+//        }
+
 
         /* 正三角 */
         QVector3D current_point          = points[i + 0];
