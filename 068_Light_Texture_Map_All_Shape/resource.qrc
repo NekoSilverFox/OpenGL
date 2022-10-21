@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/shaders">
+        <file>ShaderSource/sphere.frag</file>
+        <file>ShaderSource/sphere.vert</file>
+        <file>ShaderSource/cube.frag</file>
+        <file>ShaderSource/cube.vert</file>
+        <file>ShaderSource/cone.frag</file>
+        <file>ShaderSource/cone.vert</file>
+        <file>ShaderSource/light.frag</file>
+        <file>ShaderSource/light.vert</file>
+    </qresource>
+    <qresource prefix="/pic">
+        <file>Picture/wood_box.png</file>
+        <file>Picture/wood_box_specular_map.png</file>
+        <file>Picture/poly_specular_map.png</file>
+        <file>Picture/poly_tex.png</file>
+    </qresource>
+</RCC>
