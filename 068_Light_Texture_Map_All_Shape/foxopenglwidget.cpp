@@ -22,7 +22,7 @@ unsigned long long gl_time = 0;
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
-    this->_sphere = Sphere(1.0f, 30.0f);
+    this->_sphere = Sphere(1.0f, 45.0f);
     this->_cone = Cone(R, HEIGHT, 1.10f);
     this->_cube = Cube(LENGTH, COLOR_CUBE);
     this->_light = Light(1.0f, QVector3D(1.0f, 1.0f, 1.0f),
@@ -375,7 +375,7 @@ void FoxOpenGLWidget::paintGL()
 //        _sp_cube.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
 //        _sp_cube.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
 //        _sp_cube.setUniformValue("material.specular",   QVector3D(0.5f, 0.5f, 0.5f));
-        _sp_cube.setUniformValue("material.shininess",  128.0f);
+        _sp_cube.setUniformValue("material.shininess",  32.0f);
 
         /* 光源颜色 */
         _sp_cube.setUniformValue("light.ambient",    _light.color_ambient);
@@ -539,7 +539,7 @@ void FoxOpenGLWidget::updateGL()
 
     _cone.mat_model.rotate( 0.7f, 0.0f, 1.0f, 0.1f);
     _cube.mat_model.rotate( 0.7f, 0.0f, 1.0f, 0.1f);
-    _sphere.mat_model.rotate(0.5f, 0.0f, 1.0f, 0.4f);
+    _sphere.mat_model.rotate(0.5f, 0.0f, 1.0f, 0.0f);
 
 
     /* 旋转光源 */

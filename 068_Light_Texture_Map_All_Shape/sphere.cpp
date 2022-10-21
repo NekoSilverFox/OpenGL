@@ -37,54 +37,91 @@ void Sphere::_genVectorVerticesAndIndices()
     const unsigned int num_point_circle = 360.0f / _step_angle; // 每个圈要绘制几个点
     const unsigned int num_circle = 360.0 / _step_angle;  // 半球上需要绘制圈圈的个数
 
+    qDebug() << "生成的顶点数量：" << num_point_circle;
+
     /* 开始从最底部处一圈一圈的向上绘制，注意：最底部的点都是重叠了的 */
     float current_xy_angle = -180.0f;
-    for (int i = 0; i < num_circle; i++)
+    for (unsigned long i = 0; i < num_circle; i++)
     {
         float current_xz_angle = 0.0f;  // 水平角度
+         qDebug() << "\n[INFO] ---> 生成第：" << i << "圈";
 
         /* 圈上的点 */
-        for (int j = 0; j <= num_point_circle; j++)
+        for (unsigned long j = 0; j <= num_point_circle; j++)
         {
-            points.push_back(_r * sin(current_xz_angle*M_PI/180) * cos(current_xy_angle*M_PI/180));     // x，【重点】sin() 默认是弧度！！，不是角度！！
+            qDebug() << "生成本圈上的第：" << j << "个点, 当前水平角度：" << current_xz_angle;
+            /* 【重点 | 注意】sin() 默认是弧度！！，不是角度！！ */
+            points.push_back(_r * sin(current_xz_angle*M_PI/180) * cos(current_xy_angle*M_PI/180));     // x
             points.push_back(_r * sin(current_xy_angle*M_PI/180));                                      // y
             points.push_back(_r * cos(current_xz_angle*M_PI/180) * cos(current_xy_angle*M_PI/180));     // z
-
             current_xz_angle += _step_angle;
-            qDebug() << "生成本圈上的第：" << j << "个点";
         }
-
         current_xy_angle += _step_angle;
     }
+
+
 
 //    this->vertices = points;
     int num_points = 3 * (num_point_circle * num_circle - num_point_circle);
 
-    /// 垃圾值
-    float current_x;
-    float current_y;
-    float current_z;
-    QVector3D current_normal;
 
     for (int i = 0; i <= num_points; i += 3)
     {
-        if (i % num_point_circle == 3) continue;
-#if 0
+        if ((3 * ((num_point_circle + 1) * num_circle)) % i == 3)
+        {
+            qDebug() << "跳过，i = " << i;
+            continue;
+        }
+
         /* 正三角 */
         float current_x = points[i + 0];
         float current_y = points[i + 1];
         float current_z = points[i + 2];
 
 
-        float next_x = points[i + 3];
-        float next_y = points[i + 4];
-        float next_z = points[i + 5];
+        float next_x;
+        float next_y;
+        float next_z;
 
+        float next_top_x;
+        float next_top_y;
+        float next_top_z;
 
-        float next_top_x = points[i + 3 * num_point_circle + 3];
-        float next_top_y = points[i + 3 * num_point_circle + 4];
-        float next_top_z = points[i + 3 * num_point_circle + 5];
+        next_x = points[i + 3];
+        next_y = points[i + 4];
+        next_z = points[i + 5];
 
+        next_top_x = points[i + 3 * num_point_circle + 3];
+        next_top_y = points[i + 3 * num_point_circle + 4];
+        next_top_z = points[i + 3 * num_point_circle + 5];
+
+#if 0
+        if ((i != 0)
+                && (3 * num_point_circle * num_circle) % i == 3)
+        {
+            next_x = points[i - 3 * num_point_circle + 3];
+            next_y = points[i - 3 * num_point_circle + 4];
+            next_z = points[i - 3 * num_point_circle + 5];
+
+            next_top_x = points[i + 3 + 3];
+            next_top_y = points[i + 4 + 3];
+            next_top_z = points[i + 5 + 3];
+
+            i += 3;
+            qDebug() << "TTTTTTTt1";
+        }
+        else
+        {
+            next_x = points[i + 3];
+            next_y = points[i + 4];
+            next_z = points[i + 5];
+
+            next_top_x = points[i + 3 * num_point_circle + 3 + 3];
+            next_top_y = points[i + 3 * num_point_circle + 4 + 3];
+            next_top_z = points[i + 3 * num_point_circle + 5 + 3];
+        }
+
+#endif
         QVector3D current_normal =  getNormalVector(QVector3D(current_x,    current_y,      current_z),
                                                     QVector3D(next_x,       next_y,         next_z),
                                                     QVector3D(next_top_x,   next_top_y,     next_top_z));  // 法线
@@ -109,8 +146,8 @@ void Sphere::_genVectorVerticesAndIndices()
         vertices.push_back(current_normal.x());
         vertices.push_back(current_normal.y());
         vertices.push_back(current_normal.z());
-#endif
-#if 1
+
+#if 0
         /* 倒三角 */
         current_x = points[i + 0];
         current_y = points[i + 1];

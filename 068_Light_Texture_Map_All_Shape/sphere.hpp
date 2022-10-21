@@ -8,7 +8,7 @@
 
 //将球横纵划分成50*50的网格
 const float R_SPHERE = 1.0f;
-const float STEP_ANGLE_SPHERE = 1.0f;
+const float STEP_ANGLE_SPHERE = 90.0f;
 
 
 class Sphere
