@@ -26,7 +26,7 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
     this->_cone = Cone(R, HEIGHT, 1.10f);
     this->_cube = Cube(LENGTH, COLOR_CUBE);
     this->_light = Light(1.0f, QVector3D(1.0f, 1.0f, 1.0f),
-                               QVector3D(0.2f, 0.2f, 0.2f),
+                               QVector3D(0.3f, 0.3f, 0.3f),
                                QVector3D(0.5f, 0.5f, 0.5f),
                                QVector3D(1.0f, 1.0f, 1.0f));
 
@@ -102,17 +102,17 @@ void FoxOpenGLWidget::initializeGL()
     glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
 
 
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*_sphere.vertices.size(), &_sphere.vertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*_sphere.vertices.size()*3, &_sphere.vertices[0], GL_STATIC_DRAW);
 
-    _sp_sphere.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
-    GLint aPosLocation = _sp_sphere.attributeLocation("aPos");  // 获取顶点着色器中顶点属性 aPos 的位置
-    glVertexAttribPointer(aPosLocation,     3,  GL_FLOAT,   GL_FALSE,   6 * sizeof(float),      (void*)0);  // 手动传入第几个属性
-    glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
+    _sp_sphere.bind();
+    GLint aPosLocation = _sp_sphere.attributeLocation("aPos");
+    glVertexAttribPointer(aPosLocation,     3,  GL_FLOAT,   GL_FALSE,   6 * sizeof(float),      (void*)0);
+    glEnableVertexAttribArray(aPosLocation);
 
-    _sp_sphere.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
-    GLint aNormalLocation = _sp_sphere.attributeLocation("aNormal");  // 获取顶点着色器中顶点属性 aPos 的位置
-    glVertexAttribPointer(aNormalLocation,  3,  GL_FLOAT,   GL_FALSE,   6 * sizeof(float),      (void*)(3*sizeof(float)));  // 手动传入第几个属性
-    glEnableVertexAttribArray(aNormalLocation); // 开始 VAO 管理的第一个属性值
+    _sp_sphere.bind();
+    GLint aNormalLocation = _sp_sphere.attributeLocation("aNormal");
+    glVertexAttribPointer(aNormalLocation,  3,  GL_FLOAT,   GL_FALSE,   6 * sizeof(float),      (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(aNormalLocation);
 
 
     // ------------------------ 解绑 ------------------------
@@ -284,7 +284,7 @@ void FoxOpenGLWidget::paintGL()
 //    glViewport(0, 0, width(), height());
 
     /* 设置 OpenGLWidget 控件背景颜色为深青色，并且设置深度信息（Z-缓冲） */
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);  // set方法【重点】如果没有 initializeGL，目前是一个空指针状态，没有指向显卡里面的函数，会报错
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);  // set方法【重点】如果没有 initializeGL，目前是一个空指针状态，没有指向显卡里面的函数，会报错
     glEnable(GL_DEPTH_TEST);  // 深度信息，如果不设置立方体就像没有盖子
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // use方法
 

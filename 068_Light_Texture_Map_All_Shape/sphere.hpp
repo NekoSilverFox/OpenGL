@@ -25,7 +25,7 @@ private:
 
 
 public:
-    std::vector<float> vertices;  // 顶点
+    std::vector<QVector3D> vertices;  // 顶点
 
     QMatrix4x4 mat_model;
 
