@@ -22,7 +22,7 @@ unsigned long long gl_time = 0;
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
-    this->_sphere = Sphere(1.0f, 1.0f);
+    this->_sphere = Sphere(1.0f, 10.0f);
     this->_cone = Cone(R, HEIGHT, 1.10f);
     this->_cube = Cube(LENGTH, COLOR_CUBE);
     this->_light = Light(1.0f, QVector3D(1.0f, 1.0f, 1.0f),
@@ -38,7 +38,7 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
     is_move_cone = false;
     is_move_cube = false;
 
-    this->camera_ = Camera(QVector3D(0.0f, 0.0f, 3.0f), QVector3D(0.0f, 1.0f, 0.0f), 50.0f, -90.0f, 0.0f);
+    this->camera_ = Camera(QVector3D(-1.0f, 1.0f, 3.0f), QVector3D(0.0f, 1.0f, 0.0f), 50.0f, -90.0f, -20.0f);
 
     /* 暂时用于键盘点击事件 */
     setFocusPolicy(Qt::StrongFocus);
@@ -284,7 +284,7 @@ void FoxOpenGLWidget::paintGL()
 //    glViewport(0, 0, width(), height());
 
     /* 设置 OpenGLWidget 控件背景颜色为深青色，并且设置深度信息（Z-缓冲） */
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);  // set方法【重点】如果没有 initializeGL，目前是一个空指针状态，没有指向显卡里面的函数，会报错
+    glClearColor(0.15f, 0.15f, 0.15f, 1.0f);  // set方法【重点】如果没有 initializeGL，目前是一个空指针状态，没有指向显卡里面的函数，会报错
     glEnable(GL_DEPTH_TEST);  // 深度信息，如果不设置立方体就像没有盖子
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // use方法
 
@@ -311,7 +311,7 @@ void FoxOpenGLWidget::paintGL()
         _sp_sphere.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
         _sp_sphere.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
         _sp_sphere.setUniformValue("material.specular",   QVector3D(0.5f, 0.5f, 0.5f));
-        _sp_sphere.setUniformValue("material.shininess",  128.0f);
+        _sp_sphere.setUniformValue("material.shininess",  16.0f);
 
         /* 光源颜色 */
         _sp_sphere.setUniformValue("light.ambient",    _light.color_ambient);
@@ -329,34 +329,6 @@ void FoxOpenGLWidget::paintGL()
         glBindVertexArray(0);
     }
 
-    /****************************************************** 锥体 ******************************************************/
-    if (is_draw_cone)
-    {
-        glBindVertexArray(VAOs[1]);
-
-        _sp_cone.bind();
-        _sp_cone.setUniformValue("mat_view", mat_view);
-        _sp_cone.setUniformValue("mat_projection", mat_projection);
-        _sp_cone.setUniformValue("mat_model", _cone.mat_model);
-
-        /* 材质颜色 */
-        _sp_cone.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
-        _sp_cone.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
-        _sp_cone.setUniformValue("material.specular",   QVector3D(0.5f, 0.5f, 0.5f));
-        _sp_cone.setUniformValue("material.shininess",  128.0f);
-
-        /* 光源颜色 */
-        _sp_cone.setUniformValue("light.ambient",    _light.color_ambient);
-        _sp_cone.setUniformValue("light.diffuse",    _light.color_diffuse);
-        _sp_cone.setUniformValue("light.specular",   _light.color_specular);
-        _sp_cone.setUniformValue("light.shininess",  _light.color_shininess);
-
-        _sp_cone.setUniformValue("light_pos", _light.postion);
-        _sp_cone.setUniformValue("view_pos", camera_.position);
-
-        glDrawArrays(GL_TRIANGLES, 0, _cone.vertices.size() / 3);
-        glBindVertexArray(0);
-    }
 
     /****************************************************** 立方体 ******************************************************/
     if (is_draw_cube)
@@ -406,6 +378,50 @@ void FoxOpenGLWidget::paintGL()
         glBindVertexArray(0);
 
 
+        /****************************************************** 锥体 ******************************************************/
+        if (is_draw_cone)
+        {
+            /* 开启透明度
+             * 参考：https://blog.csdn.net/qq_31804159/article/details/80179947
+             * https://learnopengl-cn.github.io/04%20Advanced%20OpenGL/03%20Blending/
+             * 【注意】：有透明度的物体要最后绘制！！
+            */
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+            //        glDepthMask(GL_FALSE);
+            glDisable(GL_LIGHTING);
+
+
+            glBindVertexArray(VAOs[1]);
+
+            _sp_cone.bind();
+            _sp_cone.setUniformValue("mat_view", mat_view);
+            _sp_cone.setUniformValue("mat_projection", mat_projection);
+            _sp_cone.setUniformValue("mat_model", _cone.mat_model);
+
+            /* 材质颜色 */
+            _sp_cone.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
+            _sp_cone.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
+            _sp_cone.setUniformValue("material.specular",   QVector3D(0.5f, 0.5f, 0.5f));
+            _sp_cone.setUniformValue("material.shininess",  128.0f);
+
+            /* 光源颜色 */
+            _sp_cone.setUniformValue("light.ambient",    _light.color_ambient);
+            _sp_cone.setUniformValue("light.diffuse",    _light.color_diffuse);
+            _sp_cone.setUniformValue("light.specular",   _light.color_specular);
+            _sp_cone.setUniformValue("light.shininess",  _light.color_shininess);
+
+            _sp_cone.setUniformValue("light_pos", _light.postion);
+            _sp_cone.setUniformValue("view_pos", camera_.position);
+
+            glDrawArrays(GL_TRIANGLES, 0, _cone.vertices.size() / 3);
+            glBindVertexArray(0);
+
+            /* 关闭透明度 */
+            glDisable(GL_BLEND);
+            glEnable(GL_LIGHTING);
+            //        glDepthMask(GL_TRUE);
+        }
 }
 
 
@@ -537,9 +553,9 @@ void FoxOpenGLWidget::updateGL()
     gl_time += 1;
 
 
-    _cone.mat_model.rotate( 0.7f, 0.0f, 1.0f, 0.1f);
-    _cube.mat_model.rotate( 0.7f, 0.0f, 1.0f, 0.1f);
-    _sphere.mat_model.rotate(0.5f, 0.0f, 1.0f, 0.0f);
+//    _cone.mat_model.rotate( 0.7f, 0.0f, 1.0f, 0.0f);
+//    _cube.mat_model.rotate( 0.7f, 0.0f, 1.0f, 0.1f);
+    _sphere.mat_model.rotate(0.5f, 0.0f, 1.0f, 0.4f);
 
 
     /* 旋转光源 */

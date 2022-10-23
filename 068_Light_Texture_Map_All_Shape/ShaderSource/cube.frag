@@ -52,5 +52,5 @@ void main()
 
 
     vec3 result = res_ambient + res_diff + res_specular;  // 叠加物体颜色
-    FragColor = vec4(result, 1.0);
+    FragColor = vec4(result, 0.1);
 }
