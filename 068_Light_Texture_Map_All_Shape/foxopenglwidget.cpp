@@ -314,6 +314,9 @@ void FoxOpenGLWidget::paintGL()
         _sp_sphere.setUniformValue("material.ambient",    QVector3D(0.0215f,    0.1745f,    0.1215f));
         _sp_sphere.setUniformValue("material.diffuse",    QVector3D(0.07568f,   0.61424f,   0.07568f));
         _sp_sphere.setUniformValue("material.specular",   QVector3D(0.633f,     0.727811f,  0.633f));
+//        _sp_sphere.setUniformValue("material.ambient",    QVector3D(0.24725f,     0.1995f,    0.0745f)); // 金子
+//        _sp_sphere.setUniformValue("material.diffuse",    QVector3D(0.75164f,     0.60648f,   0.22648f));
+//        _sp_sphere.setUniformValue("material.specular",   QVector3D(0.628281f,    0.555802f,  0.366065f));
         _sp_sphere.setUniformValue("material.shininess",  16.0f);
 
         /* 光源颜色 */
@@ -570,17 +573,27 @@ void FoxOpenGLWidget::updateGL()
     _light.mat_model.scale(0.2);
 
 
-#if 0
-    /* 改变光源颜色光源 */
-    float color_x = sin(gl_time / 50.0 * 2.0f) + 0.5f;
-    float color_y = sin(gl_time / 50.0 * 0.7f) + 0.5f;
-    float color_z = sin(gl_time / 50.0 * 1.3f) + 0.5f;
-    QVector3D new_color = QVector3D(color_x, color_y, color_z);
 
-    _light.color_ambient = new_color * 0.2f;  // 乘以一个数来减少影响
-    _light.color_diffuse = new_color * 0.5f;
-    _light.color_specular = new_color;
-#endif
+    /* 改变光源颜色光源 */
+    if (true == is_change_light_color)
+    {
+        float color_x = sin(gl_time / 50.0 * 2.0f) + 0.4f;
+        float color_y = sin(gl_time / 50.0 * 0.7f) + 0.3f;
+        float color_z = sin(gl_time / 50.0 * 1.3f) + 0.2f;
+        QVector3D new_color = QVector3D(color_x, color_y, color_z);
+
+        _light.color_ambient = new_color * 0.2f;  // 乘以一个数来减少影响
+        _light.color_diffuse = new_color * 0.5f;
+        _light.color_specular = new_color;
+    }
+    else
+    {
+        _light.color_ambient  = QVector3D(0.4f, 0.4f, 0.4f);  // 乘以一个数来减少影响
+        _light.color_diffuse  = QVector3D(0.5f, 0.5f, 0.5f);
+        _light.color_specular = QVector3D(1.0f, 1.0f, 1.0f);
+    }
+
+
     update();
 }
 

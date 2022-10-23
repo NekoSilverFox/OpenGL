@@ -68,6 +68,8 @@ public:
     bool is_draw_cube;
     bool is_move_cube;
 
+    bool is_change_light_color;
+
 private:
     Shape current_shape_;  // 记录当前绘制的图形
 

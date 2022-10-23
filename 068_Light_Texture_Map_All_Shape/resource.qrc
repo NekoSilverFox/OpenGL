@@ -14,5 +14,6 @@
         <file>Picture/wood_box_specular_map.png</file>
         <file>Picture/poly_specular_map.png</file>
         <file>Picture/poly_tex.png</file>
+        <file>Picture/light.png</file>
     </qresource>
 </RCC>

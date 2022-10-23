@@ -34,6 +34,8 @@ private slots:
 
     void on_actionMoveCube_triggered();
 
+    void on_actionLightColor_triggered();
+
 private:
     Ui::MainWindow *ui;
 };

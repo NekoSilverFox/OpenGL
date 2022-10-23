@@ -86,6 +86,8 @@ QWidget:checked {
    <addaction name="actionMoveSphare"/>
    <addaction name="actionMoveCone"/>
    <addaction name="actionMoveCube"/>
+   <addaction name="separator"/>
+   <addaction name="actionLightColor"/>
   </widget>
   <action name="actionWireframe">
    <property name="checkable">
@@ -200,6 +202,23 @@ QWidget:checked {
     <string>Cube</string>
    </property>
   </action>
+  <action name="actionLightColor">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/pic/Picture/light.png</normaloff>:/pic/Picture/light.png</iconset>
+   </property>
+   <property name="text">
+    <string>Color</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -209,6 +228,8 @@ QWidget:checked {
    <header location="global">foxopenglwidget.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="resource.qrc"/>
+ </resources>
  <connections/>
 </ui>

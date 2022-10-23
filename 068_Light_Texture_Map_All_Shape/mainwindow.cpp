@@ -61,3 +61,9 @@ void MainWindow::on_actionMoveCube_triggered()
 {
     ui->openGLWidget->is_move_cube = ui->actionMoveCube->isChecked();
 }
+
+void MainWindow::on_actionLightColor_triggered()
+{
+    ui->openGLWidget->is_change_light_color = ui->actionLightColor->isChecked();
+}
+
