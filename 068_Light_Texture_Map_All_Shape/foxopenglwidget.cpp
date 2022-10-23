@@ -22,7 +22,7 @@ unsigned long long gl_time = 0;
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
-    this->_sphere = Sphere(1.0f, 10.0f);
+    this->_sphere = Sphere(1.0f, 5.0f);
     this->_cone = Cone(R, HEIGHT, 1.10f);
     this->_cube = Cube(LENGTH, COLOR_CUBE);
     this->_light = Light(1.0f, QVector3D(1.0f, 1.0f, 1.0f),
@@ -113,6 +113,9 @@ void FoxOpenGLWidget::initializeGL()
     GLint aNormalLocation = _sp_sphere.attributeLocation("aNormal");
     glVertexAttribPointer(aNormalLocation,  3,  GL_FLOAT,   GL_FALSE,   6 * sizeof(float),      (void*)(3*sizeof(float)));
     glEnableVertexAttribArray(aNormalLocation);
+
+    _sphere.mat_model.scale(0.7);
+    _sphere.mat_model.translate(-2.5f, -0.5f, 0.0f);
 
 
     // ------------------------ 解绑 ------------------------
@@ -308,9 +311,9 @@ void FoxOpenGLWidget::paintGL()
         _sp_sphere.setUniformValue("mat_projection", mat_projection);
 
         /* 材质颜色 */
-        _sp_sphere.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
-        _sp_sphere.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
-        _sp_sphere.setUniformValue("material.specular",   QVector3D(0.5f, 0.5f, 0.5f));
+        _sp_sphere.setUniformValue("material.ambient",    QVector3D(0.0215f,    0.1745f,    0.1215f));
+        _sp_sphere.setUniformValue("material.diffuse",    QVector3D(0.07568f,   0.61424f,   0.07568f));
+        _sp_sphere.setUniformValue("material.specular",   QVector3D(0.633f,     0.727811f,  0.633f));
         _sp_sphere.setUniformValue("material.shininess",  16.0f);
 
         /* 光源颜色 */
@@ -402,7 +405,7 @@ void FoxOpenGLWidget::paintGL()
             /* 材质颜色 */
             _sp_cone.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
             _sp_cone.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
-            _sp_cone.setUniformValue("material.specular",   QVector3D(0.5f, 0.5f, 0.5f));
+            _sp_cone.setUniformValue("material.specular",   QVector3D(0.6f, 0.6f, 0.6f));
             _sp_cone.setUniformValue("material.shininess",  128.0f);
 
             /* 光源颜色 */
@@ -569,9 +572,9 @@ void FoxOpenGLWidget::updateGL()
 
 #if 0
     /* 改变光源颜色光源 */
-    float color_x = sin(gl_time / 50.0 * 2.0f);
-    float color_y = sin(gl_time / 50.0 * 0.7f);
-    float color_z = sin(gl_time / 50.0 * 1.3f);
+    float color_x = sin(gl_time / 50.0 * 2.0f) + 0.5f;
+    float color_y = sin(gl_time / 50.0 * 0.7f) + 0.5f;
+    float color_z = sin(gl_time / 50.0 * 1.3f) + 0.5f;
     QVector3D new_color = QVector3D(color_x, color_y, color_z);
 
     _light.color_ambient = new_color * 0.2f;  // 乘以一个数来减少影响
