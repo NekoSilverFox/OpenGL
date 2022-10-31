@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2022-08-10T20:56:14
+# Project created by QtCreator 2022-09-04T14:34:21
 #
 #-------------------------------------------------
 
@@ -8,7 +8,7 @@ QT       += core gui widgets opengl openglwidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = 002_Triangle_VAO_VBO
+TARGET = OpenGL_AppleSoc
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -24,20 +24,31 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
+    bezierface.cpp \
+    light.cpp \
         main.cpp \
         mainwindow.cpp \
-    axbopenglwidget.cpp
+    foxopenglwidget.cpp \
+    camera.cpp \
+    sphere.cpp \
+    cube.cpp \
+    cone.cpp
 
 HEADERS += \
+    bezierface.hpp \
+    foxmath.h \
+    light.h \
         mainwindow.h \
-    axbopenglwidget.h
+    foxopenglwidget.h \
+    camera.hpp \
+    cone.hpp \
+    cube.hpp \
+    sphere.hpp
 
 FORMS += \
         mainwindow.ui
 
+RESOURCES += \
+    resource.qrc
 
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
-
+DISTFILES +=

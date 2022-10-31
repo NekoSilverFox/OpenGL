@@ -2746,6 +2746,82 @@ FragColor = vec4(ambient + diffuse + specular, 1.0);
 
 
 
+# 贝塞尔
+
+ Bezier
+
+## 贝塞尔曲线
+
+**贝塞尔曲线的的生成步骤：**
+
+1. 设定控制点坐标
+
+2. 设定求值函数
+
+    `void glMap1{fd}(GLenum target, TYPE t1, TYPE t2, GLint stride, GLint order, const TYPE* points)`
+
+    - `GLenum target`，给出控制点数组表示的内容，一般取 `GL_MAP1_VERTEX_3`，表示控制点数组存储控制点的三维点坐标
+    - `TYPE t1, TYPE t2`，表示贝塞尔曲线参数t的最小值和最大值，一般为 0.0 和 1.0
+    - `GLint stride`，表示数组 points 中一个坐标到另一个坐标位置的偏移量（对于三维坐标数组，stride=3）
+    - `GLint order`，指定贝塞尔曲线的阶数
+    - `const TYPE* points`，为执行控制点数组的指针
+
+3. 激活求值函数
+
+    `glEnable(GL_MAP1_VERTEX_3)`
+
+4. 计算沿样条路径的位置并现实曲线
+
+    `void glEvalCoord1{fd}(TYPE1)`
+
+    
+
+    第4步还可以用以下函数来生成一组均匀分布的参数值，显示曲线：
+
+    - `glMapGrid1(GLint n, TYPE t1, TYPE t2)` 指定曲线参数从t1开始经过n步均匀地变为t2。
+    - `glEvalMesh1(GLenum mode, GLint n1, GLint n2)` 指定从丛第n1个到第n2个参数(由glMapGrid1算出)绘制，参数mode取值为`GL_POINT` 或 `GL_LINE`,表示以点或折线的形式显示曲线
+
+
+
+## 贝塞尔曲面
+
+**贝塞尔曲面的的生成步骤：**
+
+1. 设定控制点坐标
+
+2. 设定求值函数
+
+    `void glMap2{fd}(GLenum target, TYPE u1, TYPE u2, GLint ustride, GLint uorder, TYPE v1, TYPE v2, GLint vstride, GLint vorder, const TYPE* points)`
+
+    - `GLenum target`，给出控制点数组表示的内容，一般取 `GL_MAP2_VERTEX_3`，表示控制点数组存储控制点的三维点坐标
+    - `TYPE u1, TYPE u2`和 `TYPE v1, TYPE v2`，表示贝塞尔曲面参数u和v的最小值和最大值，一般为 0.0 和 1.0
+    - `GLint ustride`和`GLint vstride`，表示数组 points 中一个坐标到另一个坐标位置的偏移量（对于三维坐标数组，stride=3）
+    - `GLint uorder`和`GLint vorder`，指定贝塞尔曲线的阶数
+    - `const TYPE* points`，为执行控制点数组的指针
+
+    
+
+3. 激活求值函数
+
+    `glEnable(GL_MAP2_VERTEX_3)`
+
+    
+
+4. 计算沿样条路径的位置并现实曲面
+
+    `void glEvalCoord2{fd}(TYPE u, TYPE v)`
+
+    
+
+    第4步还可以用以下函数来生成一组均匀分布的参数值，显示曲面：
+
+    - `glMapGrid2(GLint nu, TYPE u1, TYPE u2, GLint nv, TYPE v1, TYPE v2)` 指定曲线参数从t1开始经过n步均匀地变为t2。
+    - `glEvalMesh2(GLenum mode, GLint nu1, GLint nu2, GLint nv1, GLint nv2)` 指定从丛第n1个到第n2个参数(由glMapGrid1算出)绘制，参数mode取值为`GL_POINT` 或 `GL_LINE` 或 `GL_FILL`,表示以点或折线或填充面的形式显示曲面
+
+
+
+
+
 
 
 

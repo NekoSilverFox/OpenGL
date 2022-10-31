@@ -4,12 +4,15 @@
 #include <QKeyEvent>
 #include "foxopenglwidget.h"
 #include "sphere.hpp"
+#include "bezierface.hpp"
 
 
 #define TIMEOUT 50  // 50 毫秒更新一次
 
+
 const unsigned int NUM_VBO = 4;
 const unsigned int NUM_VAO = 4;
+
 
 /* 创建 VAO、VBO 对象并且赋予 ID */
 unsigned int VBOs[NUM_VBO], VAOs[NUM_VAO];
@@ -18,6 +21,82 @@ unsigned int VBOs[NUM_VBO], VAOs[NUM_VAO];
 float val_alpha = 0.5;
 
 unsigned long long gl_time = 0;
+
+/* =#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=# */
+// 贝塞尔曲线控制点
+//GLfloat control_points[4][3] = {
+//    {-0.4f, 0.1f, 0.0f},
+//    {-0.1f, 0.1f, 0.0f},
+//    {-0.1f, 0.4f, 0.0f},
+//    {-0.4f, 0.4f, 0.0f}
+//};
+//GLfloat control_points[5][5][3] = {{{-3,0,0}, {-1,1,0}, {0,0,0}, {1,-1,0}, {3,0,0}},
+//                                   {{-3,0,-1},{-1,1,-1},{0,0,-1},{1,-1,-1},{3,0,-1}},
+//                                   {{-3,0,-3},{-1,1,-3},{0,0,-3},{1,-1,-3},{3,0,-3}},
+//                                   {{-3,0,-3},{-1,1,-3},{0,0,-3},{1,-1,-3},{3,0,-3}},
+//                                   {{-3,0,-4},{-1,1,-4},{0,0,-4},{1,-1,-4},{3,0,-4}}};
+#if 0
+GLfloat control_points[4][4][3] = {
+    {
+        { -1.5, -1.5,  2.0 },
+        { -0.5, -1.5,  2.0 },
+        {  0.5, -1.5, -1.0 },
+        {  1.5, -1.5,  2.0 }
+    },
+
+    {
+        { -1.5, -0.5,  1.0 },
+        { -0.5,  1.5,  2.0 },
+        {  0.5,  0.5,  1.0 },
+        {  1.5, -0.5, -1.0 }
+    },
+
+    {
+        { -1.5,  0.5, 2.0 },
+        { -0.5,  0.5, 1.0 },
+        {  0.5,  0.5, 3.0 },
+        {  1.5, -1.5, 1.5 }
+    },
+
+    {
+        { -1.5, 1.5, -2.0 },
+        { -0.5, 1.5, -2.0 },
+        {  0.5, 0.5,  1.0 },
+        {  1.5, 1.5, -1.0 }
+    }
+};
+#endif
+GLfloat control_points[4][4][3] = {
+    {
+        { -0.3, -0.3,  2.0 },
+        { -0.2, -0.3,  2.0 },
+        {  0.2, -0.3, -1.0 },
+        {  0.3, -0.3,  2.0 }
+    },
+
+    {
+        { -0.3, -0.2,  1.0 },
+        { -0.2,  0.3,  2.0 },
+        {  0.2,  0.2,  1.0 },
+        {  0.3, -0.2, -1.0 }
+    },
+
+    {
+        { -0.3,  0.2, 2.0 },
+        { -0.2,  0.2, 1.0 },
+        {  0.2,  0.2, 3.0 },
+        {  0.3, -0.3, 0.3 }
+    },
+
+    {
+        { -0.3, 0.3, -2.0 },
+        { -0.2, 0.3, -2.0 },
+        {  0.2, 0.2,  1.0 },
+        {  0.3, 0.3, -1.0 }
+    }
+};
+
+/* =#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=# */
 
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
@@ -274,9 +353,8 @@ void FoxOpenGLWidget::resizeGL(int w, int h)
 {
     Q_UNUSED(w);
     Q_UNUSED(h);
+
 }
-
-
 
 
 /// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -285,6 +363,17 @@ void FoxOpenGLWidget::resizeGL(int w, int h)
 void FoxOpenGLWidget::paintGL()
 {
 //    glViewport(0, 0, width(), height());
+
+    /****************************************************** 贝塞尔曲线测试 ******************************************************/
+    glMap2f(GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, &control_points[0][0][0]);
+    glEnable(GL_MAP2_VERTEX_3);
+    glMapGrid2f(20, 0.0, 1.0, 20, 0.0, 1.0);
+    glEnable(GL_BLEND);
+    glEnable(GL_LINE_SMOOTH);
+    glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);  // Antialias the lines
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_AUTO_NORMAL);
+
 
     /* 设置 OpenGLWidget 控件背景颜色为深青色，并且设置深度信息（Z-缓冲） */
     glClearColor(0.15f, 0.15f, 0.15f, 1.0f);  // set方法【重点】如果没有 initializeGL，目前是一个空指针状态，没有指向显卡里面的函数，会报错
@@ -298,9 +387,15 @@ void FoxOpenGLWidget::paintGL()
     mat_projection.perspective(camera_.zoom_fov, (float)width()/(float)height(), 0.1f, 100.0f);
 
 
+
+
+
     /****************************************************** 球体 ******************************************************/
     if (is_draw_sphere)
     {
+//            glMap1f(GL_MAP1_VERTEX_3, 0.0f, 1.0f, 3, 4, &control_points[0][0]);
+//            glEnable(GL_MAP1_VERTEX_3);
+
         glBindVertexArray(VAOs[0]);
 
         /* 【重点】使用 QOpenGLShaderProgram 进行着色器绑定 */
@@ -365,6 +460,7 @@ void FoxOpenGLWidget::paintGL()
         _sp_cube.setUniformValue("view_pos", camera_.position);
 
         glDrawArrays(GL_TRIANGLES, 0, 36);
+
         glBindVertexArray(0);
     }
 
