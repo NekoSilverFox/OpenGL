@@ -24,6 +24,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
+    bezierface.cpp \
     light.cpp \
         main.cpp \
         mainwindow.cpp \
@@ -34,6 +35,7 @@ SOURCES += \
     cone.cpp
 
 HEADERS += \
+    bezierface.hpp \
     foxmath.h \
     light.h \
         mainwindow.h \

@@ -4,12 +4,15 @@
 #include <QKeyEvent>
 #include "foxopenglwidget.h"
 #include "sphere.hpp"
+#include "bezierface.hpp"
 
 
 #define TIMEOUT 50  // 50 毫秒更新一次
 
+
 const unsigned int NUM_VBO = 4;
 const unsigned int NUM_VAO = 4;
+
 
 /* 创建 VAO、VBO 对象并且赋予 ID */
 unsigned int VBOs[NUM_VBO], VAOs[NUM_VAO];
@@ -18,6 +21,17 @@ unsigned int VBOs[NUM_VBO], VAOs[NUM_VAO];
 float val_alpha = 0.5;
 
 unsigned long long gl_time = 0;
+
+/* =#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=# */
+float controlPoints[] = {
+    -1.5, -1.5, 2.0, -0.5, -1.5, 2.0, 0.5, -1.5, -1.0, 1.5, -1.5, 2.0,
+    -1.5, -0.5, 1.0, -0.5, 1.5, 2.0, 0.5, 0.5, 1.0, 1.5, -0.5, -1.0,
+    -1.5, 0.5, 2.0, -0.5, 0.5, 1.0, 0.5, 0.5, 3.0, 1.5, -1.5, 1.5,
+    -1.5, 1.5, -2.0, -0.5, 1.5, -2.0, 0.5, 0.5, 1.0, 1.5, 1.5, -1.0
+};
+BezierFace myBezier = BezierFace(3, controlPoints, 36);
+
+/* =#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=# */
 
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
@@ -277,6 +291,41 @@ void FoxOpenGLWidget::resizeGL(int w, int h)
 }
 
 
+void setupVertices()
+{
+    std::vector<float> pvalues;  //顶点坐标
+    std::vector<float> tvalues;  //纹理坐标
+    std::vector<float> nvalues;  //法线
+    std::vector<int> ind = myBezier.getIndices();
+    std::vector<QVector3D> verts = myBezier.getVertices();
+    std::vector<QVector2D> tex = myBezier.getTexCoords();
+    std::vector<QVector3D> norm = myBezier.getNormals();
+    for (int i = 0; i < myBezier.getNumIndices(); i++)
+    {
+        pvalues.push_back(verts[ind[i]].x());
+        pvalues.push_back(verts[ind[i]].y());
+        pvalues.push_back(verts[ind[i]].z());
+        tvalues.push_back(tex[ind[i]].x());
+        tvalues.push_back(tex[ind[i]].y());
+
+        nvalues.push_back(norm[ind[i]].x());
+        nvalues.push_back(norm[ind[i]].y());
+        nvalues.push_back(norm[ind[i]].z());
+    }
+
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(3, VBO);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+    glBufferData(GL_ARRAY_BUFFER, pvalues.size() * 4, &pvalues[0], GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+    glBufferData(GL_ARRAY_BUFFER, tvalues.size() * 4, &tvalues[0], GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
+    glBufferData(GL_ARRAY_BUFFER, nvalues.size() * 4, &nvalues[0], GL_STATIC_DRAW);
+
+}
 
 
 /// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -296,6 +345,11 @@ void FoxOpenGLWidget::paintGL()
 
     QMatrix4x4 mat_projection;  // 透视（焦距）一般设置一次就好了，之后不变。如果放在PaintGL() 里会导致每次重绘都调用，增加资源消耗
     mat_projection.perspective(camera_.zoom_fov, (float)width()/(float)height(), 0.1f, 100.0f);
+
+    /****************************************************** 贝塞尔曲线测试 ******************************************************/
+
+
+
 
 
     /****************************************************** 球体 ******************************************************/
@@ -364,7 +418,8 @@ void FoxOpenGLWidget::paintGL()
         _sp_cube.setUniformValue("light_pos", _light.postion);
         _sp_cube.setUniformValue("view_pos", camera_.position);
 
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDrawArrays(GL_TRIANGLES, 0, myBezier.getNumIndices());
+
         glBindVertexArray(0);
     }
 
