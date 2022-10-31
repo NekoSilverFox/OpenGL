@@ -10,6 +10,44 @@ float vertices[] = {
    0.0f,  0.5f, 0.0f
 };
 
+// 贝塞尔曲线控制点
+//GLfloat control_points[4][3] = {
+//    {-0.4f, 0.1f, 0.0f},
+//    {-0.1f, 0.1f, 0.0f},
+//    {-0.1f, 0.4f, 0.0f},
+//    {-0.4f, 0.4f, 0.0f}
+//};
+GLfloat control_points[4][4][3] = {
+    {
+        { -0.3, -0.3,  2.0 },
+        { -0.2, -0.3,  2.0 },
+        {  0.2, -0.3, -1.0 },
+        {  0.3, -0.3,  2.0 }
+    },
+
+    {
+        { -0.3, -0.2,  1.0 },
+        { -0.2,  0.3,  2.0 },
+        {  0.2,  0.2,  1.0 },
+        {  0.3, -0.2, -1.0 }
+    },
+
+    {
+        { -0.3,  0.2, 2.0 },
+        { -0.2,  0.2, 1.0 },
+        {  0.2,  0.2, 3.0 },
+        {  0.3, -0.3, 0.3 }
+    },
+
+    {
+        { -0.3, 0.3, -2.0 },
+        { -0.2, 0.3, -2.0 },
+        {  0.2, 0.2,  1.0 },
+        {  0.3, 0.3, -1.0 }
+    }
+};
+
+
 // 创建 VAO 和 VBO 对象并且赋予 ID
 unsigned int VBO, VAO;
 
@@ -59,6 +97,10 @@ void AXBOpenGLWidget::initializeGL()
     // 解绑 VAO 和 VBO
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+
+//    glMap1f(GL_MAP1_VERTEX_3, 0.0f, 1.0f, 3, 4, &control_points[0][0]);
+//    glEnable(GL_MAP1_VERTEX_3);
 
 
     // ===================== 顶点着色器 =====================
@@ -127,8 +169,20 @@ void AXBOpenGLWidget::paintGL()
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);  // set方法【重点】如果没有 initializeGL，目前是一个空指针状态，没有指向显卡里面的函数，会报错
     glClear(GL_COLOR_BUFFER_BIT);  // use方法
 
+
+    glMap2f(GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, &control_points[0][0][0]);
+    glEnable(GL_MAP2_VERTEX_3);
+    glMapGrid2f(20, 0.0, 1.0, 20, 0.0, 1.0);
+    glEnable(GL_BLEND);
+    glEnable(GL_LINE_SMOOTH);
+    glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);  // Antialias the lines
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
+
     /* 重新绑定 VAO */
     glBindVertexArray(VAO);
+
 
     /* 绘制三角形 */
     glDrawArrays(GL_TRIANGLES, 0, 3);

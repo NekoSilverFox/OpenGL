@@ -23,13 +23,78 @@ float val_alpha = 0.5;
 unsigned long long gl_time = 0;
 
 /* =#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=# */
-float controlPoints[] = {
-    -1.5, -1.5, 2.0, -0.5, -1.5, 2.0, 0.5, -1.5, -1.0, 1.5, -1.5, 2.0,
-    -1.5, -0.5, 1.0, -0.5, 1.5, 2.0, 0.5, 0.5, 1.0, 1.5, -0.5, -1.0,
-    -1.5, 0.5, 2.0, -0.5, 0.5, 1.0, 0.5, 0.5, 3.0, 1.5, -1.5, 1.5,
-    -1.5, 1.5, -2.0, -0.5, 1.5, -2.0, 0.5, 0.5, 1.0, 1.5, 1.5, -1.0
+// 贝塞尔曲线控制点
+//GLfloat control_points[4][3] = {
+//    {-0.4f, 0.1f, 0.0f},
+//    {-0.1f, 0.1f, 0.0f},
+//    {-0.1f, 0.4f, 0.0f},
+//    {-0.4f, 0.4f, 0.0f}
+//};
+//GLfloat control_points[5][5][3] = {{{-3,0,0}, {-1,1,0}, {0,0,0}, {1,-1,0}, {3,0,0}},
+//                                   {{-3,0,-1},{-1,1,-1},{0,0,-1},{1,-1,-1},{3,0,-1}},
+//                                   {{-3,0,-3},{-1,1,-3},{0,0,-3},{1,-1,-3},{3,0,-3}},
+//                                   {{-3,0,-3},{-1,1,-3},{0,0,-3},{1,-1,-3},{3,0,-3}},
+//                                   {{-3,0,-4},{-1,1,-4},{0,0,-4},{1,-1,-4},{3,0,-4}}};
+#if 0
+GLfloat control_points[4][4][3] = {
+    {
+        { -1.5, -1.5,  2.0 },
+        { -0.5, -1.5,  2.0 },
+        {  0.5, -1.5, -1.0 },
+        {  1.5, -1.5,  2.0 }
+    },
+
+    {
+        { -1.5, -0.5,  1.0 },
+        { -0.5,  1.5,  2.0 },
+        {  0.5,  0.5,  1.0 },
+        {  1.5, -0.5, -1.0 }
+    },
+
+    {
+        { -1.5,  0.5, 2.0 },
+        { -0.5,  0.5, 1.0 },
+        {  0.5,  0.5, 3.0 },
+        {  1.5, -1.5, 1.5 }
+    },
+
+    {
+        { -1.5, 1.5, -2.0 },
+        { -0.5, 1.5, -2.0 },
+        {  0.5, 0.5,  1.0 },
+        {  1.5, 1.5, -1.0 }
+    }
 };
-BezierFace myBezier = BezierFace(3, controlPoints, 36);
+#endif
+GLfloat control_points[4][4][3] = {
+    {
+        { -0.3, -0.3,  2.0 },
+        { -0.2, -0.3,  2.0 },
+        {  0.2, -0.3, -1.0 },
+        {  0.3, -0.3,  2.0 }
+    },
+
+    {
+        { -0.3, -0.2,  1.0 },
+        { -0.2,  0.3,  2.0 },
+        {  0.2,  0.2,  1.0 },
+        {  0.3, -0.2, -1.0 }
+    },
+
+    {
+        { -0.3,  0.2, 2.0 },
+        { -0.2,  0.2, 1.0 },
+        {  0.2,  0.2, 3.0 },
+        {  0.3, -0.3, 0.3 }
+    },
+
+    {
+        { -0.3, 0.3, -2.0 },
+        { -0.2, 0.3, -2.0 },
+        {  0.2, 0.2,  1.0 },
+        {  0.3, 0.3, -1.0 }
+    }
+};
 
 /* =#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=# */
 
@@ -288,42 +353,6 @@ void FoxOpenGLWidget::resizeGL(int w, int h)
 {
     Q_UNUSED(w);
     Q_UNUSED(h);
-}
-
-
-void setupVertices()
-{
-    std::vector<float> pvalues;  //顶点坐标
-    std::vector<float> tvalues;  //纹理坐标
-    std::vector<float> nvalues;  //法线
-    std::vector<int> ind = myBezier.getIndices();
-    std::vector<QVector3D> verts = myBezier.getVertices();
-    std::vector<QVector2D> tex = myBezier.getTexCoords();
-    std::vector<QVector3D> norm = myBezier.getNormals();
-    for (int i = 0; i < myBezier.getNumIndices(); i++)
-    {
-        pvalues.push_back(verts[ind[i]].x());
-        pvalues.push_back(verts[ind[i]].y());
-        pvalues.push_back(verts[ind[i]].z());
-        tvalues.push_back(tex[ind[i]].x());
-        tvalues.push_back(tex[ind[i]].y());
-
-        nvalues.push_back(norm[ind[i]].x());
-        nvalues.push_back(norm[ind[i]].y());
-        nvalues.push_back(norm[ind[i]].z());
-    }
-
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(3, VBO);
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
-    glBufferData(GL_ARRAY_BUFFER, pvalues.size() * 4, &pvalues[0], GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
-    glBufferData(GL_ARRAY_BUFFER, tvalues.size() * 4, &tvalues[0], GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
-    glBufferData(GL_ARRAY_BUFFER, nvalues.size() * 4, &nvalues[0], GL_STATIC_DRAW);
 
 }
 
@@ -334,6 +363,17 @@ void setupVertices()
 void FoxOpenGLWidget::paintGL()
 {
 //    glViewport(0, 0, width(), height());
+
+    /****************************************************** 贝塞尔曲线测试 ******************************************************/
+    glMap2f(GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, &control_points[0][0][0]);
+    glEnable(GL_MAP2_VERTEX_3);
+    glMapGrid2f(20, 0.0, 1.0, 20, 0.0, 1.0);
+    glEnable(GL_BLEND);
+    glEnable(GL_LINE_SMOOTH);
+    glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);  // Antialias the lines
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_AUTO_NORMAL);
+
 
     /* 设置 OpenGLWidget 控件背景颜色为深青色，并且设置深度信息（Z-缓冲） */
     glClearColor(0.15f, 0.15f, 0.15f, 1.0f);  // set方法【重点】如果没有 initializeGL，目前是一个空指针状态，没有指向显卡里面的函数，会报错
@@ -346,8 +386,6 @@ void FoxOpenGLWidget::paintGL()
     QMatrix4x4 mat_projection;  // 透视（焦距）一般设置一次就好了，之后不变。如果放在PaintGL() 里会导致每次重绘都调用，增加资源消耗
     mat_projection.perspective(camera_.zoom_fov, (float)width()/(float)height(), 0.1f, 100.0f);
 
-    /****************************************************** 贝塞尔曲线测试 ******************************************************/
-
 
 
 
@@ -355,6 +393,9 @@ void FoxOpenGLWidget::paintGL()
     /****************************************************** 球体 ******************************************************/
     if (is_draw_sphere)
     {
+//            glMap1f(GL_MAP1_VERTEX_3, 0.0f, 1.0f, 3, 4, &control_points[0][0]);
+//            glEnable(GL_MAP1_VERTEX_3);
+
         glBindVertexArray(VAOs[0]);
 
         /* 【重点】使用 QOpenGLShaderProgram 进行着色器绑定 */
@@ -418,7 +459,7 @@ void FoxOpenGLWidget::paintGL()
         _sp_cube.setUniformValue("light_pos", _light.postion);
         _sp_cube.setUniformValue("view_pos", camera_.position);
 
-        glDrawArrays(GL_TRIANGLES, 0, myBezier.getNumIndices());
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 
         glBindVertexArray(0);
     }
