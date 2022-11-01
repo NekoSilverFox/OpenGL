@@ -4,7 +4,7 @@ out vec4 FragColor;
 
 in vec3 g_axis_normal;
 in vec3 g_axis_fragPos;
-
+in vec2 texCoord_TESout;
 
 /* 材质颜色 */
 struct Material {

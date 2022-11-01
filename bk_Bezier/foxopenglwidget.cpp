@@ -5,6 +5,7 @@
 #include "foxopenglwidget.h"
 #include "sphere.hpp"
 #include "bezierface.hpp"
+#include "GLUT/glut.h"
 
 
 #define TIMEOUT 50  // 50 毫秒更新一次
@@ -35,7 +36,8 @@ unsigned long long gl_time = 0;
 //                                   {{-3,0,-3},{-1,1,-3},{0,0,-3},{1,-1,-3},{3,0,-3}},
 //                                   {{-3,0,-3},{-1,1,-3},{0,0,-3},{1,-1,-3},{3,0,-3}},
 //                                   {{-3,0,-4},{-1,1,-4},{0,0,-4},{1,-1,-4},{3,0,-4}}};
-#if 0
+
+#if 1
 GLfloat control_points[4][4][3] = {
     {
         { -1.5, -1.5,  2.0 },
@@ -66,6 +68,8 @@ GLfloat control_points[4][4][3] = {
     }
 };
 #endif
+
+#if 0
 GLfloat control_points[4][4][3] = {
     {
         { -0.3, -0.3,  2.0 },
@@ -95,6 +99,41 @@ GLfloat control_points[4][4][3] = {
         {  0.3, 0.3, -1.0 }
     }
 };
+#endif
+/*
+ * A fourth order surface
+ */
+//GLfloat points[4][4][3] =
+//{
+//  {
+//    {-20.0, -2.0,  1.0},
+//    {-0.5, -2.0,  0.0},
+//    { 0.5, -2.0, -2.0},
+//    { 2.0, -2.0,  2.0}},
+//  {
+//    {-2.0, -0.5,  2.0},
+//    {-0.5, -0.5,  1.5},
+//    { 0.5, -0.5,  0.0},
+//    { 2.0, -0.5, -2.0}},
+//  {
+//    {-2.0,  0.5,  2.0},
+//    {-0.5,  0.5,  1.0},
+//    { 0.5,  0.5, -1.0},
+//    { 2.0,  0.5,  1.0}},
+//  {
+//    {-2.0,  2.0, -1.0},
+//    {-0.5,  2.0, -1.0},
+//    { 0.5,  2.0,  0.0},
+//    { 2.0,  2.0, -0.5}}
+//};
+//int        uSize         = 4;
+//int        vSize         = 4;
+
+
+//// The number of subdivisions in the grid
+//int        gridSize      = 200;
+//int        uSelected     = -1;
+//int        vSelected     = -1;
 
 /* =#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=# */
 
@@ -216,6 +255,7 @@ void FoxOpenGLWidget::initializeGL()
     // ------------------------ 着色器 ------------------------
     _sp_cone.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/cone.vert");
     _sp_cone.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/cone.frag");
+     _sp_cone.addShaderFromSourceFile(QOpenGLShader::Geometry, ":/shaders/ShaderSource/cone.geom");
     success = _sp_cone.link();
     qDebug() << "[INFO] Sphere Shade Program _sp_cone" << success;
     if (!success)
@@ -365,25 +405,26 @@ void FoxOpenGLWidget::paintGL()
 //    glViewport(0, 0, width(), height());
 
     /****************************************************** 贝塞尔曲线测试 ******************************************************/
-    glMap2f(GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, &control_points[0][0][0]);
-    glEnable(GL_MAP2_VERTEX_3);
-    glMapGrid2f(20, 0.0, 1.0, 20, 0.0, 1.0);
-    glEnable(GL_BLEND);
-    glEnable(GL_LINE_SMOOTH);
-    glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);  // Antialias the lines
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_AUTO_NORMAL);
+//    glMap2f(GL_MAP2_VERTEX_3, 0, 1, 3, uSize, 0, 1, uSize * 3, vSize, &points[0][0][0]);
+//    // Fill the surface
+//    glEvalMesh2(GL_FILL, 0, gridSize, 0, gridSize);
+//    glEnable(GL_MAP2_VERTEX_3);
+//    glMapGrid2f(10, 0.0f, 10.0f, 10, 0.0f, 10.0f);
+
 
 
     /* 设置 OpenGLWidget 控件背景颜色为深青色，并且设置深度信息（Z-缓冲） */
-    glClearColor(0.15f, 0.15f, 0.15f, 1.0f);  // set方法【重点】如果没有 initializeGL，目前是一个空指针状态，没有指向显卡里面的函数，会报错
-    glEnable(GL_DEPTH_TEST);  // 深度信息，如果不设置立方体就像没有盖子
+    glClearColor(0.15f, 0.15f, 0.15f, 1.0f);    // set方法【重点】如果没有 initializeGL，目前是一个空指针状态，没有指向显卡里面的函数，会报错
+    glEnable(GL_DEPTH_TEST);                    // 深度信息，如果不设置立方体就像没有盖子
+    glEnable(GL_PROGRAM_POINT_SIZE);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // use方法
 
-    QMatrix4x4 mat_view;  // 【重点】 view代表摄像机拍摄的物体，也就是全世界！！！
+
+
+    QMatrix4x4 mat_view;                        // 【重点】 view代表摄像机拍摄的物体，也就是全世界！！！
     mat_view = camera_.getViewMatrix();
 
-    QMatrix4x4 mat_projection;  // 透视（焦距）一般设置一次就好了，之后不变。如果放在PaintGL() 里会导致每次重绘都调用，增加资源消耗
+    QMatrix4x4 mat_projection;                  // 透视（焦距）一般设置一次就好了，之后不变。如果放在PaintGL() 里会导致每次重绘都调用，增加资源消耗
     mat_projection.perspective(camera_.zoom_fov, (float)width()/(float)height(), 0.1f, 100.0f);
 
 
@@ -524,6 +565,10 @@ void FoxOpenGLWidget::paintGL()
             glEnable(GL_LIGHTING);
             //        glDepthMask(GL_TRUE);
         }
+
+
+
+
 }
 
 
