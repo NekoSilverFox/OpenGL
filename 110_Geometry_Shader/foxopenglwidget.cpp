@@ -59,6 +59,7 @@ void FoxOpenGLWidget::initializeGL()
 
     // ===================== 着色器 =====================
     this->shader_program_.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/source.vert");
+    this->shader_program_.addShaderFromSourceFile(QOpenGLShader::Geometry, ":/shaders/ShaderSource/source.geom");
     this->shader_program_.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/source.frag");
     bool success = this->shader_program_.link();
     if (!success) qDebug() << "ERROR: " << this->shader_program_.log();
