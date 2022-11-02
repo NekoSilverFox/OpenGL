@@ -26,7 +26,7 @@ void main() {
     gl_Position = explode(gl_in[0].gl_Position, gs_in[0].g_axis_normal);
     res_g_axis_normal   = gs_in[0].g_axis_normal;
     res_g_axis_fragPos  = gs_in[0].g_axis_fragPos;
-    EmitVertex();
+    EmitVertex();  // 这就是发送了一个顶点
 
     gl_Position = explode(gl_in[1].gl_Position, gs_in[1].g_axis_normal);
     res_g_axis_normal   = gs_in[1].g_axis_normal;
