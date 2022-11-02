@@ -14,24 +14,17 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::on_actionDrawRect_triggered()
+{
+    ui->openGLWidget->drawShape(FoxOpenGLWidget::Shape::Rect);
+}
+
 void MainWindow::on_actionWireframe_triggered()
 {
     ui->openGLWidget->setWirefame(ui->actionWireframe->isChecked());  // 如果按下就是线框模式
 }
 
-void MainWindow::on_actionDrawCube_triggered()
+void MainWindow::on_actionClear_triggered()
 {
-    ui->openGLWidget->is_draw_cube = ui->actionDrawCube->isChecked();
-    ui->openGLWidget->updateGL();
+    ui->openGLWidget->drawShape(FoxOpenGLWidget::Shape::None);
 }
-
-void MainWindow::on_actionMoveCube_triggered()
-{
-    ui->openGLWidget->is_move_cube = ui->actionMoveCube->isChecked();
-}
-
-void MainWindow::on_actionLightColor_triggered()
-{
-    ui->openGLWidget->is_change_light_color = ui->actionLightColor->isChecked();
-}
-

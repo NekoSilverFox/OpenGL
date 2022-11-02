@@ -8,7 +8,7 @@ QT       += core gui widgets opengl openglwidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = OpenGL_AppleSoc
+TARGET = 003_Triangle_EBO
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -24,25 +24,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
-    light.cpp \
         main.cpp \
         mainwindow.cpp \
-    foxopenglwidget.cpp \
-    camera.cpp \
-    cube.cpp
+    foxopenglwidget.cpp
 
 HEADERS += \
-    foxmath.h \
-    light.h \
         mainwindow.h \
-    foxopenglwidget.h \
-    camera.hpp \
-    cube.hpp
+    foxopenglwidget.h
 
 FORMS += \
         mainwindow.ui
 
 RESOURCES += \
     resource.qrc
-
-DISTFILES +=

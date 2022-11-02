@@ -3125,6 +3125,102 @@ layout (std140) uniform ExampleBlock
 
 
 
+# 几何着色器
+
+在顶点和片段着色器之间有一个可选的==几何着色器(Geometry Shader)==，几何着色器的**输入是一个图元的==一组顶点==（如点或三角形）**。几何着色器可以在顶点发送到下一着色器阶段之前对它们**随意变换**。然而，几何着色器最有趣的地方在于，**它能够将（这一组）顶点变换为完全不同的图元，并且还能生成比原来更多的顶点。**
+
+废话不多说，我们直接先看一个几何着色器的例子：
+
+```glsl
+#version 330 core
+layout (points) in;			//  声明从顶点着色器输入的图元类型
+layout (line_strip, max_vertices = 2) out;  // 几何着色器输出的图元类型
+
+void main() {    
+    gl_Position = gl_in[0].gl_Position + vec4(-0.1, 0.0, 0.0, 0.0); 
+    EmitVertex();
+
+    gl_Position = gl_in[0].gl_Position + vec4( 0.1, 0.0, 0.0, 0.0);
+    EmitVertex();
+
+    EndPrimitive();
+}
+```
+
+在几何着色器的顶部，我们需要**声明从顶点着色器输入的图元类型**。这需要在in关键字前声明一个布局修饰符(Layout Qualifier)。这个输入布局修饰符可以从顶点着色器接收下列任何一个图元值：
+
+- `points`：绘制`GL_POINTS`图元时（1）。
+- `lines`：绘制`GL_LINES`或`GL_LINE_STRIP`时（2）
+- `lines_adjacency`：`GL_LINES_ADJACENCY`或`GL_LINE_STRIP_ADJACENCY`（4）
+- `triangles`：`GL_TRIANGLES`、`GL_TRIANGLE_STRIP`或`GL_TRIANGLE_FAN`（3）
+- `triangles_adjacency`：`GL_TRIANGLES_ADJACENCY`或`GL_TRIANGLE_STRIP_ADJACENCY`（6）
+
+以上是能提供给`glDrawArrays`渲染函数的几乎所有图元了。如果我们想要将顶点绘制为`GL_TRIANGLES`，我们就要将输入修饰符设置为`triangles`。**括号内的数字表示的是一个图元所包含的最小顶点数。**
+
+
+
+接下来，我们还需要指定**几何着色器输出的图元类型**，这需要在out关键字前面加一个布局修饰符。和输入布局修饰符一样，输出布局修饰符也可以接受几个图元值：
+
+- `points`
+- `line_strip`
+- `triangle_strip`
+
+有了这3个输出修饰符，我们就可以使用输入图元创建几乎任意的形状了。要生成一个三角形的话，我们将输出定义为`triangle_strip`，并输出3个顶点。
+
+几何着色器同时希望我们设置一个它最大能够输出的顶点数量（如果你超过了这个值，OpenGL将不会绘制**多出的**顶点），这个也可以在out关键字的布局修饰符中设置。在这个例子中，我们将输出一个`line_strip`，并将最大顶点数设置为2个。
+
+如果你不知道什么是线条(Line Strip)：线条连接了一组点，形成一条连续的线，它最少要由两个点来组成。在渲染函数中每多加一个点，就会在这个点与前一个点之间形成一条新的线。在下面这张图中，我们有5个顶点：
+
+![img](https://learnopengl-cn.github.io/img/04/09/geometry_shader_line_strip.png)
+
+如果使用的是上面定义的着色器，那么这将只能输出一条线段，因为最大顶点数等于2。
+
+为了生成更有意义的结果，我们需要某种方式来获取前一着色器阶段的输出。GLSL提供给我们一个内建(Built-in)变量，在内部看起来（可能）是这样的：
+
+```
+in gl_Vertex
+{
+    vec4  gl_Position;
+    float gl_PointSize;
+    float gl_ClipDistance[];
+} gl_in[];
+```
+
+这里，它被声明为一个接口块（Interface Block，我们在[上一节](https://learnopengl-cn.github.io/04 Advanced OpenGL/08 Advanced GLSL/)已经讨论过），它包含了几个很有意思的变量，其中最有趣的一个是gl_Position，它是和顶点着色器输出非常相似的一个向量。
+
+要注意的是，它被声明为一个数组，因为大多数的渲染图元包含多于1个的顶点，而几何着色器的输入是一个图元的**所有**顶点。
+
+有了之前顶点着色器阶段的顶点数据，我们就可以使用2个几何着色器函数，`EmitVertex()`和`EndPrimitive()`，来生成新的数据了。几何着色器希望你能够生成并输出至少一个定义为输出的图元。在我们的例子中，我们需要至少生成一个线条图元。
+
+```glsl
+void main() {
+    gl_Position = gl_in[0].gl_Position + vec4(-0.1, 0.0, 0.0, 0.0); 
+    EmitVertex();
+
+    gl_Position = gl_in[0].gl_Position + vec4( 0.1, 0.0, 0.0, 0.0);
+    EmitVertex();
+
+    EndPrimitive();
+}
+```
+
+- 每次我们调用`EmitVertex`时，gl_Position中的向量会被添加到图元中来。
+- 当`EndPrimitive`被调用时，所有发射出的(Emitted)顶点都会合成为指定的输出渲染图元。
+
+在一个或多个EmitVertex调用之后重复调用EndPrimitive能够生成多个图元。在这个例子中，我们发射了两个顶点，它们从原始顶点位置平移了一段距离，之后调用了EndPrimitive，将这两个顶点合成为一个包含两个顶点的线条。
+
+现在你（大概）了解了几何着色器的工作方式，你可能已经猜出这个几何着色器是做什么的了。它接受一个点图元作为输入，以这个点为中心，创建一条水平的线图元。如果我们渲染它，看起来会是这样的：
+
+![img](https://learnopengl-cn.github.io/img/04/09/geometry_shader_lines.png)
+
+目前还并没有什么令人惊叹的效果，但考虑到这个输出是通过调用下面的渲染函数来生成的，它还是很有意思的：
+
+```glsl
+glDrawArrays(GL_POINTS, 0, 4);
+```
+
+虽然这是一个比较简单的例子，它的确向你展示了如何能够使用几何着色器来（动态地）生成新的形状。在之后我们会利用几何着色器创建出更有意思的效果，但现在我们仍将从创建一个简单的几何着色器开始。
+
 
 
 

@@ -1,32 +1,27 @@
 #ifndef FOXOPENGLWIDGET_H
 #define FOXOPENGLWIDGET_H
 
-
 #include <QOpenGLWidget>  // 相当于GLFW
 #include <QOpenGLFunctions_3_3_Core>  // 相当于 GLAD
 #include <QOpenGLShaderProgram>
-#include <QTimer>
-#include <QTime>
-#include <QOpenGLTexture>
-#include "camera.hpp"
-#include "cube.hpp"
-#include "light.h"
-
-
 
 class FoxOpenGLWidget : public QOpenGLWidget, QOpenGLFunctions_3_3_Core
 {
     Q_OBJECT
-
 public:
-    explicit FoxOpenGLWidget(QWidget* parent = nullptr);
+    enum Shape
+    {
+        None,
+        Rect,
+        Circle,
+        Triangle
+    };
+
+    explicit FoxOpenGLWidget(QWidget *parent = nullptr);
     ~FoxOpenGLWidget();
 
-    /* 设置线框模式是否开启 */
+    void drawShape(Shape shape);
     void setWirefame(bool wirefame);
-
-    /* 移动图形 */
-    void move3DShape(QVector3D step);
 
 
 protected:
@@ -35,44 +30,13 @@ protected:
     virtual void resizeGL(int w, int h);
     virtual void paintGL();
 
-    /* 处理键盘、鼠标事件 */
-    void keyPressEvent(QKeyEvent* event);
-    void mouseMoveEvent(QMouseEvent* event);    // 鼠标移动
-    void wheelEvent(QWheelEvent* event);        // 鼠标滚轮 
-
 signals:
 
 public slots:
-    void updateGL();
-
-public:
-    bool is_draw_cube;
-    bool is_move_cube;
-
-    bool is_change_light_color;
 
 private:
-
-    /* 立方体 */
-    Cube _cube;
-    QOpenGLShaderProgram _sp_cube;
-    QOpenGLTexture* _texPoly;
-    int _indexPoly;
-    QOpenGLTexture* _texPolySpecular;
-    int _indexTexPolySpecular;
-    QOpenGLTexture* _texBack;
-    int _indexTexBack;
-
-    /* 时钟及计时器 */
-    QTimer timer_;  // 【重点】 这里是 Timer - 计时器类
-    QTime time_;
-
-    /* 封装的摄像机类 */
-    Camera camera_;
-
-    /* 光源 */
-    Light _light;
-    QOpenGLShaderProgram _sp_light;
+    Shape current_shape_;  // 记录当前绘制的图形
+    QOpenGLShaderProgram shader_program_;  // 【重点】使用 Qt 提供的对象进行编译和链接
 };
 
 #endif // FOXOPENGLWIDGET_H

@@ -1,15 +1,15 @@
 #include "mainwindow.h"
 #include <QApplication>
 #include <QSurfaceFormat>
-#include <QVector3D>
-
-#include "foxmath.h"
-
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
+    /**
+     *  在 M1 的 Mac 要设置这里
+     *  ！！3.3 的版本可用，但是 4.5 用不了！，initializeOpenGLFunctions 返回 false
+    */
     QSurfaceFormat format;
     format.setMajorVersion(3);
     format.setMinorVersion(3);

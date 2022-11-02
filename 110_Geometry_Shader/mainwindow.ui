@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1110</width>
-    <height>693</height>
+    <width>681</width>
+    <height>441</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,8 +31,8 @@ QWidget:checked {
    <widget class="FoxOpenGLWidget" name="openGLWidget">
     <property name="geometry">
      <rect>
-      <x>400</x>
-      <y>220</y>
+      <x>170</x>
+      <y>100</y>
       <width>300</width>
       <height>200</height>
      </rect>
@@ -44,18 +44,34 @@ QWidget:checked {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1110</width>
-     <height>24</height>
+     <width>681</width>
+     <height>27</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>文件</string>
+    </property>
+   </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
-     <string>Selete</string>
+     <string>查看</string>
     </property>
-    <addaction name="actionSphere"/>
-    <addaction name="actionCube"/>
    </widget>
+   <widget class="QMenu" name="menu_3">
+    <property name="title">
+     <string>设置</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menu_4">
+    <property name="title">
+     <string>帮助</string>
+    </property>
+   </widget>
+   <addaction name="menu"/>
    <addaction name="menu_2"/>
+   <addaction name="menu_3"/>
+   <addaction name="menu_4"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -64,106 +80,27 @@ QWidget:checked {
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionisDraw"/>
-   <addaction name="actionDrawCube"/>
+   <addaction name="actionDrawRect"/>
    <addaction name="actionWireframe"/>
+   <addaction name="actionClear"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <widget class="QToolBar" name="toolBarMove">
-   <property name="windowTitle">
-    <string>toolBar</string>
+  <action name="actionDrawRect">
+   <property name="text">
+    <string>绘制矩形</string>
    </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-   <addaction name="actionMove"/>
-   <addaction name="actionMoveCube"/>
-   <addaction name="separator"/>
-   <addaction name="actionLightColor"/>
-  </widget>
+  </action>
   <action name="actionWireframe">
    <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name="checked">
-    <bool>false</bool>
-   </property>
    <property name="text">
-    <string>Wireframe</string>
+    <string>线框渲染</string>
    </property>
   </action>
-  <action name="actionDrawCube">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>false</bool>
-   </property>
+  <action name="actionClear">
    <property name="text">
-    <string>Cube</string>
-   </property>
-  </action>
-  <action name="actionSphere">
-   <property name="text">
-    <string>Sphere</string>
-   </property>
-  </action>
-  <action name="actionCube">
-   <property name="text">
-    <string>Cube</string>
-   </property>
-  </action>
-  <action name="actionisDraw">
-   <property name="text">
-    <string>DRAW:</string>
-   </property>
-   <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; color:#ffff00;&quot;&gt;Draw:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-   </property>
-   <property name="autoRepeat">
-    <bool>true</bool>
-   </property>
-   <property name="visible">
-    <bool>true</bool>
-   </property>
-   <property name="menuRole">
-    <enum>QAction::NoRole</enum>
-   </property>
-   <property name="iconVisibleInMenu">
-    <bool>false</bool>
-   </property>
-  </action>
-  <action name="actionMove">
-   <property name="text">
-    <string>MOVE:</string>
-   </property>
-  </action>
-  <action name="actionMoveCube">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Cube</string>
-   </property>
-  </action>
-  <action name="actionLightColor">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="resource.qrc">
-     <normaloff>:/pic/Picture/light.png</normaloff>:/pic/Picture/light.png</iconset>
-   </property>
-   <property name="text">
-    <string>Color</string>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>10</pointsize>
-    </font>
+    <string>清空图形</string>
    </property>
   </action>
  </widget>
@@ -175,8 +112,6 @@ QWidget:checked {
    <header location="global">foxopenglwidget.h</header>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="resource.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

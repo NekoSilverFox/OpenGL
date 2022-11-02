@@ -16,13 +16,11 @@ public:
     ~MainWindow();
 
 private slots:
+    void on_actionDrawRect_triggered();
+
     void on_actionWireframe_triggered();
 
-    void on_actionDrawCube_triggered();
-
-    void on_actionMoveCube_triggered();
-
-    void on_actionLightColor_triggered();
+    void on_actionClear_triggered();
 
 private:
     Ui::MainWindow *ui;
