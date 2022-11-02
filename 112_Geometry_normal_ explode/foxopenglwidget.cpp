@@ -85,6 +85,7 @@ void FoxOpenGLWidget::initializeGL()
 /****************************************************** 球体 ******************************************************/
     // ------------------------ 着色器 ------------------------
     _sp_sphere.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/sphere.vert");
+    _sp_sphere.addShaderFromSourceFile(QOpenGLShader::Geometry, ":/shaders/ShaderSource/sphere.geom");
     _sp_sphere.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/sphere.frag");
     bool success = _sp_sphere.link();
     qDebug() << "[INFO] Sphere Shade Program _sp_sphere" << success;
@@ -319,6 +320,8 @@ void FoxOpenGLWidget::paintGL()
 //        _sp_sphere.setUniformValue("material.diffuse",    QVector3D(0.75164f,     0.60648f,   0.22648f));
 //        _sp_sphere.setUniformValue("material.specular",   QVector3D(0.628281f,    0.555802f,  0.366065f));
         _sp_sphere.setUniformValue("material.shininess",  16.0f);
+
+        _sp_sphere.setUniformValue("time", (GLfloat)(::gl_time / 10.0));
 
         /* 光源颜色 */
         _sp_sphere.setUniformValue("light.ambient",    _light.color_ambient);
