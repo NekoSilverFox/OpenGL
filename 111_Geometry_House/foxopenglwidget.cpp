@@ -3,10 +3,10 @@
 
 // 顶点数据
 float vertices[] = {
-    0.5f, 0.5f, 0.0f,   // 右上角 0
-    0.5f, -0.5f, 0.0f,  // 右下角 1
-    -0.5f, -0.5f, 0.0f, // 左下角 2
-    -0.5f, 0.5f, 0.0f   // 左上角 3
+    -0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // 左上
+     0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // 右上
+     0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // 右下
+    -0.5f, -0.5f, 1.0f, 1.0f, 0.0f  // 左下
 };
 
 
@@ -48,8 +48,11 @@ void FoxOpenGLWidget::initializeGL()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);  // 第一个属性，所以不需要偏移
+    glVertexAttribPointer(0,    2,  GL_FLOAT, GL_FALSE,     5 * sizeof(float),  (void*)0);  // 第一个属性，所以不需要偏移
     glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1,    3,  GL_FLOAT, GL_FALSE,     5 * sizeof(float),  (void*)(2*sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
     glBindVertexArray(0);
