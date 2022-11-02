@@ -3,16 +3,13 @@
 
 // 顶点数据
 float vertices[]={
-    -0.6f, -0.8f,  0.0f,        //首尾填充
     -0.6f, -0.8f,  0.0f,
     -0.4f, -0.3f,  0.0f,
     -0.2f, -0.5f,  0.0f,
      0.0f,  0.4f,  0.0f,
      0.2f,  0.4f,  0.0f,
      0.3f,  0.1f,  0.0f,
-     0.3f,  0.1f,  0.0f
 };
-
 
 // 创建 VAO 和 VBO 对象并且赋予 ID
 unsigned int VBO, VAO;
@@ -85,7 +82,7 @@ void FoxOpenGLWidget::paintGL()
     /* 重新绑定 VAO */
     glBindVertexArray(VAO);
     this->shader_program_.bind();
-    glDrawArrays(GL_TRIANGLES, 0, 8);
+    glDrawArrays(GL_TRIANGLES, 0, 24);
 }
 
 void FoxOpenGLWidget::drawShape(FoxOpenGLWidget::Shape shape)
