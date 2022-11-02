@@ -10,7 +10,7 @@ out vec3 fColor;
 
 void build_house(vec4 position)
 {
-    fColor = gs_in[0].color; // gs_in[0] 因为只有一个输入顶点
+    fColor = gs_in[0].color; //【重点】 gs_in[0] 因为只有一个输入顶点，这个颜色是性对于一个点而言的！！！
 
     gl_Position = position + vec4(-0.2, -0.2, 0.0, 0.0);    // 1:左下
     EmitVertex();
@@ -25,6 +25,7 @@ void build_house(vec4 position)
     EmitVertex();
 
     gl_Position = position + vec4( 0.0,  0.4, 0.0, 0.0);    // 5:顶部
+    fColor = vec3(1.0, 1.0, 1.0);  // 只更改第五个点的颜色，来实现雪顶的效果
     EmitVertex();
 
 
