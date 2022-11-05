@@ -2739,7 +2739,7 @@ FragColor = vec4(ambient + diffuse + specular, 1.0);
 
 如果你现在运行程序的话，你可以清楚地看到箱子的材质现在和真实的钢制边框箱子非常类似了：
 
-![image-20221019005611230](doc/pic/README/image-20221019005611230.png)
+![get](doc/pic/README/get.gif)![image-20221019005611230]()
 
 你可以在[这里](https://learnopengl.com/code_viewer_gh.php?code=src/2.lighting/4.2.lighting_maps_specular_map/lighting_maps_specular.cpp)找到程序的全部源码。
 
@@ -2751,7 +2751,13 @@ FragColor = vec4(ambient + diffuse + specular, 1.0);
 
  Bezier
 
+
+
+> https://zh.wikipedia.org/wiki/%E8%B2%9D%E8%8C%B2%E6%9B%B2%E7%B7%9A
+
 ## 贝塞尔曲线
+
+![get](doc/pic/README/get-7417632.gif)
 
 **贝塞尔曲线的的生成步骤：**
 

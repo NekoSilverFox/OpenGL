@@ -4,16 +4,12 @@
 #include <QKeyEvent>
 #include "foxopenglwidget.h"
 #include "sphere.hpp"
-#include "bezierface.hpp"
-#include "GLUT/glut.h"
 
 
 #define TIMEOUT 50  // 50 毫秒更新一次
 
-
 const unsigned int NUM_VBO = 4;
 const unsigned int NUM_VAO = 4;
-
 
 /* 创建 VAO、VBO 对象并且赋予 ID */
 unsigned int VBOs[NUM_VBO], VAOs[NUM_VAO];
@@ -22,120 +18,6 @@ unsigned int VBOs[NUM_VBO], VAOs[NUM_VAO];
 float val_alpha = 0.5;
 
 unsigned long long gl_time = 0;
-
-/* =#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=# */
-// 贝塞尔曲线控制点
-//GLfloat control_points[4][3] = {
-//    {-0.4f, 0.1f, 0.0f},
-//    {-0.1f, 0.1f, 0.0f},
-//    {-0.1f, 0.4f, 0.0f},
-//    {-0.4f, 0.4f, 0.0f}
-//};
-//GLfloat control_points[5][5][3] = {{{-3,0,0}, {-1,1,0}, {0,0,0}, {1,-1,0}, {3,0,0}},
-//                                   {{-3,0,-1},{-1,1,-1},{0,0,-1},{1,-1,-1},{3,0,-1}},
-//                                   {{-3,0,-3},{-1,1,-3},{0,0,-3},{1,-1,-3},{3,0,-3}},
-//                                   {{-3,0,-3},{-1,1,-3},{0,0,-3},{1,-1,-3},{3,0,-3}},
-//                                   {{-3,0,-4},{-1,1,-4},{0,0,-4},{1,-1,-4},{3,0,-4}}};
-
-#if 1
-GLfloat control_points[4][4][3] = {
-    {
-        { -1.5, -1.5,  2.0 },
-        { -0.5, -1.5,  2.0 },
-        {  0.5, -1.5, -1.0 },
-        {  1.5, -1.5,  2.0 }
-    },
-
-    {
-        { -1.5, -0.5,  1.0 },
-        { -0.5,  1.5,  2.0 },
-        {  0.5,  0.5,  1.0 },
-        {  1.5, -0.5, -1.0 }
-    },
-
-    {
-        { -1.5,  0.5, 2.0 },
-        { -0.5,  0.5, 1.0 },
-        {  0.5,  0.5, 3.0 },
-        {  1.5, -1.5, 1.5 }
-    },
-
-    {
-        { -1.5, 1.5, -2.0 },
-        { -0.5, 1.5, -2.0 },
-        {  0.5, 0.5,  1.0 },
-        {  1.5, 1.5, -1.0 }
-    }
-};
-#endif
-
-#if 0
-GLfloat control_points[4][4][3] = {
-    {
-        { -0.3, -0.3,  2.0 },
-        { -0.2, -0.3,  2.0 },
-        {  0.2, -0.3, -1.0 },
-        {  0.3, -0.3,  2.0 }
-    },
-
-    {
-        { -0.3, -0.2,  1.0 },
-        { -0.2,  0.3,  2.0 },
-        {  0.2,  0.2,  1.0 },
-        {  0.3, -0.2, -1.0 }
-    },
-
-    {
-        { -0.3,  0.2, 2.0 },
-        { -0.2,  0.2, 1.0 },
-        {  0.2,  0.2, 3.0 },
-        {  0.3, -0.3, 0.3 }
-    },
-
-    {
-        { -0.3, 0.3, -2.0 },
-        { -0.2, 0.3, -2.0 },
-        {  0.2, 0.2,  1.0 },
-        {  0.3, 0.3, -1.0 }
-    }
-};
-#endif
-/*
- * A fourth order surface
- */
-//GLfloat points[4][4][3] =
-//{
-//  {
-//    {-20.0, -2.0,  1.0},
-//    {-0.5, -2.0,  0.0},
-//    { 0.5, -2.0, -2.0},
-//    { 2.0, -2.0,  2.0}},
-//  {
-//    {-2.0, -0.5,  2.0},
-//    {-0.5, -0.5,  1.5},
-//    { 0.5, -0.5,  0.0},
-//    { 2.0, -0.5, -2.0}},
-//  {
-//    {-2.0,  0.5,  2.0},
-//    {-0.5,  0.5,  1.0},
-//    { 0.5,  0.5, -1.0},
-//    { 2.0,  0.5,  1.0}},
-//  {
-//    {-2.0,  2.0, -1.0},
-//    {-0.5,  2.0, -1.0},
-//    { 0.5,  2.0,  0.0},
-//    { 2.0,  2.0, -0.5}}
-//};
-//int        uSize         = 4;
-//int        vSize         = 4;
-
-
-//// The number of subdivisions in the grid
-//int        gridSize      = 200;
-//int        uSelected     = -1;
-//int        vSelected     = -1;
-
-/* =#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=# */
 
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
@@ -203,6 +85,7 @@ void FoxOpenGLWidget::initializeGL()
 /****************************************************** 球体 ******************************************************/
     // ------------------------ 着色器 ------------------------
     _sp_sphere.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/sphere.vert");
+    _sp_sphere.addShaderFromSourceFile(QOpenGLShader::Geometry, ":/shaders/ShaderSource/sphere.geom");
     _sp_sphere.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/sphere.frag");
     bool success = _sp_sphere.link();
     qDebug() << "[INFO] Sphere Shade Program _sp_sphere" << success;
@@ -254,8 +137,8 @@ void FoxOpenGLWidget::initializeGL()
     /****************************************************** 锥体 ******************************************************/
     // ------------------------ 着色器 ------------------------
     _sp_cone.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/cone.vert");
+    _sp_cone.addShaderFromSourceFile(QOpenGLShader::Geometry, ":/shaders/ShaderSource/cone.geom");
     _sp_cone.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/cone.frag");
-     _sp_cone.addShaderFromSourceFile(QOpenGLShader::Geometry, ":/shaders/ShaderSource/cone.geom");
     success = _sp_cone.link();
     qDebug() << "[INFO] Sphere Shade Program _sp_cone" << success;
     if (!success)
@@ -393,8 +276,9 @@ void FoxOpenGLWidget::resizeGL(int w, int h)
 {
     Q_UNUSED(w);
     Q_UNUSED(h);
-
 }
+
+
 
 
 /// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -404,39 +288,21 @@ void FoxOpenGLWidget::paintGL()
 {
 //    glViewport(0, 0, width(), height());
 
-    /****************************************************** 贝塞尔曲线测试 ******************************************************/
-//    glMap2f(GL_MAP2_VERTEX_3, 0, 1, 3, uSize, 0, 1, uSize * 3, vSize, &points[0][0][0]);
-//    // Fill the surface
-//    glEvalMesh2(GL_FILL, 0, gridSize, 0, gridSize);
-//    glEnable(GL_MAP2_VERTEX_3);
-//    glMapGrid2f(10, 0.0f, 10.0f, 10, 0.0f, 10.0f);
-
-
-
     /* 设置 OpenGLWidget 控件背景颜色为深青色，并且设置深度信息（Z-缓冲） */
-    glClearColor(0.15f, 0.15f, 0.15f, 1.0f);    // set方法【重点】如果没有 initializeGL，目前是一个空指针状态，没有指向显卡里面的函数，会报错
-    glEnable(GL_DEPTH_TEST);                    // 深度信息，如果不设置立方体就像没有盖子
-    glEnable(GL_PROGRAM_POINT_SIZE);
+    glClearColor(0.15f, 0.15f, 0.15f, 1.0f);  // set方法【重点】如果没有 initializeGL，目前是一个空指针状态，没有指向显卡里面的函数，会报错
+    glEnable(GL_DEPTH_TEST);  // 深度信息，如果不设置立方体就像没有盖子
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // use方法
 
-
-
-    QMatrix4x4 mat_view;                        // 【重点】 view代表摄像机拍摄的物体，也就是全世界！！！
+    QMatrix4x4 mat_view;  // 【重点】 view代表摄像机拍摄的物体，也就是全世界！！！
     mat_view = camera_.getViewMatrix();
 
-    QMatrix4x4 mat_projection;                  // 透视（焦距）一般设置一次就好了，之后不变。如果放在PaintGL() 里会导致每次重绘都调用，增加资源消耗
+    QMatrix4x4 mat_projection;  // 透视（焦距）一般设置一次就好了，之后不变。如果放在PaintGL() 里会导致每次重绘都调用，增加资源消耗
     mat_projection.perspective(camera_.zoom_fov, (float)width()/(float)height(), 0.1f, 100.0f);
-
-
-
 
 
     /****************************************************** 球体 ******************************************************/
     if (is_draw_sphere)
     {
-//            glMap1f(GL_MAP1_VERTEX_3, 0.0f, 1.0f, 3, 4, &control_points[0][0]);
-//            glEnable(GL_MAP1_VERTEX_3);
-
         glBindVertexArray(VAOs[0]);
 
         /* 【重点】使用 QOpenGLShaderProgram 进行着色器绑定 */
@@ -454,6 +320,8 @@ void FoxOpenGLWidget::paintGL()
 //        _sp_sphere.setUniformValue("material.diffuse",    QVector3D(0.75164f,     0.60648f,   0.22648f));
 //        _sp_sphere.setUniformValue("material.specular",   QVector3D(0.628281f,    0.555802f,  0.366065f));
         _sp_sphere.setUniformValue("material.shininess",  16.0f);
+
+        _sp_sphere.setUniformValue("time", (GLfloat)(::gl_time / 10.0));
 
         /* 光源颜色 */
         _sp_sphere.setUniformValue("light.ambient",    _light.color_ambient);
@@ -501,7 +369,6 @@ void FoxOpenGLWidget::paintGL()
         _sp_cube.setUniformValue("view_pos", camera_.position);
 
         glDrawArrays(GL_TRIANGLES, 0, 36);
-
         glBindVertexArray(0);
     }
 
@@ -542,6 +409,8 @@ void FoxOpenGLWidget::paintGL()
             _sp_cone.setUniformValue("mat_projection", mat_projection);
             _sp_cone.setUniformValue("mat_model", _cone.mat_model);
 
+            _sp_cone.setUniformValue("time", (GLfloat)(::gl_time / 10.0));
+
             /* 材质颜色 */
             _sp_cone.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
             _sp_cone.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
@@ -565,10 +434,6 @@ void FoxOpenGLWidget::paintGL()
             glEnable(GL_LIGHTING);
             //        glDepthMask(GL_TRUE);
         }
-
-
-
-
 }
 
 
@@ -703,6 +568,7 @@ void FoxOpenGLWidget::updateGL()
 //    _cone.mat_model.rotate( 0.7f, 0.0f, 1.0f, 0.0f);
 //    _cube.mat_model.rotate( 0.7f, 0.0f, 1.0f, 0.1f);
     _sphere.mat_model.rotate(0.5f, 0.0f, 1.0f, 0.4f);
+
 
 
     /* 旋转光源 */

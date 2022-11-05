@@ -24,25 +24,19 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
-    bezierface.cpp \
     light.cpp \
         main.cpp \
         mainwindow.cpp \
     foxopenglwidget.cpp \
     camera.cpp \
-    sphere.cpp \
-    cube.cpp \
-    cone.cpp
+    sphere.cpp
 
 HEADERS += \
-    bezierface.hpp \
     foxmath.h \
     light.h \
         mainwindow.h \
     foxopenglwidget.h \
     camera.hpp \
-    cone.hpp \
-    cube.hpp \
     sphere.hpp
 
 FORMS += \
