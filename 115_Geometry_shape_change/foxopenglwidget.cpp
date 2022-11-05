@@ -180,6 +180,23 @@ void FoxOpenGLWidget::paintGL()
     mat_projection.perspective(camera_.zoom_fov, (float)width()/(float)height(), 0.1f, 100.0f);
 
 
+
+
+    /****************************************************** 光源 ******************************************************/
+
+    glBindVertexArray(VAOs[1]);
+
+    _sp_light.bind();
+    _sp_light.setUniformValue("mat_view", mat_view);
+    _sp_light.setUniformValue("mat_projection", mat_projection);
+    _sp_light.setUniformValue("mat_model", _light.mat_model);
+
+    _sp_light.setUniformValue("light_color", _light.color_specular);
+
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
+
+
     /****************************************************** 球体 ******************************************************/
     if (is_draw_sphere)
     {
@@ -198,7 +215,14 @@ void FoxOpenGLWidget::paintGL()
         _sp_sphere.setUniformValue("material.specular",   QVector3D(0.633f,     0.727811f,  0.633f));
         _sp_sphere.setUniformValue("material.shininess",  16.0f);
 
-        _sp_sphere.setUniformValue("time", (GLfloat)(::gl_time / 10.0));
+        _sp_sphere.setUniformValue("time",  (GLfloat)  sin(::gl_time / 10.0f));
+        _sp_sphere.setUniformValue("del_h", (GLfloat)((sin(::gl_time / 20.0f) + 2.0f) * 0.5f));
+        _sp_sphere.setUniformValue("del_w", (GLfloat)((cos(::gl_time / 20.0f) + 1.0f) * 0.5f));
+//        _sp_sphere.setUniformValue("del_w", 1.0f);
+        _sp_sphere.setUniformValue("step_angle", 2);
+        qDebug() << "\n--------------------";
+        qDebug() << "del_h" << (GLfloat)((sin(::gl_time / 20.0f) + 2.0f) * 0.5);
+        qDebug() << "del_w" << (GLfloat)(abs(cos(::gl_time / 20.0f)));
 
         /* 光源颜色 */
         _sp_sphere.setUniformValue("light.ambient",    _light.color_ambient);
@@ -215,22 +239,6 @@ void FoxOpenGLWidget::paintGL()
         glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumTrianglesinSphere());
         glBindVertexArray(0);
     }
-
-
-
-    /****************************************************** 光源 ******************************************************/
-
-    glBindVertexArray(VAOs[1]);
-
-    _sp_light.bind();
-    _sp_light.setUniformValue("mat_view", mat_view);
-    _sp_light.setUniformValue("mat_projection", mat_projection);
-    _sp_light.setUniformValue("mat_model", _light.mat_model);
-
-    _sp_light.setUniformValue("light_color", _light.color_specular);
-
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-    glBindVertexArray(0);
 
 
 }
@@ -330,7 +338,7 @@ void FoxOpenGLWidget::updateGL()
 {
     gl_time += 1;
 
-    _sphere.mat_model.rotate(0.5f, 0.0f, 1.0f, 0.4f);
+//    _sphere.mat_model.rotate(0.5f, 0.0f, 1.0f, 0.4f);
 
 
 
