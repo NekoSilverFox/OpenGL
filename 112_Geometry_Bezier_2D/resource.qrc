@@ -9,6 +9,7 @@
         <file>ShaderSource/light.frag</file>
         <file>ShaderSource/light.vert</file>
         <file>ShaderSource/cone.geom</file>
+        <file>ShaderSource/sphere.geom</file>
     </qresource>
     <qresource prefix="/pic">
         <file>Picture/wood_box.png</file>

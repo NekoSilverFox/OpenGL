@@ -420,7 +420,7 @@ void FoxOpenGLWidget::paintGL()
             _sp_cone.setUniformValue("light_pos", _light.postion);
             _sp_cone.setUniformValue("view_pos", camera_.position);
 
-            glDrawArrays(GL_TRIANGLES, 0, _cone.vertices.size() / 3);
+            glDrawArrays(GL_TRIANGLES, 0, _cone.vertices.size() / 6);
             glBindVertexArray(0);
 
             /* 关闭透明度 */

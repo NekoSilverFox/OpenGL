@@ -14,11 +14,10 @@ out vec3 res_g_axis_fragPos;
 
 
 uniform float time;
-//float time = 10.0;
 
 vec4 explode(vec4 position, vec3 normal)
 {
-    float magnitude = 200.0;
+    float magnitude = 100.0;
     vec3 direction = normal * ((sin(time) + 1.0) / 2.0) * magnitude;
     return position + vec4(direction, 0.0);
 }
@@ -27,7 +26,7 @@ void main() {
     gl_Position = explode(gl_in[0].gl_Position, gs_in[0].g_axis_normal);
     res_g_axis_normal   = gs_in[0].g_axis_normal;
     res_g_axis_fragPos  = gs_in[0].g_axis_fragPos;
-    EmitVertex();
+    EmitVertex();  // 这就是发送了一个顶点
 
     gl_Position = explode(gl_in[1].gl_Position, gs_in[1].g_axis_normal);
     res_g_axis_normal   = gs_in[1].g_axis_normal;

@@ -2,8 +2,8 @@
 out vec4 FragColor;
 
 
-in vec3 g_axis_normal;
-in vec3 g_axis_fragPos;
+in vec3 res_g_axis_normal;
+in vec3 res_g_axis_fragPos;
 
 
 /* 材质颜色 */
@@ -35,18 +35,18 @@ void main()
     vec3    res_ambient  = light.ambient * material.ambient;  // 环境光及强度
 
     /* 漫反射光 - diffuse */
-    vec3    normal       = normalize(g_axis_normal);  // 标准化法线
-    vec3    light_dir    = normalize(light_pos - g_axis_fragPos); // 片段指向光源的方向向量
+    vec3    normal       = normalize(res_g_axis_normal);  // 标准化法线
+    vec3    light_dir    = normalize(light_pos - res_g_axis_fragPos); // 片段指向光源的方向向量
     float   diff         = max(dot(normal, light_dir), 0.0);  // 光源对当前片段实际的漫反射影响系数
     vec3    res_diff     = light.diffuse * material.diffuse * diff;
 
     /* 反射光 - specular */
-    vec3    view_dir     = normalize(view_pos - g_axis_fragPos);
+    vec3    view_dir     = normalize(view_pos - res_g_axis_fragPos);
     vec3    reflect_dir  = reflect(-light_dir, normal);
     float   spec         = pow(max(dot(view_dir, reflect_dir), 0.0f), material.shininess);
     vec3    res_specular = light.specular * material.specular * spec;
 
 
     vec3 result = res_ambient + res_diff + res_specular;  // 叠加物体颜色
-    FragColor = vec4(result, 1.0);
+    FragColor = vec4(result, 0.6);
 }

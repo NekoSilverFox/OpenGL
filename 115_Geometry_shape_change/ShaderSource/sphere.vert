@@ -18,6 +18,8 @@ void main()
 {
     gl_Position = mat_projection * mat_view * mat_model * vec4(aPos, 1.0);  // 乘以矩阵实现旋转和位移的效果，注意矩阵运算方向
 
-    vs_out.g_axis_normal = mat3(transpose(inverse(mat_model))) * aNormal;  // 将模型[法线]的坐标转换到世界坐标
-    vs_out.g_axis_fragPos = vec3(mat_model * vec4(aPos, 1.0));             // 将模型[片段]的坐标转换到世界坐标
+    vs_out.g_axis_fragPos = aPos;
+    vs_out.g_axis_normal = aNormal;
+//    vs_out.g_axis_normal = mat3(transpose(inverse(mat_model))) * aNormal;  // 将模型[法线]的坐标转换到世界坐标
+//    vs_out.g_axis_fragPos = vec3(mat_model * vec4(aPos, 1.0));             // 将模型[片段]的坐标转换到世界坐标
 }
