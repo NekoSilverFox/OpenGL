@@ -18,12 +18,13 @@ unsigned int VBOs[NUM_VBO], VAOs[NUM_VAO];
 float val_alpha = 0.5;
 
 unsigned long long gl_time = 0;
-
-
+float step_angle = 180.0f;
+int num_add_points = 2;
+float add_point_step_angle = step_angle/num_add_points;
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
     this->_sphere = Sphere(1.0f, 5.0f);
-    this->_cone = Cone(R, HEIGHT, 1.10f);
+    this->_cone = Cone(R, HEIGHT, step_angle);
     this->_light = Light(1.0f, QVector3D(1.0f, 1.0f, 1.0f),
                                QVector3D(0.3f, 0.3f, 0.3f),
                                QVector3D(0.5f, 0.5f, 0.5f),
@@ -308,17 +309,13 @@ void FoxOpenGLWidget::paintGL()
             _sp_cone.setUniformValue("mat_model", _cone.mat_model);
 
             /* 材质颜色 */
-            _sp_cone.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
-            _sp_cone.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
-            _sp_cone.setUniformValue("material.specular",   QVector3D(0.6f, 0.6f, 0.6f));
+            _sp_cone.setUniformValue("material.ambient",    QVector3D(0.84725f,     0.6995f,    0.2745f)); // 金子
+            _sp_cone.setUniformValue("material.diffuse",    QVector3D(0.95164f,     0.90648f,   0.32648f));
+            _sp_cone.setUniformValue("material.specular",   QVector3D(0.828281f,    0.855802f,  0.366065f));
             _sp_cone.setUniformValue("material.shininess",  256.0f);
 
-            /* 光源颜色 */
-            _sp_cone.setUniformValue("light.ambient",    _light.color_ambient);
-            _sp_cone.setUniformValue("light.diffuse",    _light.color_diffuse);
-            _sp_cone.setUniformValue("light.specular",   _light.color_specular);
-            _sp_cone.setUniformValue("light.shininess",  _light.color_shininess);
 
+            _sp_cone.bind();
             _sp_cone.setUniformValue("time",  (GLfloat)  sin(::gl_time / 10.0f));
 
             GLfloat del_h = (GLfloat)((sin(::gl_time / 20.0f) + 0.5f));
@@ -326,9 +323,25 @@ void FoxOpenGLWidget::paintGL()
 
             GLfloat del_b = (GLfloat)((cos(::gl_time / 20.0f) + 1.5f));
             _sp_cone.setUniformValue("del_b", del_b);
+
+            add_point_step_angle = step_angle / num_add_points;
+            _sp_cone.setUniformValue("num_add_points", num_add_points);
+            _sp_cone.setUniformValue("add_point_step_angle", add_point_step_angle);
+            qDebug() << "add_point_step_angle: " << add_point_step_angle << " | num_add_points" << num_add_points;
+
+
             qDebug() << "\n-----------------------------";
             qDebug() << "高度偏移量（del_h）：" << del_h;
             qDebug() << "高度偏移量（del_b）：" << del_b;
+
+
+
+            /* 光源颜色 */
+            _sp_cone.setUniformValue("light.ambient",    _light.color_ambient);
+            _sp_cone.setUniformValue("light.diffuse",    _light.color_diffuse);
+            _sp_cone.setUniformValue("light.specular",   _light.color_specular);
+            _sp_cone.setUniformValue("light.shininess",  _light.color_shininess);
+
 
 
             _sp_cone.setUniformValue("light_pos", _light.postion);
@@ -394,13 +407,16 @@ void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Space: camera_.moveCamera(Camera_Movement::UP,         cameraSpeed);  break;
     case Qt::Key_Shift: camera_.moveCamera(Camera_Movement::DOWN,       cameraSpeed);  break;
 
-    case Qt::Key_Up:    move3DShape(QVector3D( 0.0f,      moveSpeed, 0.0f));  break;
-    case Qt::Key_Down:  move3DShape(QVector3D( 0.0f,     -moveSpeed, 0.0f));  break;
+    case Qt::Key_Up:    move3DShape(QVector3D( 0.0f,      moveSpeed, 0.0f)); num_add_points += 1; break;
+    case Qt::Key_Down:  move3DShape(QVector3D( 0.0f,     -moveSpeed, 0.0f)); num_add_points -= 1; break;
     case Qt::Key_Left:  move3DShape(QVector3D(-moveSpeed, 0.0f,      0.0f));  break;
     case Qt::Key_Right: move3DShape(QVector3D( moveSpeed, 0.0f,      0.0f));  break;
 
     default: break;
     }
+
+    if (num_add_points < 2)  num_add_points = 2;
+    if (num_add_points > 30) num_add_points = 30;
 }
 
 
