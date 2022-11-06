@@ -308,7 +308,6 @@ void FoxOpenGLWidget::paintGL()
             _sp_cone.setUniformValue("mat_model", _cone.mat_model);
 
             /* 材质颜色 */
-//            _sp_cone.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
             _sp_cone.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
             _sp_cone.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
             _sp_cone.setUniformValue("material.specular",   QVector3D(0.6f, 0.6f, 0.6f));
@@ -320,16 +319,22 @@ void FoxOpenGLWidget::paintGL()
             _sp_cone.setUniformValue("light.specular",   _light.color_specular);
             _sp_cone.setUniformValue("light.shininess",  _light.color_shininess);
 
-            _sp_sphere.setUniformValue("time",  (GLfloat)  sin(::gl_time / 10.0f));
+            _sp_cone.setUniformValue("time",  (GLfloat)  sin(::gl_time / 10.0f));
+
             GLfloat del_h = (GLfloat)((sin(::gl_time / 20.0f) + 0.5f));
-            _sp_sphere.setUniformValue("del_h", del_h);
-            _sp_sphere.setUniformValue("del_b", (GLfloat)((cos(::gl_time / 20.0f) + 1.0f) * 0.5f));
+            _sp_cone.setUniformValue("del_h", del_h);
+
+            GLfloat del_b = (GLfloat)((cos(::gl_time / 20.0f) + 1.5f));
+            _sp_cone.setUniformValue("del_b", del_b);
+            qDebug() << "\n-----------------------------";
             qDebug() << "高度偏移量（del_h）：" << del_h;
+            qDebug() << "高度偏移量（del_b）：" << del_b;
+
 
             _sp_cone.setUniformValue("light_pos", _light.postion);
             _sp_cone.setUniformValue("view_pos", camera_.position);
 
-            glDrawArrays(GL_TRIANGLES, 0, _cone.vertices.size() / 6);
+            glDrawArrays(GL_TRIANGLES, 0, _cone.vertices.size() / 3);
             glBindVertexArray(0);
 
             /* 关闭透明度 */
