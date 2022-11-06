@@ -150,16 +150,12 @@ void FoxOpenGLWidget::initializeGL()
 
     _sp_cone.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
     aPosLocation = _sp_cone.attributeLocation("aPos");  // 获取顶点着色器中顶点属性 aPos 的位置
-    glVertexAttribPointer(aPosLocation,     3,  GL_FLOAT,   GL_FALSE,    6 * sizeof(float),     (void*)0);  // 手动传入第几个属性
+    glVertexAttribPointer(aPosLocation,     3,  GL_FLOAT,   GL_FALSE,    3 * sizeof(float),     (void*)0);  // 手动传入第几个属性
     glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
 
-    _sp_cone.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
-    aNormalLocation = _sp_cone.attributeLocation("aNormal");  // 获取顶点着色器中顶点属性 aPos 的位置
-    glVertexAttribPointer(aNormalLocation,  3,  GL_FLOAT,   GL_FALSE,   6 * sizeof(float),      (void*)(3*sizeof(float)));  // 手动传入第几个属性
-    glEnableVertexAttribArray(aNormalLocation); // 开始 VAO 管理的第一个属性值
+    _cone.mat_model.scale(1.2);
+    _cone.mat_model.translate(0.0f, -0.25f, 0.0f);
 
-
-    _cone.mat_model.translate(0.0f, -0.5f, 0.0f);
 
     // ------------------------ 解绑 ------------------------
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
@@ -312,16 +308,23 @@ void FoxOpenGLWidget::paintGL()
             _sp_cone.setUniformValue("mat_model", _cone.mat_model);
 
             /* 材质颜色 */
+//            _sp_cone.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
             _sp_cone.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
             _sp_cone.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
             _sp_cone.setUniformValue("material.specular",   QVector3D(0.6f, 0.6f, 0.6f));
-            _sp_cone.setUniformValue("material.shininess",  512.0f);
+            _sp_cone.setUniformValue("material.shininess",  256.0f);
 
             /* 光源颜色 */
             _sp_cone.setUniformValue("light.ambient",    _light.color_ambient);
             _sp_cone.setUniformValue("light.diffuse",    _light.color_diffuse);
             _sp_cone.setUniformValue("light.specular",   _light.color_specular);
             _sp_cone.setUniformValue("light.shininess",  _light.color_shininess);
+
+            _sp_sphere.setUniformValue("time",  (GLfloat)  sin(::gl_time / 10.0f));
+            GLfloat del_h = (GLfloat)((sin(::gl_time / 20.0f) + 0.5f));
+            _sp_sphere.setUniformValue("del_h", del_h);
+            _sp_sphere.setUniformValue("del_b", (GLfloat)((cos(::gl_time / 20.0f) + 1.0f) * 0.5f));
+            qDebug() << "高度偏移量（del_h）：" << del_h;
 
             _sp_cone.setUniformValue("light_pos", _light.postion);
             _sp_cone.setUniformValue("view_pos", camera_.position);
