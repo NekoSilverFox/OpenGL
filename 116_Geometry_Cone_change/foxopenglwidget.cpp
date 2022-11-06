@@ -309,9 +309,6 @@ void FoxOpenGLWidget::paintGL()
             _sp_cone.setUniformValue("mat_model", _cone.mat_model);
 
             /* 材质颜色 */
-//            _sp_cone.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
-//            _sp_cone.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
-//            _sp_cone.setUniformValue("material.specular",   QVector3D(0.6f, 0.6f, 0.6f));
             _sp_cone.setUniformValue("material.ambient",    QVector3D(0.84725f,     0.6995f,    0.2745f)); // 金子
             _sp_cone.setUniformValue("material.diffuse",    QVector3D(0.95164f,     0.90648f,   0.32648f));
             _sp_cone.setUniformValue("material.specular",   QVector3D(0.828281f,    0.855802f,  0.366065f));
@@ -321,12 +318,10 @@ void FoxOpenGLWidget::paintGL()
             _sp_cone.bind();
             _sp_cone.setUniformValue("time",  (GLfloat)  sin(::gl_time / 10.0f));
 
-        //            GLfloat del_h = (GLfloat)((sin(::gl_time / 20.0f) + 0.5f));
-            GLfloat del_h = 1;
+            GLfloat del_h = (GLfloat)((sin(::gl_time / 20.0f) + 0.5f));
             _sp_cone.setUniformValue("del_h", del_h);
 
-        //            GLfloat del_b = (GLfloat)((cos(::gl_time / 20.0f) + 1.5f));
-            GLfloat del_b = 1;
+            GLfloat del_b = (GLfloat)((cos(::gl_time / 20.0f) + 1.5f));
             _sp_cone.setUniformValue("del_b", del_b);
 
             add_point_step_angle = step_angle / num_add_points;
@@ -421,7 +416,7 @@ void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
     }
 
     if (num_add_points < 2)  num_add_points = 2;
-    if (num_add_points > 40) num_add_points = 40;
+    if (num_add_points > 30) num_add_points = 30;
 }
 
 
