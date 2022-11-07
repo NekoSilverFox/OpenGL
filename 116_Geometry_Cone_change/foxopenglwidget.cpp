@@ -14,13 +14,16 @@ const unsigned int NUM_VAO = 4;
 /* 创建 VAO、VBO 对象并且赋予 ID */
 unsigned int VBOs[NUM_VBO], VAOs[NUM_VAO];
 
-/* 透明度 */
-float val_alpha = 0.5;
+const unsigned int CUBE_MAX_BOTTON_POINTS = 40;
+const unsigned int CUBE_MIN_BOTTON_POINTS = 2;
 
 unsigned long long gl_time = 0;
 float step_angle = 180.0f;
 int num_add_points = 2;
 float add_point_step_angle = step_angle/num_add_points;
+
+
+
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
     this->_sphere = Sphere(1.0f, 5.0f);
@@ -92,7 +95,6 @@ void FoxOpenGLWidget::initializeGL()
     }
 
     _sp_sphere.bind();
-    _sp_sphere.setUniformValue("val_alpha", val_alpha);
 
 
     // ------------------------ VAO、VBO ------------------------
@@ -140,7 +142,6 @@ void FoxOpenGLWidget::initializeGL()
     }
 
     _sp_cone.bind();
-    _sp_cone.setUniformValue("val_alpha", val_alpha);
 
 
     // ------------------------ VAO、VBO ------------------------
@@ -415,8 +416,8 @@ void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
     default: break;
     }
 
-    if (num_add_points < 2)  num_add_points = 2;
-    if (num_add_points > 30) num_add_points = 30;
+    if (num_add_points < CUBE_MIN_BOTTON_POINTS)  num_add_points = CUBE_MIN_BOTTON_POINTS;
+    if (num_add_points > CUBE_MAX_BOTTON_POINTS) num_add_points = CUBE_MAX_BOTTON_POINTS;
 }
 
 
