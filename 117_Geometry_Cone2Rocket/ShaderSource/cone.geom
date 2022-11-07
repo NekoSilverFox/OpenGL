@@ -1,6 +1,6 @@
 #version 330 core
 layout (triangles) in;
-layout (triangle_strip, max_vertices = 131) out;
+layout (triangle_strip, max_vertices = 170) out;
 
 
 out vec3 res_g_axis_normal;
@@ -17,6 +17,9 @@ uniform mat4 mat_model;
 uniform mat4 mat_view;
 uniform mat4 mat_projection;
 
+
+uniform bool is_draw_cylinder;
+uniform float heigh_cylinder;
 
 vec4 changePos(vec4 position)
 {
@@ -56,36 +59,34 @@ void main() {
 
     /* 增加点 */
     vec3    c   = vec3(pos_1.x, 0.0f, pos_1.z);  // 圆心坐标 C(c_x, c_y, c_z)
-    vec4    last_pos;
+    vec4    last_pos = pos_2;
     vec4    add_pos;
-    add_pos = vec4(c.x + (pos_2.x - c.x)*cos(radians(add_point_step_angle)) - (pos_2.y - c.y)*sin(radians(add_point_step_angle)),
-                   pos_2.y,
-                   c.y + (pos_2.x - c.x)*sin(radians(add_point_step_angle)) - (pos_2.y - c.y)*cos(radians(add_point_step_angle)),
-                   pos_2.w);
-    new_normal = GetNormal(pos_1, pos_2, add_pos);
-    sendPoint2FragShader(pos_1, new_normal);
-    sendPoint2FragShader(pos_2, new_normal);
-    sendPoint2FragShader(add_pos, new_normal);
-    last_pos = add_pos;
-
-    for (int i = 0; i < num_add_points - 1; i++)
+    for (int i = 1; i <= num_add_points; i++)
     {
-    add_pos = vec4(c.x + (pos_2.x - c.x)*cos(radians(add_point_step_angle * (i + 2))) - (pos_2.y - c.y)*sin(radians(add_point_step_angle * (i + 2))),
-                   pos_2.y,
-                   c.y + (pos_2.x - c.x)*sin(radians(add_point_step_angle * (i + 2))) - (pos_2.y - c.y)*cos(radians(add_point_step_angle * (i + 2))),
-                   pos_2.w);
+        add_pos = vec4(c.x + (pos_2.x - c.x)*cos(radians(add_point_step_angle * i)) - (pos_2.y - c.y)*sin(radians(add_point_step_angle * i)),
+                       pos_2.y,
+                       c.y + (pos_2.x - c.x)*sin(radians(add_point_step_angle * i)) - (pos_2.y - c.y)*cos(radians(add_point_step_angle * i)),
+                       pos_2.w);
         new_normal = GetNormal(pos_1, last_pos, add_pos);
         sendPoint2FragShader(pos_1, new_normal);
         sendPoint2FragShader(last_pos, new_normal);
         sendPoint2FragShader(add_pos, new_normal);
+
         last_pos = add_pos;
     }
 
-    pos_3 = changePos(gl_in[2].gl_Position);
-    new_normal = GetNormal(pos_1, add_pos, pos_3);
-
-    sendPoint2FragShader(pos_1, new_normal);
-    sendPoint2FragShader(add_pos, new_normal);
-    sendPoint2FragShader(pos_3, new_normal);
     EndPrimitive();
 }
+
+///* 判断是否是底部的点 */
+//if (is_draw_cylinder && (pos_1.y == last_pos.y))
+//{
+//    pos_1.x = last_pos.x;
+//    pos_1.y = -heigh_cylinder;
+//    pos_1.z = last_pos.z;
+//    new_normal = GetNormal(pos_1, last_pos, add_pos);
+//    sendPoint2FragShader(pos_1, new_normal);
+//    sendPoint2FragShader(last_pos, new_normal);
+//    sendPoint2FragShader(add_pos, new_normal);
+//}
+//last_pos = add_pos;
