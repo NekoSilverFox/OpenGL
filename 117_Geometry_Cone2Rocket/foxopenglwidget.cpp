@@ -14,15 +14,20 @@ const unsigned int NUM_VAO = 4;
 /* 创建 VAO、VBO 对象并且赋予 ID */
 unsigned int VBOs[NUM_VBO], VAOs[NUM_VAO];
 
-const unsigned int CUBE_MAX_BOTTON_POINTS = 40;
-const unsigned int CUBE_MIN_BOTTON_POINTS = 2;
 
 unsigned long long gl_time = 0;
+
 float step_angle = 180.0f;
-int num_add_points = 2;
+unsigned int num_add_points = 2;
 float add_point_step_angle = step_angle/num_add_points;
+const unsigned int CUBE_MAX_BOTTON_POINTS = 10;
+const unsigned int CUBE_MIN_BOTTON_POINTS = 2;
 
+GLfloat del_h = 0.0f;
+const GLfloat STEP_DEL_H = 0.01f;
+const GLfloat MAX_DEL_H = 0.5f;
 
+GLboolean is_draw_cylinder = false;
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
@@ -315,25 +320,35 @@ void FoxOpenGLWidget::paintGL()
             _sp_cone.setUniformValue("material.specular",   QVector3D(0.828281f,    0.855802f,  0.366065f));
             _sp_cone.setUniformValue("material.shininess",  256.0f);
 
-
             _sp_cone.bind();
             _sp_cone.setUniformValue("time",  (GLfloat)  sin(::gl_time / 10.0f));
 
-            GLfloat del_h = (GLfloat)((sin(::gl_time / 20.0f) + 0.5f));
-            _sp_cone.setUniformValue("del_h", del_h);
-
-            GLfloat del_b = (GLfloat)((cos(::gl_time / 20.0f) + 1.5f));
-            _sp_cone.setUniformValue("del_b", del_b);
-
-            add_point_step_angle = step_angle / num_add_points;
-            _sp_cone.setUniformValue("num_add_points", num_add_points);
-            _sp_cone.setUniformValue("add_point_step_angle", add_point_step_angle);
-            qDebug() << "add_point_step_angle: " << add_point_step_angle << " | num_add_points" << num_add_points;
-
-
             qDebug() << "\n-----------------------------";
-            qDebug() << "高度偏移量（del_h）：" << del_h;
-            qDebug() << "高度偏移量（del_b）：" << del_b;
+            GLfloat del_b = 1.0f;
+            _sp_cone.setUniformValue("del_b", del_b);
+            qDebug() << "恒向偏移量（del_b）：" << del_b;
+
+            /* 高度拉伸 */
+            if (del_h < MAX_DEL_H)
+            {
+                qDebug() << "高度偏移量（del_h）：" << del_h;
+                _sp_cone.setUniformValue("del_h", del_h);
+                del_h += STEP_DEL_H;
+            }
+
+            /* 圆度增加 */
+            if (num_add_points < CUBE_MAX_BOTTON_POINTS)
+            {
+                add_point_step_angle = step_angle / num_add_points;
+                _sp_cone.setUniformValue("num_add_points", num_add_points);
+                _sp_cone.setUniformValue("add_point_step_angle", add_point_step_angle);
+                qDebug() << "add_point_step_angle: " << add_point_step_angle << " | num_add_points" << num_add_points;
+
+                num_add_points++;
+            }
+
+            _sp_cone.setUniformValue("is_draw_cylinder", true);
+            _sp_cone.setUniformValue("heigh_cylinder", 0.8f);
 
 
 
