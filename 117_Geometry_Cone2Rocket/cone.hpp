@@ -15,6 +15,7 @@ class Cone
 public:
     Cone();
     Cone(const float r, const float height, const float step_angle);
+    Cone(const float r, const QVector3D peak, const float step_angle);  // peak 为圆锥最顶部点的位置
 
     /* 获取绘制三角形的数量 */
     unsigned int getNumTrianglesinSphere();
@@ -31,7 +32,8 @@ public:
 
 private:
     float _r;       // 半径
-    float _height;  // 高度
+    QVector3D _peak;
+//    float _height;  // 高度
     float _step_angle;  // 底的角度间隔
 
 };

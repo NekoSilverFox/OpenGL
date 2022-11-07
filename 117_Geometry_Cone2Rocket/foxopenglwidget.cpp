@@ -25,7 +25,7 @@ const unsigned int CUBE_MIN_BOTTON_POINTS = 2;
 
 GLfloat del_h = 0.0f;
 const GLfloat STEP_DEL_H = 0.01f;
-const GLfloat MAX_DEL_H = 0.5f;
+const GLfloat MAX_DEL_H = 0.7f;
 
 GLboolean is_draw_cylinder = false;
 

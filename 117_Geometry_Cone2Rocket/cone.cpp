@@ -7,7 +7,7 @@
 Cone::Cone()
 {
     _r = R;
-    _height = HEIGHT;
+    _peak = QVector3D(0.0f, HEIGHT, 0.0f);
     _step_angle = STEP_ANGLE;
 
     _genVectorVerticesAndIndices();
@@ -16,7 +16,15 @@ Cone::Cone()
 
 Cone::Cone(const float r, const float height, const float step_angle) :
     _r(r),
-    _height(height),
+    _peak(0.0f, height, 0.0f),
+    _step_angle(step_angle)
+{
+    _genVectorVerticesAndIndices();
+}
+
+Cone::Cone(const float r, const QVector3D peak, const float step_angle) :
+    _r(r),
+    _peak(peak),
     _step_angle(step_angle)
 {
     _genVectorVerticesAndIndices();
@@ -32,9 +40,9 @@ unsigned int Cone::getNumTrianglesinSphere()
 void Cone::_genVectorVerticesAndIndices()
 {
     /* 锥体顶点 (0-EBO)*/
-    float top_x = 0.0f;
-    float top_y = _height;
-    float top_z = 0.0f;
+    float top_x = _peak.x();
+    float top_y = _peak.y();
+    float top_z = _peak.z();
 
     /* 生成锥体底部的顶点数据 */
     std::vector<float> tmp_vetices;

@@ -81,6 +81,12 @@ void main() {
             sendPoint2FragShader(last_pos,          new_normal);
             sendPoint2FragShader(add_cylinder_pos,  new_normal);
             sendPoint2FragShader(add_pos,           new_normal);
+
+
+            vec4 add_cylinder_pos_2 = vec4(add_pos.x, add_pos.y - heigh_cylinder, add_pos.z, add_pos.w);
+            sendPoint2FragShader(add_pos,           new_normal);
+            sendPoint2FragShader(add_cylinder_pos,  new_normal);
+            sendPoint2FragShader(add_cylinder_pos_2,new_normal);
         }
 
         last_pos = add_pos;
