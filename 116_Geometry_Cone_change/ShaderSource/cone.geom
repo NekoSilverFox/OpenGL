@@ -54,8 +54,8 @@ void main() {
     pos_1 = changePos(gl_in[0].gl_Position);
     pos_2 = changePos(gl_in[1].gl_Position);
 
-    /* 圆心坐标 C(c_x, c_y, c_z) */
-    vec3    c   = vec3(pos_1.x, 0.0f, pos_1.z);
+    /* 增加点 */
+    vec3    c   = vec3(pos_1.x, 0.0f, pos_1.z);  // 圆心坐标 C(c_x, c_y, c_z)
     vec4    last_pos;
     vec4    add_pos;
     add_pos = vec4(c.x + (pos_2.x - c.x)*cos(radians(add_point_step_angle)) - (pos_2.y - c.y)*sin(radians(add_point_step_angle)),
