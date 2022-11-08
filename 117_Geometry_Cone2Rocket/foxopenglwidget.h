@@ -52,6 +52,7 @@ public:
 
     bool is_draw_cone;
     bool is_move_cone;
+    bool is_draw_booster;  // 是否绘制 4 个助推器
 
     bool is_change_light_color;
 

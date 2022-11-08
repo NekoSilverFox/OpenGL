@@ -25,9 +25,9 @@ const unsigned int CUBE_MIN_BOTTON_POINTS = 2;
 
 GLfloat del_h = 0.0f;
 const GLfloat STEP_DEL_H = 0.01f;
-const GLfloat MAX_DEL_H = 0.7f;
+const GLfloat MAX_DEL_H = 0.8f;
 
-GLboolean is_draw_cylinder = false;
+GLboolean is_draw_cylinder = true;
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
@@ -347,8 +347,8 @@ void FoxOpenGLWidget::paintGL()
                 num_add_points++;
             }
 
-            _sp_cone.setUniformValue("is_draw_cylinder", true);
-            _sp_cone.setUniformValue("heigh_cylinder", 0.8f);
+            _sp_cone.setUniformValue("is_draw_cylinder", is_draw_cylinder);
+            _sp_cone.setUniformValue("heigh_cylinder", 5.8f);
 
 
 
