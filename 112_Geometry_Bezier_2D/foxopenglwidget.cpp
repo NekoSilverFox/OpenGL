@@ -85,6 +85,7 @@ void FoxOpenGLWidget::initializeGL()
 /****************************************************** 球体 ******************************************************/
     // ------------------------ 着色器 ------------------------
     _sp_sphere.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/sphere.vert");
+    _sp_sphere.addShaderFromSourceFile(QOpenGLShader::Geometry, ":/shaders/ShaderSource/sphere.geom");
     _sp_sphere.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/sphere.frag");
     bool success = _sp_sphere.link();
     qDebug() << "[INFO] Sphere Shade Program _sp_sphere" << success;
@@ -136,6 +137,7 @@ void FoxOpenGLWidget::initializeGL()
     /****************************************************** 锥体 ******************************************************/
     // ------------------------ 着色器 ------------------------
     _sp_cone.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/cone.vert");
+    _sp_cone.addShaderFromSourceFile(QOpenGLShader::Geometry, ":/shaders/ShaderSource/cone.geom");
     _sp_cone.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/cone.frag");
     success = _sp_cone.link();
     qDebug() << "[INFO] Sphere Shade Program _sp_cone" << success;
@@ -286,6 +288,20 @@ void FoxOpenGLWidget::paintGL()
 {
 //    glViewport(0, 0, width(), height());
 
+<<<<<<< HEAD:100_Bezier/foxopenglwidget.cpp
+    /****************************************************** 贝塞尔曲线测试 ******************************************************/
+    glMap2f(GL_MAP2_VERTEX_3, 0.0, 1.0, 3, 4, 0.0, 1.0, 12, 4, &control_points[0][0][0]);
+    glEnable(GL_MAP2_VERTEX_3);
+    glMapGrid2f(20, 0.0, 1.0, 20, 0.0, 1.0);
+    glEnable(GL_BLEND);
+    glEnable(GL_LINE_SMOOTH);
+    glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);  // Antialias the lines
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_AUTO_NORMAL);
+
+
+=======
+>>>>>>> 712578bf3985249d073cb99c74e777e2172c1137:112_Geometry_Bezier_2D/foxopenglwidget.cpp
     /* 设置 OpenGLWidget 控件背景颜色为深青色，并且设置深度信息（Z-缓冲） */
     glClearColor(0.15f, 0.15f, 0.15f, 1.0f);  // set方法【重点】如果没有 initializeGL，目前是一个空指针状态，没有指向显卡里面的函数，会报错
     glEnable(GL_DEPTH_TEST);  // 深度信息，如果不设置立方体就像没有盖子
@@ -318,6 +334,8 @@ void FoxOpenGLWidget::paintGL()
 //        _sp_sphere.setUniformValue("material.diffuse",    QVector3D(0.75164f,     0.60648f,   0.22648f));
 //        _sp_sphere.setUniformValue("material.specular",   QVector3D(0.628281f,    0.555802f,  0.366065f));
         _sp_sphere.setUniformValue("material.shininess",  16.0f);
+
+        _sp_sphere.setUniformValue("time", (GLfloat)(::gl_time / 10.0));
 
         /* 光源颜色 */
         _sp_sphere.setUniformValue("light.ambient",    _light.color_ambient);
@@ -405,6 +423,8 @@ void FoxOpenGLWidget::paintGL()
             _sp_cone.setUniformValue("mat_projection", mat_projection);
             _sp_cone.setUniformValue("mat_model", _cone.mat_model);
 
+            _sp_cone.setUniformValue("time", (GLfloat)(::gl_time / 10.0));
+
             /* 材质颜色 */
             _sp_cone.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
             _sp_cone.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
@@ -420,7 +440,7 @@ void FoxOpenGLWidget::paintGL()
             _sp_cone.setUniformValue("light_pos", _light.postion);
             _sp_cone.setUniformValue("view_pos", camera_.position);
 
-            glDrawArrays(GL_TRIANGLES, 0, _cone.vertices.size() / 6);
+            glDrawArrays(GL_TRIANGLES, 0, _cone.vertices.size() / 3);
             glBindVertexArray(0);
 
             /* 关闭透明度 */
@@ -562,6 +582,7 @@ void FoxOpenGLWidget::updateGL()
 //    _cone.mat_model.rotate( 0.7f, 0.0f, 1.0f, 0.0f);
 //    _cube.mat_model.rotate( 0.7f, 0.0f, 1.0f, 0.1f);
     _sphere.mat_model.rotate(0.5f, 0.0f, 1.0f, 0.4f);
+
 
 
     /* 旋转光源 */

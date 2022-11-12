@@ -88,6 +88,7 @@ void Sphere::_genVectorVerticesAndIndices()
         vertices.push_back(current_next_point);
         vertices.push_back(current_normal);
 
+
         vertices.push_back(current_next_top_point);
         vertices.push_back(current_normal);
 

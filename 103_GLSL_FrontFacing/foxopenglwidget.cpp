@@ -220,6 +220,10 @@ void FoxOpenGLWidget::initializeGL()
     _indexTexPolySpecular = 1;
     _sp_cube.setUniformValue("material.specular", _indexTexPolySpecular);  // 为他绑定第二个纹理单元
 
+    _texBack = new QOpenGLTexture(QImage(":/pic/Picture/wood_box.png").mirrored()); // 设置内部纹理
+    _indexTexBack = 2;
+    _sp_cube.setUniformValue("back_texture", _indexTexBack);
+
     _cube.mat_model.translate(0.0f, -0.5f, 0.0f);
 
     // ------------------------ 解绑 ------------------------
@@ -289,6 +293,8 @@ void FoxOpenGLWidget::paintGL()
     /* 设置 OpenGLWidget 控件背景颜色为深青色，并且设置深度信息（Z-缓冲） */
     glClearColor(0.15f, 0.15f, 0.15f, 1.0f);  // set方法【重点】如果没有 initializeGL，目前是一个空指针状态，没有指向显卡里面的函数，会报错
     glEnable(GL_DEPTH_TEST);  // 深度信息，如果不设置立方体就像没有盖子
+//    glEnable(GL_CULL_FACE);  // 面剔除
+    glEnable(GL_PROGRAM_POINT_SIZE);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // use方法
 
     QMatrix4x4 mat_view;  // 【重点】 view代表摄像机拍摄的物体，也就是全世界！！！
@@ -343,6 +349,7 @@ void FoxOpenGLWidget::paintGL()
 
         _texPoly->bind(_indexPoly);  // 绑定纹理
         _texPolySpecular->bind(_indexTexPolySpecular);
+        _texBack->bind(_indexTexBack);
 
         _sp_cube.bind();
         _sp_cube.setUniformValue("mat_view", mat_view);
@@ -420,7 +427,7 @@ void FoxOpenGLWidget::paintGL()
             _sp_cone.setUniformValue("light_pos", _light.postion);
             _sp_cone.setUniformValue("view_pos", camera_.position);
 
-            glDrawArrays(GL_TRIANGLES, 0, _cone.vertices.size() / 6);
+            glDrawArrays(GL_TRIANGLES, 0, _cone.vertices.size() / 3);
             glBindVertexArray(0);
 
             /* 关闭透明度 */

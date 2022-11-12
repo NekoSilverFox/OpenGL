@@ -85,6 +85,7 @@ void FoxOpenGLWidget::initializeGL()
 /****************************************************** 球体 ******************************************************/
     // ------------------------ 着色器 ------------------------
     _sp_sphere.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/sphere.vert");
+    _sp_sphere.addShaderFromSourceFile(QOpenGLShader::Geometry, ":/shaders/ShaderSource/sphere.geom");
     _sp_sphere.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/sphere.frag");
     bool success = _sp_sphere.link();
     qDebug() << "[INFO] Sphere Shade Program _sp_sphere" << success;
@@ -136,6 +137,7 @@ void FoxOpenGLWidget::initializeGL()
     /****************************************************** 锥体 ******************************************************/
     // ------------------------ 着色器 ------------------------
     _sp_cone.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/cone.vert");
+    _sp_cone.addShaderFromSourceFile(QOpenGLShader::Geometry, ":/shaders/ShaderSource/cone.geom");
     _sp_cone.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/cone.frag");
     success = _sp_cone.link();
     qDebug() << "[INFO] Sphere Shade Program _sp_cone" << success;
@@ -319,6 +321,8 @@ void FoxOpenGLWidget::paintGL()
 //        _sp_sphere.setUniformValue("material.specular",   QVector3D(0.628281f,    0.555802f,  0.366065f));
         _sp_sphere.setUniformValue("material.shininess",  16.0f);
 
+        _sp_sphere.setUniformValue("time", (GLfloat)(::gl_time / 10.0));
+
         /* 光源颜色 */
         _sp_sphere.setUniformValue("light.ambient",    _light.color_ambient);
         _sp_sphere.setUniformValue("light.diffuse",    _light.color_diffuse);
@@ -405,6 +409,8 @@ void FoxOpenGLWidget::paintGL()
             _sp_cone.setUniformValue("mat_projection", mat_projection);
             _sp_cone.setUniformValue("mat_model", _cone.mat_model);
 
+            _sp_cone.setUniformValue("time", (GLfloat)(::gl_time / 10.0));
+
             /* 材质颜色 */
             _sp_cone.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
             _sp_cone.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
@@ -420,7 +426,7 @@ void FoxOpenGLWidget::paintGL()
             _sp_cone.setUniformValue("light_pos", _light.postion);
             _sp_cone.setUniformValue("view_pos", camera_.position);
 
-            glDrawArrays(GL_TRIANGLES, 0, _cone.vertices.size() / 6);
+            glDrawArrays(GL_TRIANGLES, 0, _cone.vertices.size() / 3);
             glBindVertexArray(0);
 
             /* 关闭透明度 */
@@ -562,6 +568,7 @@ void FoxOpenGLWidget::updateGL()
 //    _cone.mat_model.rotate( 0.7f, 0.0f, 1.0f, 0.0f);
 //    _cube.mat_model.rotate( 0.7f, 0.0f, 1.0f, 0.1f);
     _sphere.mat_model.rotate(0.5f, 0.0f, 1.0f, 0.4f);
+
 
 
     /* 旋转光源 */

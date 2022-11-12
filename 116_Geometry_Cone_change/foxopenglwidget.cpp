@@ -14,17 +14,20 @@ const unsigned int NUM_VAO = 4;
 /* 创建 VAO、VBO 对象并且赋予 ID */
 unsigned int VBOs[NUM_VBO], VAOs[NUM_VAO];
 
-/* 透明度 */
-float val_alpha = 0.5;
+const unsigned int CUBE_MAX_BOTTON_POINTS = 40;
+const unsigned int CUBE_MIN_BOTTON_POINTS = 2;
 
 unsigned long long gl_time = 0;
+float step_angle = 180.0f;
+int num_add_points = 2;
+float add_point_step_angle = step_angle/num_add_points;
+
 
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
     this->_sphere = Sphere(1.0f, 5.0f);
-    this->_cone = Cone(R, HEIGHT, 1.10f);
-    this->_cube = Cube(LENGTH, COLOR_CUBE);
+    this->_cone = Cone(R, HEIGHT, step_angle);
     this->_light = Light(1.0f, QVector3D(1.0f, 1.0f, 1.0f),
                                QVector3D(0.3f, 0.3f, 0.3f),
                                QVector3D(0.5f, 0.5f, 0.5f),
@@ -32,11 +35,9 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 
     is_draw_sphere = false;
     is_draw_cone = false;
-    is_draw_cube = false;
 
     is_move_sphere = false;
     is_move_cone = false;
-    is_move_cube = false;
 
     this->camera_ = Camera(QVector3D(-1.0f, 1.0f, 3.0f), QVector3D(0.0f, 1.0f, 0.0f), 50.0f, -90.0f, -20.0f);
 
@@ -94,7 +95,6 @@ void FoxOpenGLWidget::initializeGL()
     }
 
     _sp_sphere.bind();
-    _sp_sphere.setUniformValue("val_alpha", val_alpha);
 
 
     // ------------------------ VAO、VBO ------------------------
@@ -129,13 +129,10 @@ void FoxOpenGLWidget::initializeGL()
 
 
 
-
-
-
-
     /****************************************************** 锥体 ******************************************************/
     // ------------------------ 着色器 ------------------------
     _sp_cone.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/cone.vert");
+    _sp_cone.addShaderFromSourceFile(QOpenGLShader::Geometry, ":/shaders/ShaderSource/cone.geom");
     _sp_cone.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/cone.frag");
     success = _sp_cone.link();
     qDebug() << "[INFO] Sphere Shade Program _sp_cone" << success;
@@ -145,7 +142,6 @@ void FoxOpenGLWidget::initializeGL()
     }
 
     _sp_cone.bind();
-    _sp_cone.setUniformValue("val_alpha", val_alpha);
 
 
     // ------------------------ VAO、VBO ------------------------
@@ -156,16 +152,12 @@ void FoxOpenGLWidget::initializeGL()
 
     _sp_cone.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
     aPosLocation = _sp_cone.attributeLocation("aPos");  // 获取顶点着色器中顶点属性 aPos 的位置
-    glVertexAttribPointer(aPosLocation,     3,  GL_FLOAT,   GL_FALSE,    6 * sizeof(float),     (void*)0);  // 手动传入第几个属性
+    glVertexAttribPointer(aPosLocation,     3,  GL_FLOAT,   GL_FALSE,    3 * sizeof(float),     (void*)0);  // 手动传入第几个属性
     glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
 
-    _sp_cone.bind();  // 如果使用 QShaderProgram，那么最好在获取顶点属性位置前，先 bind()
-    aNormalLocation = _sp_cone.attributeLocation("aNormal");  // 获取顶点着色器中顶点属性 aPos 的位置
-    glVertexAttribPointer(aNormalLocation,  3,  GL_FLOAT,   GL_FALSE,   6 * sizeof(float),      (void*)(3*sizeof(float)));  // 手动传入第几个属性
-    glEnableVertexAttribArray(aNormalLocation); // 开始 VAO 管理的第一个属性值
+    _cone.mat_model.scale(1.2);
+    _cone.mat_model.translate(0.0f, -0.25f, 0.0f);
 
-
-    _cone.mat_model.translate(0.0f, 0.0f, 0.0f);
 
     // ------------------------ 解绑 ------------------------
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
@@ -173,59 +165,6 @@ void FoxOpenGLWidget::initializeGL()
     glBindBuffer(GL_ARRAY_BUFFER, 0);  // 注意 VAO 不参与管理 VBO
 
 
-
-
-
-
-
-    /****************************************************** 立方体 ******************************************************/
-    // ------------------------ 着色器 ------------------------
-    _sp_cube.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/cube.vert");
-    _sp_cube.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/cube.frag");
-    success = _sp_cube.link();
-    qDebug() << "[INFO] Sphere Shade Program _sp_cube" << success;
-    if (!success)
-    {
-         qDebug() << "[ERROR-Cube] " << _sp_cube.log();
-    }
-
-
-    // 绑定 VAO、VBO 对象
-    glBindVertexArray(VAOs[2]);
-    glBindBuffer(GL_ARRAY_BUFFER, VBOs[2]);
-
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*_cube.vertices.size(), &_cube.vertices[0], GL_STATIC_DRAW);
-
-    _sp_cube.bind();
-    aPosLocation = _sp_cube.attributeLocation("aPos");
-    glVertexAttribPointer(aPosLocation,     3,  GL_FLOAT,   GL_FALSE,   8 * sizeof(float),  (void*)0);
-    glEnableVertexAttribArray(aPosLocation);
-
-    _sp_cube.bind();
-    aNormalLocation = _sp_cube.attributeLocation("aNormal");
-    glVertexAttribPointer(aNormalLocation,  3,  GL_FLOAT,   GL_FALSE,   8 * sizeof(float),  (void*)(3*sizeof(float)));
-    glEnableVertexAttribArray(aNormalLocation);
-
-    _sp_cube.bind();
-    int aTexColorLocation = _sp_cube.attributeLocation("aTexColor");
-    glVertexAttribPointer(aTexColorLocation,2,  GL_FLOAT,   GL_FALSE,   8 * sizeof(float),  (void*)(6*sizeof(float)));
-    glEnableVertexAttribArray(aTexColorLocation);
-
-    // ------------------------ 纹理 ------------------------
-    _texPoly = new QOpenGLTexture(QImage(":/pic/Picture/poly_tex.png").mirrored());
-    _indexPoly = 0;  // 设置为第 0 个纹理单元
-    _sp_cube.setUniformValue("material.diffuse", _indexPoly);  // 【复习 | 重点】一个着色器内可以绑定多个纹理，只需要不同纹理对应不同的索引即可
-
-    _texPolySpecular = new QOpenGLTexture(QImage(":/pic/Picture/poly_specular_map.png").mirrored());
-    _indexTexPolySpecular = 1;
-    _sp_cube.setUniformValue("material.specular", _indexTexPolySpecular);  // 为他绑定第二个纹理单元
-
-    _cube.mat_model.translate(0.0f, -0.5f, 0.0f);
-
-    // ------------------------ 解绑 ------------------------
-    // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);  // 注意 VAO 不参与管理 VBO
 
 
 
@@ -314,9 +253,6 @@ void FoxOpenGLWidget::paintGL()
         _sp_sphere.setUniformValue("material.ambient",    QVector3D(0.0215f,    0.1745f,    0.1215f));
         _sp_sphere.setUniformValue("material.diffuse",    QVector3D(0.07568f,   0.61424f,   0.07568f));
         _sp_sphere.setUniformValue("material.specular",   QVector3D(0.633f,     0.727811f,  0.633f));
-//        _sp_sphere.setUniformValue("material.ambient",    QVector3D(0.24725f,     0.1995f,    0.0745f)); // 金子
-//        _sp_sphere.setUniformValue("material.diffuse",    QVector3D(0.75164f,     0.60648f,   0.22648f));
-//        _sp_sphere.setUniformValue("material.specular",   QVector3D(0.628281f,    0.555802f,  0.366065f));
         _sp_sphere.setUniformValue("material.shininess",  16.0f);
 
         /* 光源颜色 */
@@ -335,38 +271,6 @@ void FoxOpenGLWidget::paintGL()
         glBindVertexArray(0);
     }
 
-
-    /****************************************************** 立方体 ******************************************************/
-    if (is_draw_cube)
-    {
-        glBindVertexArray(VAOs[2]);
-
-        _texPoly->bind(_indexPoly);  // 绑定纹理
-        _texPolySpecular->bind(_indexTexPolySpecular);
-
-        _sp_cube.bind();
-        _sp_cube.setUniformValue("mat_view", mat_view);
-        _sp_cube.setUniformValue("mat_projection", mat_projection);
-        _sp_cube.setUniformValue("mat_model", _cube.mat_model);
-
-        /* 材质颜色 */
-//        _sp_cube.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
-//        _sp_cube.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
-//        _sp_cube.setUniformValue("material.specular",   QVector3D(0.5f, 0.5f, 0.5f));
-        _sp_cube.setUniformValue("material.shininess",  32.0f);
-
-        /* 光源颜色 */
-        _sp_cube.setUniformValue("light.ambient",    _light.color_ambient);
-        _sp_cube.setUniformValue("light.diffuse",    _light.color_diffuse);
-        _sp_cube.setUniformValue("light.specular",   _light.color_specular);
-        _sp_cube.setUniformValue("light.shininess",  _light.color_shininess);
-
-        _sp_cube.setUniformValue("light_pos", _light.postion);
-        _sp_cube.setUniformValue("view_pos", camera_.position);
-
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glBindVertexArray(0);
-    }
 
 
     /****************************************************** 光源 ******************************************************/
@@ -406,10 +310,32 @@ void FoxOpenGLWidget::paintGL()
             _sp_cone.setUniformValue("mat_model", _cone.mat_model);
 
             /* 材质颜色 */
-            _sp_cone.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
-            _sp_cone.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
-            _sp_cone.setUniformValue("material.specular",   QVector3D(0.6f, 0.6f, 0.6f));
-            _sp_cone.setUniformValue("material.shininess",  512.0f);
+            _sp_cone.setUniformValue("material.ambient",    QVector3D(0.84725f,     0.6995f,    0.2745f)); // 金子
+            _sp_cone.setUniformValue("material.diffuse",    QVector3D(0.95164f,     0.90648f,   0.32648f));
+            _sp_cone.setUniformValue("material.specular",   QVector3D(0.828281f,    0.855802f,  0.366065f));
+            _sp_cone.setUniformValue("material.shininess",  256.0f);
+
+
+            _sp_cone.bind();
+            _sp_cone.setUniformValue("time",  (GLfloat)  sin(::gl_time / 10.0f));
+
+            GLfloat del_h = (GLfloat)((sin(::gl_time / 20.0f) + 0.5f));
+            _sp_cone.setUniformValue("del_h", del_h);
+
+            GLfloat del_b = (GLfloat)((cos(::gl_time / 20.0f) + 1.5f));
+            _sp_cone.setUniformValue("del_b", del_b);
+
+            add_point_step_angle = step_angle / num_add_points;
+            _sp_cone.setUniformValue("num_add_points", num_add_points);
+            _sp_cone.setUniformValue("add_point_step_angle", add_point_step_angle);
+            qDebug() << "add_point_step_angle: " << add_point_step_angle << " | num_add_points" << num_add_points;
+
+
+            qDebug() << "\n-----------------------------";
+            qDebug() << "高度偏移量（del_h）：" << del_h;
+            qDebug() << "高度偏移量（del_b）：" << del_b;
+
+
 
             /* 光源颜色 */
             _sp_cone.setUniformValue("light.ambient",    _light.color_ambient);
@@ -417,10 +343,12 @@ void FoxOpenGLWidget::paintGL()
             _sp_cone.setUniformValue("light.specular",   _light.color_specular);
             _sp_cone.setUniformValue("light.shininess",  _light.color_shininess);
 
+
+
             _sp_cone.setUniformValue("light_pos", _light.postion);
             _sp_cone.setUniformValue("view_pos", camera_.position);
 
-            glDrawArrays(GL_TRIANGLES, 0, _cone.vertices.size() / 6);
+            glDrawArrays(GL_TRIANGLES, 0, _cone.vertices.size() / 3);
             glBindVertexArray(0);
 
             /* 关闭透明度 */
@@ -428,13 +356,6 @@ void FoxOpenGLWidget::paintGL()
             glEnable(GL_LIGHTING);
             //        glDepthMask(GL_TRUE);
         }
-}
-
-
-void FoxOpenGLWidget::drawShape(FoxOpenGLWidget::Shape shape)
-{
-    this->current_shape_ = shape;
-    update();  // 【重点】注意使用 update() 进行重绘，也就是这条语句会重新调用 paintGL()
 }
 
 
@@ -468,11 +389,6 @@ void FoxOpenGLWidget::move3DShape(QVector3D step)
     {
         _cone.mat_model.translate(step);
     }
-
-    if (is_move_cube)
-    {
-        _cube.mat_model.translate(step);
-    }
 }
 
 
@@ -484,11 +400,6 @@ void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
 
     switch (event->key())
     {
-
-    /* 键盘 +/-键改变透明度 */
-    case Qt::Key_Minus: val_alpha += 0.1; break;
-    case Qt::Key_Plus: val_alpha -= 0.1; break;
-
     /* 键盘WASD移动摄像机 */
     case Qt::Key_W:     camera_.moveCamera(Camera_Movement::FORWARD,    cameraSpeed);  break;
     case Qt::Key_A:     camera_.moveCamera(Camera_Movement::LEFT,       cameraSpeed);  break;
@@ -497,25 +408,16 @@ void FoxOpenGLWidget::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Space: camera_.moveCamera(Camera_Movement::UP,         cameraSpeed);  break;
     case Qt::Key_Shift: camera_.moveCamera(Camera_Movement::DOWN,       cameraSpeed);  break;
 
-    case Qt::Key_Up:    move3DShape(QVector3D( 0.0f,      moveSpeed, 0.0f));  break;
-    case Qt::Key_Down:  move3DShape(QVector3D( 0.0f,     -moveSpeed, 0.0f));  break;
+    case Qt::Key_Up:    move3DShape(QVector3D( 0.0f,      moveSpeed, 0.0f)); num_add_points += 1; break;
+    case Qt::Key_Down:  move3DShape(QVector3D( 0.0f,     -moveSpeed, 0.0f)); num_add_points -= 1; break;
     case Qt::Key_Left:  move3DShape(QVector3D(-moveSpeed, 0.0f,      0.0f));  break;
     case Qt::Key_Right: move3DShape(QVector3D( moveSpeed, 0.0f,      0.0f));  break;
 
     default: break;
     }
 
-    if (val_alpha > 1.0) val_alpha = 1.0;
-    if (val_alpha < 0.0) val_alpha = 0.0;
-
-    makeCurrent();
-    _sp_sphere.bind();
-    _sp_sphere.setUniformValue("val_alpha", val_alpha);
-
-    qDebug() << "[INFO] val_alpha=" << val_alpha;
-    doneCurrent();
-    update();
-
+    if (num_add_points < CUBE_MIN_BOTTON_POINTS)  num_add_points = CUBE_MIN_BOTTON_POINTS;
+    if (num_add_points > CUBE_MAX_BOTTON_POINTS) num_add_points = CUBE_MAX_BOTTON_POINTS;
 }
 
 
@@ -560,7 +462,6 @@ void FoxOpenGLWidget::updateGL()
 
 
 //    _cone.mat_model.rotate( 0.7f, 0.0f, 1.0f, 0.0f);
-//    _cube.mat_model.rotate( 0.7f, 0.0f, 1.0f, 0.1f);
     _sphere.mat_model.rotate(0.5f, 0.0f, 1.0f, 0.4f);
 
 

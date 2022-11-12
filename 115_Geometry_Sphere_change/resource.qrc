@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/shaders">
+        <file>ShaderSource/sphere.frag</file>
+        <file>ShaderSource/sphere.vert</file>
+        <file>ShaderSource/light.frag</file>
+        <file>ShaderSource/light.vert</file>
+        <file>ShaderSource/sphere.geom</file>
+    </qresource>
+    <qresource prefix="/pic">
+        <file>Picture/light.png</file>
+        <file>Picture/ball.png</file>
+    </qresource>
+</RCC>
