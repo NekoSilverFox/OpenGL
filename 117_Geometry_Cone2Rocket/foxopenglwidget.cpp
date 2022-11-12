@@ -20,12 +20,15 @@ unsigned long long gl_time = 0;
 float step_angle = 180.0f;
 unsigned int num_add_points = 2;
 float add_point_step_angle = step_angle/num_add_points;
-const unsigned int CUBE_MAX_BOTTON_POINTS = 10;
+const unsigned int CUBE_MAX_BOTTON_POINTS = 2;  // 10
 const unsigned int CUBE_MIN_BOTTON_POINTS = 2;
 
 GLfloat del_h = 0.0f;
 const GLfloat STEP_DEL_H = 0.01f;
 const GLfloat MAX_DEL_H = 0.8f;
+
+GLfloat booster_R = 0.0f;
+GLfloat booster_R_step = 0.01f;
 
 GLboolean is_draw_cylinder = true;
 
@@ -305,6 +308,8 @@ void FoxOpenGLWidget::paintGL()
             glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
             //        glDepthMask(GL_FALSE);
             glDisable(GL_LIGHTING);
+            glEnable(GL_PROGRAM_POINT_SIZE);
+
 
 
             glBindVertexArray(VAOs[1]);
@@ -323,10 +328,10 @@ void FoxOpenGLWidget::paintGL()
             _sp_cone.bind();
             _sp_cone.setUniformValue("time",  (GLfloat)  sin(::gl_time / 10.0f));
 
-            qDebug() << "\n-----------------------------";
+//            qDebug() << "\n-----------------------------";
             GLfloat del_b = 1.0f;
             _sp_cone.setUniformValue("del_b", del_b);
-            qDebug() << "恒向偏移量（del_b）：" << del_b;
+//            qDebug() << "恒向偏移量（del_b）：" << del_b;
 
             /* 高度拉伸 */
             if (del_h < MAX_DEL_H)
@@ -337,7 +342,7 @@ void FoxOpenGLWidget::paintGL()
             }
 
             /* 圆度增加 */
-            if (num_add_points < CUBE_MAX_BOTTON_POINTS)
+            if (num_add_points <= CUBE_MAX_BOTTON_POINTS)
             {
                 add_point_step_angle = step_angle / num_add_points;
                 _sp_cone.setUniformValue("num_add_points", num_add_points);
@@ -347,7 +352,17 @@ void FoxOpenGLWidget::paintGL()
                 num_add_points++;
             }
 
+            _sp_cone.setUniformValue("r", R);
             _sp_cone.setUniformValue("is_draw_cylinder", is_draw_cylinder);
+
+            if (is_draw_booster)
+            {
+                _sp_cone.setUniformValue("is_draw_booster", is_draw_booster);
+                _sp_cone.setUniformValue("booster_R", (GLfloat)(R * 1.0));
+            }
+
+
+
             _sp_cone.setUniformValue("heigh_cylinder", 5.8f);
 
 

@@ -49,3 +49,9 @@ void MainWindow::on_actionLightColor_triggered()
     ui->openGLWidget->is_change_light_color = ui->actionLightColor->isChecked();
 }
 
+
+void MainWindow::on_actionBooster_triggered()
+{
+    ui->openGLWidget->is_draw_booster = ui->actionBooster->isChecked();
+}
+

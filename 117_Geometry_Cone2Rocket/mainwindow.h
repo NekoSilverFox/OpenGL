@@ -28,6 +28,8 @@ private slots:
 
     void on_actionLightColor_triggered();
 
+    void on_actionBooster_triggered();
+
 private:
     Ui::MainWindow *ui;
 };
