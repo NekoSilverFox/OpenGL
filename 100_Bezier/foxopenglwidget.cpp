@@ -365,7 +365,7 @@ void FoxOpenGLWidget::paintGL()
 //    glViewport(0, 0, width(), height());
 
     /****************************************************** 贝塞尔曲线测试 ******************************************************/
-    glMap2f(GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, &control_points[0][0][0]);
+    glMap2f(GL_MAP2_VERTEX_3, 0.0, 1.0, 3, 4, 0.0, 1.0, 12, 4, &control_points[0][0][0]);
     glEnable(GL_MAP2_VERTEX_3);
     glMapGrid2f(20, 0.0, 1.0, 20, 0.0, 1.0);
     glEnable(GL_BLEND);
