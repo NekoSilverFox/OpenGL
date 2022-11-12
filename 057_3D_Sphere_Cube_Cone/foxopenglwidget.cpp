@@ -19,6 +19,41 @@ float val_alpha = 0.5;
 /* 鼠标位置偏移量 */
 QPoint delta_pos;
 
+/*
+ * A fourth order surface
+ */
+GLfloat points[4][4][3] =
+{
+  {
+    {-2.0, -2.0,  1.0},
+    {-0.5, -2.0,  0.0},
+    { 0.5, -2.0, -2.0},
+    { 2.0, -2.0,  2.0}},
+  {
+    {-2.0, -0.5,  2.0},
+    {-0.5, -0.5,  1.5},
+    { 0.5, -0.5,  0.0},
+    { 2.0, -0.5, -2.0}},
+  {
+    {-2.0,  0.5,  2.0},
+    {-0.5,  0.5,  1.0},
+    { 0.5,  0.5, -1.0},
+    { 2.0,  0.5,  1.0}},
+  {
+    {-2.0,  2.0, -1.0},
+    {-0.5,  2.0, -1.0},
+    { 0.5,  2.0,  0.0},
+    { 2.0,  2.0, -0.5}}
+};
+int        uSize         = 4;
+int        vSize         = 4;
+
+
+// The number of subdivisions in the grid
+int        gridSize      = 200;
+int        uSelected     = -1;
+int        vSelected     = -1;
+
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
@@ -239,6 +274,15 @@ void FoxOpenGLWidget::resizeGL(int w, int h)
 void FoxOpenGLWidget::paintGL()
 {
     glViewport(0, 0, width(), height());
+
+    glMap2f(GL_MAP2_VERTEX_3, 0, 1, 3, uSize, 0, 1, uSize * 3, vSize,
+              &points[0][0][0]);
+    // Fill the surface
+    glEvalMesh2(GL_FILL, 0, gridSize, 0, gridSize);
+    glEnable(GL_MAP2_VERTEX_3);
+    glMapGrid2f(10, 0.0f, 10.0f, 10, 0.0f, 10.0f);
+
+
 
     /* 设置 OpenGLWidget 控件背景颜色为深青色，并且设置深度信息（Z-缓冲） */
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);  // set方法【重点】如果没有 initializeGL，目前是一个空指针状态，没有指向显卡里面的函数，会报错

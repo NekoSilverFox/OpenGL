@@ -288,6 +288,20 @@ void FoxOpenGLWidget::paintGL()
 {
 //    glViewport(0, 0, width(), height());
 
+<<<<<<< HEAD:100_Bezier/foxopenglwidget.cpp
+    /****************************************************** 贝塞尔曲线测试 ******************************************************/
+    glMap2f(GL_MAP2_VERTEX_3, 0.0, 1.0, 3, 4, 0.0, 1.0, 12, 4, &control_points[0][0][0]);
+    glEnable(GL_MAP2_VERTEX_3);
+    glMapGrid2f(20, 0.0, 1.0, 20, 0.0, 1.0);
+    glEnable(GL_BLEND);
+    glEnable(GL_LINE_SMOOTH);
+    glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);  // Antialias the lines
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_AUTO_NORMAL);
+
+
+=======
+>>>>>>> 712578bf3985249d073cb99c74e777e2172c1137:112_Geometry_Bezier_2D/foxopenglwidget.cpp
     /* 设置 OpenGLWidget 控件背景颜色为深青色，并且设置深度信息（Z-缓冲） */
     glClearColor(0.15f, 0.15f, 0.15f, 1.0f);  // set方法【重点】如果没有 initializeGL，目前是一个空指针状态，没有指向显卡里面的函数，会报错
     glEnable(GL_DEPTH_TEST);  // 深度信息，如果不设置立方体就像没有盖子
