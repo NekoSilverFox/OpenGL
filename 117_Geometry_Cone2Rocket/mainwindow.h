@@ -28,7 +28,15 @@ private slots:
 
     void on_actionLightColor_triggered();
 
-    void on_actionBooster_triggered();
+    void on_action2Booster_triggered();
+
+    void on_action2Pyramid_triggered();
+
+    void on_action2House_triggered();
+
+    void on_action2Pencil_triggered();
+
+    void on_actionLaunch_triggered();
 
 private:
     Ui::MainWindow *ui;

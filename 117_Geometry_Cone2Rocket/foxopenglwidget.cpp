@@ -20,10 +20,10 @@ unsigned long long gl_time = 0;
 float step_angle = 180.0f;
 unsigned int num_add_points = 2;
 float add_point_step_angle = step_angle/num_add_points;
-const unsigned int CUBE_MAX_BOTTON_POINTS = 10;  // 10
+const unsigned int CUBE_MAX_BOTTON_POINTS = 20;  // 10
 const unsigned int CUBE_MIN_BOTTON_POINTS = 2;
 
-GLfloat del_h = 0.0f;
+GLfloat del_h = 0.01f;
 const GLfloat STEP_DEL_H = 0.01f;
 const GLfloat MAX_DEL_H = 0.8f;
 
@@ -32,6 +32,12 @@ GLfloat BOOSTER_R_STEP = 0.01f;
 GLfloat BOOSTER_R_MAX = R * 1.5;
 
 GLboolean is_draw_cylinder = true;
+float heigh_cylinder = 0.0f;
+float heigh_cylinder_step = 0.02f;
+const float MAX_HEIGH_CYLINDER = 5.5f;
+
+const float CONE_ROLE_MAX = 15.0f;
+const float cone_role = 0.0f;
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
@@ -47,6 +53,12 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 
     is_move_sphere = false;
     is_move_cone = false;
+
+    is_2_pyramid = false;  // 增加顶点高度到金字塔形状
+    is_2_house = false;  // 增加底
+    is_2_pencil = false; // 增加高度，圆滑度
+    is_draw_booster = false;  // 是否绘制 4 个助推器
+    is_launch = false;  // 发射
 
     this->camera_ = Camera(QVector3D(-1.0f, 1.0f, 3.0f), QVector3D(0.0f, 1.0f, 0.0f), 50.0f, -90.0f, -20.0f);
 
@@ -163,6 +175,10 @@ void FoxOpenGLWidget::initializeGL()
     aPosLocation = _sp_cone.attributeLocation("aPos");  // 获取顶点着色器中顶点属性 aPos 的位置
     glVertexAttribPointer(aPosLocation,     3,  GL_FLOAT,   GL_FALSE,    3 * sizeof(float),     (void*)0);  // 手动传入第几个属性
     glEnableVertexAttribArray(aPosLocation); // 开始 VAO 管理的第一个属性值
+
+    _sp_cone.setUniformValue("del_h", del_h);
+    _sp_cone.setUniformValue("num_add_points", num_add_points);
+    _sp_cone.setUniformValue("add_point_step_angle", add_point_step_angle);
 
     _cone.mat_model.scale(1.2);
     _cone.mat_model.translate(0.0f, -0.25f, 0.0f);
@@ -311,8 +327,6 @@ void FoxOpenGLWidget::paintGL()
             glDisable(GL_LIGHTING);
 
 
-
-
             glBindVertexArray(VAOs[1]);
 
             _sp_cone.bind();
@@ -328,6 +342,8 @@ void FoxOpenGLWidget::paintGL()
 
             _sp_cone.bind();
             _sp_cone.setUniformValue("time",  (GLfloat)  sin(::gl_time / 10.0f));
+            _sp_cone.setUniformValue("r", R);
+
 
 //            qDebug() << "\n-----------------------------";
             GLfloat del_b = 1.0f;
@@ -335,25 +351,39 @@ void FoxOpenGLWidget::paintGL()
 //            qDebug() << "恒向偏移量（del_b）：" << del_b;
 
             /* 高度拉伸 */
-            if (del_h < MAX_DEL_H)
+            if (is_2_pyramid && del_h < MAX_DEL_H)
             {
                 qDebug() << "高度偏移量（del_h）：" << del_h;
                 _sp_cone.setUniformValue("del_h", del_h);
                 del_h += STEP_DEL_H;
             }
 
-            /* 圆度增加 */
-            if (num_add_points <= CUBE_MAX_BOTTON_POINTS)
+            /* 向下拉伸，实现房子效果 */
+            if(is_2_house && heigh_cylinder < 0.6f)
             {
-                add_point_step_angle = step_angle / num_add_points;
-                _sp_cone.setUniformValue("num_add_points", num_add_points);
-                _sp_cone.setUniformValue("add_point_step_angle", add_point_step_angle);
-                qDebug() << "add_point_step_angle: " << add_point_step_angle << " | num_add_points" << num_add_points;
-
-                num_add_points++;
+                _sp_cone.setUniformValue("heigh_cylinder", heigh_cylinder);
+                heigh_cylinder += heigh_cylinder_step;
             }
 
-            _sp_cone.setUniformValue("r", R);
+
+
+            /* 圆度增加, 向下拉伸，实现铅笔 */
+            if (is_2_pencil)
+            {
+                if (num_add_points <= CUBE_MAX_BOTTON_POINTS)
+                {
+                    add_point_step_angle = step_angle / num_add_points;
+                    _sp_cone.setUniformValue("num_add_points", num_add_points);
+                    _sp_cone.setUniformValue("add_point_step_angle", add_point_step_angle);
+                    qDebug() << "add_point_step_angle: " << add_point_step_angle << " | num_add_points" << num_add_points;
+                    if (gl_time % 10 == 0) num_add_points++;  // 绘制慢一点
+                }
+
+                _sp_cone.setUniformValue("heigh_cylinder", heigh_cylinder);
+                if (heigh_cylinder < MAX_HEIGH_CYLINDER) heigh_cylinder += heigh_cylinder_step;
+            }
+
+
             _sp_cone.setUniformValue("is_draw_cylinder", is_draw_cylinder);
 
             if (is_draw_booster)
@@ -365,7 +395,15 @@ void FoxOpenGLWidget::paintGL()
 
 
 
-            _sp_cone.setUniformValue("heigh_cylinder", 5.8f);
+
+
+
+            /* 向上移动火箭，实现类似发射效果 */
+            if (is_launch)
+            {
+                if (cone_role < CONE_ROLE_MAX) _cone.mat_model.rotate(-0.2, QVector3D(0.0, 0.0, 1.0));
+                _cone.mat_model.translate(0.0f, 0.1f, 0.0);
+            }
 
 
 
@@ -495,6 +533,7 @@ void FoxOpenGLWidget::updateGL()
 
 //    _cone.mat_model.rotate( 0.7f, 0.0f, 1.0f, 0.0f);
     _sphere.mat_model.rotate(0.5f, 0.0f, 1.0f, 0.4f);
+
 
 
     /* 旋转光源 */

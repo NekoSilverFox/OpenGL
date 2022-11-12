@@ -50,8 +50,32 @@ void MainWindow::on_actionLightColor_triggered()
 }
 
 
-void MainWindow::on_actionBooster_triggered()
+void MainWindow::on_action2Booster_triggered()
 {
-    ui->openGLWidget->is_draw_booster = ui->actionBooster->isChecked();
+    ui->openGLWidget->is_draw_booster = ui->action2Booster->isChecked();
+}
+
+
+void MainWindow::on_action2Pyramid_triggered()
+{
+    ui->openGLWidget->is_2_pyramid = ui->action2Pyramid->isChecked();
+}
+
+
+void MainWindow::on_action2House_triggered()
+{
+    ui->openGLWidget->is_2_house = ui->action2House->isChecked();
+}
+
+
+void MainWindow::on_action2Pencil_triggered()
+{
+    ui->openGLWidget->is_2_pencil = ui->action2Pencil->isChecked();
+}
+
+
+void MainWindow::on_actionLaunch_triggered()
+{
+    ui->openGLWidget->is_launch = ui->actionLaunch->isChecked();
 }
 
