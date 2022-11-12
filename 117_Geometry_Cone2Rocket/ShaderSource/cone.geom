@@ -4,7 +4,7 @@ layout (triangle_strip, max_vertices = 170) out;
 
 out vec3 res_g_axis_normal;
 out vec3 res_g_axis_fragPos;
-
+out float color_id;
 
 uniform float time;
 uniform float del_h;  // 高度偏移量
@@ -59,7 +59,7 @@ void sendPoint2FragShader(vec4 pos, vec3 normal)
 // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ main @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 void main() {
 
-
+    color_id = 0.0f;
 
 
     vec4    pos_1    = changePos(gl_in[0].gl_Position);
@@ -150,6 +150,6 @@ void main() {
         }
     }
 
-    EndPrimitive();
+//    EndPrimitive();
 
 }

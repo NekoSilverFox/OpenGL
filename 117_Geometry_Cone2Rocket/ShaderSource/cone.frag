@@ -4,7 +4,7 @@ out vec4 FragColor;
 
 in vec3 res_g_axis_normal;
 in vec3 res_g_axis_fragPos;
-
+in float color_id;
 
 vec3 ambient;		// 环境光颜色
 vec3 diffuse;		// 漫反射颜色
@@ -36,12 +36,20 @@ uniform vec3 view_pos;
 
 void main()
 {
-
+    if(0.0f == color_id)
+    {
         ambient   = vec3(material.ambient );
         diffuse   = vec3(material.diffuse  );
         specular  = vec3(material.specular   );
         shininess = float(material.shininess   );
-
+    }
+//    else
+//    {
+//        ambient   = vec3(0.0, 0.9, 0.0);
+//        diffuse   = vec3(0.0, 0.9, 0.0 );
+//        specular  = vec3(0.0, 0.9, 0.0   );
+//        shininess = float(material.shininess   );
+//    }
 
 
     /* 环境光 */
