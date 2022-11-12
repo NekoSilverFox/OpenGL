@@ -1,7 +1,6 @@
 #version 330 core
 layout (triangles) in;
-//layout (triangle_strip, max_vertices = 170) out;
-layout (points, max_vertices = 170) out;
+layout (triangle_strip, max_vertices = 170) out;
 
 out vec3 res_g_axis_normal;
 out vec3 res_g_axis_fragPos;
@@ -76,6 +75,7 @@ void main() {
             sendPoint2FragShader(pos_1,    new_normal);
             sendPoint2FragShader(last_pos, new_normal);
             sendPoint2FragShader(add_pos,  new_normal);
+            EndPrimitive();
         }
 
         /* 如果是底面的点，增加底部的点（向下拉伸） */
@@ -86,15 +86,18 @@ void main() {
             sendPoint2FragShader(last_pos,          new_normal);
             sendPoint2FragShader(add_cylinder_pos,  new_normal);
             sendPoint2FragShader(add_pos,           new_normal);
+            EndPrimitive();
 
 
             vec4 add_cylinder_pos_2 = vec4(add_pos.x, add_pos.y - heigh_cylinder, add_pos.z, add_pos.w);
             sendPoint2FragShader(add_pos,           new_normal);
             sendPoint2FragShader(add_cylinder_pos,  new_normal);
             sendPoint2FragShader(add_cylinder_pos_2,new_normal);
+            EndPrimitive();
         }
         last_pos = add_pos;
     }
+
 
     /*  如果圆度足够，就增加助推器 */
     if (is_draw_booster && (pos_1.y == last_pos.y) && (is_draw_cylinder == true))
@@ -108,31 +111,38 @@ void main() {
 
 
 
-        for (float angle_offset = 0.0f; angle_offset < 90.0f; angle_offset += 90.0f)
+        for (float angle_offset = 0.0f; angle_offset <= 360.0f; angle_offset += 90.0f)
         {
-            booster_top      = vec4(r*sin(45.0f+angle_offset),               c.y - heigh_cylinder/3, r*cos(45.0f+angle_offset),               1.0f);
-            booster_bottom_1 = vec4(r*sin(15.0f+angle_offset),               c.y - heigh_cylinder,   r*cos(15.0f+angle_offset),               1.0f);
-            booster_bottom_2 = vec4((r+booster_R)*sin(45.0f+angle_offset),   c.y - heigh_cylinder,   (r+booster_R)*cos(45.0f+angle_offset),   1.0f);
-            booster_bottom_3 = vec4(r*sin(75.0f+angle_offset),               c.y - heigh_cylinder,   r*cos(75.0f+angle_offset),               1.0f);
+            float lr_offset = 40.0f;
+            booster_top      = vec4(r*sin(radians(45.0f+angle_offset)),                      c.y - heigh_cylinder/3,
+                                    r*cos(radians(45.0f+angle_offset)),                      1.0f);
 
-            normal = GetNormal(booster_bottom_3, booster_bottom_1, booster_bottom_2);
+            booster_bottom_1 = vec4(r*sin(radians(45.0f-lr_offset+angle_offset)),            c.y - heigh_cylinder,
+                                    r*cos(radians(45.0f-lr_offset+angle_offset)),            1.0f);
+
+            booster_bottom_2 = vec4((r+booster_R)*sin(radians(45.0f+angle_offset)),          c.y - heigh_cylinder,
+                                    (r+booster_R)*cos(radians(45.0f+angle_offset)),          1.0f);
+
+            booster_bottom_3 = vec4(r*sin(radians(45.0f+lr_offset+angle_offset)),            c.y - heigh_cylinder,
+                                    r*cos(radians(45.0f+lr_offset+angle_offset)),            1.0f);
+
+
+
+            normal = -GetNormal(booster_top, booster_bottom_1, booster_bottom_2);
+            sendPoint2FragShader(booster_top,           normal);
             sendPoint2FragShader(booster_bottom_1,      normal);
-            sendPoint2FragShader(booster_bottom_3,           normal);
             sendPoint2FragShader(booster_bottom_2,      normal);
+            EndPrimitive();
 
+            normal = -GetNormal(booster_top, booster_bottom_2, booster_bottom_3);
+            sendPoint2FragShader(booster_top,           normal);
+            sendPoint2FragShader(booster_bottom_3,      normal);
+            sendPoint2FragShader(booster_bottom_2,      normal);
+            EndPrimitive();
 
-//            normal = GetNormal(booster_top, booster_bottom_1, booster_bottom_2);
-//            sendPoint2FragShader(booster_bottom_1,      normal);
-//            sendPoint2FragShader(booster_top,           normal);
-//            sendPoint2FragShader(booster_bottom_2,      normal);
-
-//            normal = GetNormal(booster_top, booster_bottom_2, booster_bottom_3);
-//            sendPoint2FragShader(booster_bottom_3,      normal);
-//            sendPoint2FragShader(booster_top,           normal);
-//            sendPoint2FragShader(booster_bottom_2,      normal);
         }
     }
 
-
     EndPrimitive();
+
 }

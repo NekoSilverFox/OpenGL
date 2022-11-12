@@ -20,7 +20,7 @@ unsigned long long gl_time = 0;
 float step_angle = 180.0f;
 unsigned int num_add_points = 2;
 float add_point_step_angle = step_angle/num_add_points;
-const unsigned int CUBE_MAX_BOTTON_POINTS = 2;  // 10
+const unsigned int CUBE_MAX_BOTTON_POINTS = 10;  // 10
 const unsigned int CUBE_MIN_BOTTON_POINTS = 2;
 
 GLfloat del_h = 0.0f;
@@ -28,7 +28,8 @@ const GLfloat STEP_DEL_H = 0.01f;
 const GLfloat MAX_DEL_H = 0.8f;
 
 GLfloat booster_R = 0.0f;
-GLfloat booster_R_step = 0.01f;
+GLfloat BOOSTER_R_STEP = 0.01f;
+GLfloat BOOSTER_R_MAX = R * 1.5;
 
 GLboolean is_draw_cylinder = true;
 
@@ -308,7 +309,7 @@ void FoxOpenGLWidget::paintGL()
             glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
             //        glDepthMask(GL_FALSE);
             glDisable(GL_LIGHTING);
-            glEnable(GL_PROGRAM_POINT_SIZE);
+
 
 
 
@@ -358,7 +359,8 @@ void FoxOpenGLWidget::paintGL()
             if (is_draw_booster)
             {
                 _sp_cone.setUniformValue("is_draw_booster", is_draw_booster);
-                _sp_cone.setUniformValue("booster_R", (GLfloat)(R * 1.0));
+                _sp_cone.setUniformValue("booster_R", (GLfloat)(booster_R));
+                if (booster_R < BOOSTER_R_MAX) booster_R += BOOSTER_R_STEP;
             }
 
 
