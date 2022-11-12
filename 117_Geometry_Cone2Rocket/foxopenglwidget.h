@@ -52,7 +52,12 @@ public:
 
     bool is_draw_cone;
     bool is_move_cone;
+
+    bool is_2_pyramid;  // 增加顶点高度到金字塔形状
+    bool is_2_house;  // 增加底
+    bool is_2_pencil; // 增加高度，圆滑度
     bool is_draw_booster;  // 是否绘制 4 个助推器
+    bool is_launch;  // 发射
 
     bool is_change_light_color;
 

@@ -45,7 +45,7 @@ void Sphere::_genVectorVerticesAndIndices()
     for (unsigned long i = 0; i <= num_circle; i++)
     {
         float current_xz_angle = 0.0f;  // 水平角度
-        qDebug() << "\n[INFO] ---> 生成第：" << i << "圈， 垂直角度：" << current_xy_angle;
+//        qDebug() << "\n[INFO] ---> 生成第：" << i << "圈， 垂直角度：" << current_xy_angle;
 
         /* 圈上的点 */
         for (unsigned long j = 0; j <= num_point_circle; j++)

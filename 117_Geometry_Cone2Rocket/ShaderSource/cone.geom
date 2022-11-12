@@ -2,16 +2,17 @@
 layout (triangles) in;
 layout (triangle_strip, max_vertices = 170) out;
 
-
 out vec3 res_g_axis_normal;
 out vec3 res_g_axis_fragPos;
-
+out float color_id;
 
 uniform float time;
 uniform float del_h;  // 高度偏移量
 uniform float del_b;  // 底部圆心偏移量
 uniform float add_point_step_angle;
 uniform int num_add_points;
+uniform float r;
+uniform float booster_R;  // 助推器长度（宽度）
 
 uniform mat4 mat_model;
 uniform mat4 mat_view;
@@ -19,7 +20,13 @@ uniform mat4 mat_projection;
 
 
 uniform bool is_draw_cylinder;
+uniform bool is_draw_booster;
 uniform float heigh_cylinder;
+
+bool is_al_draw_booster = false;
+
+
+
 
 vec4 changePos(vec4 position)
 {
@@ -51,6 +58,10 @@ void sendPoint2FragShader(vec4 pos, vec3 normal)
 
 // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ main @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 void main() {
+
+    color_id = 0.0f;
+
+
     vec4    pos_1    = changePos(gl_in[0].gl_Position);
     vec4    pos_2    = changePos(gl_in[1].gl_Position);
     vec3    c        = vec3(pos_1.x, 0.0f, pos_1.z);  // 圆锥底部圆心坐标 C(c_x, c_y, c_z)
@@ -71,6 +82,7 @@ void main() {
             sendPoint2FragShader(pos_1,    new_normal);
             sendPoint2FragShader(last_pos, new_normal);
             sendPoint2FragShader(add_pos,  new_normal);
+            EndPrimitive();
         }
 
         /* 如果是底面的点，增加底部的点（向下拉伸） */
@@ -81,16 +93,63 @@ void main() {
             sendPoint2FragShader(last_pos,          new_normal);
             sendPoint2FragShader(add_cylinder_pos,  new_normal);
             sendPoint2FragShader(add_pos,           new_normal);
+            EndPrimitive();
 
 
             vec4 add_cylinder_pos_2 = vec4(add_pos.x, add_pos.y - heigh_cylinder, add_pos.z, add_pos.w);
             sendPoint2FragShader(add_pos,           new_normal);
             sendPoint2FragShader(add_cylinder_pos,  new_normal);
             sendPoint2FragShader(add_cylinder_pos_2,new_normal);
+            EndPrimitive();
         }
-
         last_pos = add_pos;
     }
 
-    EndPrimitive();
+
+    /*  如果圆度足够，就增加助推器 */
+    if (is_draw_booster && (pos_1.y == last_pos.y) && (is_draw_cylinder == true))
+    {
+          is_al_draw_booster = true;
+          vec4 booster_top     ;
+          vec4 booster_bottom_1;
+          vec4 booster_bottom_2;
+          vec4 booster_bottom_3;
+          vec3 normal;
+
+
+
+        for (float angle_offset = 0.0f; angle_offset <= 360.0f; angle_offset += 90.0f)
+        {
+            float lr_offset = 40.0f;
+            booster_top      = vec4(r*sin(radians(45.0f+angle_offset)),                      c.y - heigh_cylinder/3,
+                                    r*cos(radians(45.0f+angle_offset)),                      1.0f);
+
+            booster_bottom_1 = vec4(r*sin(radians(45.0f-lr_offset+angle_offset)),            c.y - heigh_cylinder,
+                                    r*cos(radians(45.0f-lr_offset+angle_offset)),            1.0f);
+
+            booster_bottom_2 = vec4((r+booster_R)*sin(radians(45.0f+angle_offset)),          c.y - heigh_cylinder,
+                                    (r+booster_R)*cos(radians(45.0f+angle_offset)),          1.0f);
+
+            booster_bottom_3 = vec4(r*sin(radians(45.0f+lr_offset+angle_offset)),            c.y - heigh_cylinder,
+                                    r*cos(radians(45.0f+lr_offset+angle_offset)),            1.0f);
+
+
+
+            normal = -GetNormal(booster_top, booster_bottom_1, booster_bottom_2);
+            sendPoint2FragShader(booster_top,           normal);
+            sendPoint2FragShader(booster_bottom_1,      normal);
+            sendPoint2FragShader(booster_bottom_2,      normal);
+            EndPrimitive();
+
+            normal = -GetNormal(booster_top, booster_bottom_2, booster_bottom_3);
+            sendPoint2FragShader(booster_top,           normal);
+            sendPoint2FragShader(booster_bottom_3,      normal);
+            sendPoint2FragShader(booster_bottom_2,      normal);
+            EndPrimitive();
+
+        }
+    }
+
+//    EndPrimitive();
+
 }

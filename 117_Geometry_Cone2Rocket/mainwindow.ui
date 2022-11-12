@@ -86,6 +86,22 @@ QWidget:checked {
    <addaction name="separator"/>
    <addaction name="actionLightColor"/>
   </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>LeftToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="action2Pyramid"/>
+   <addaction name="action2House"/>
+   <addaction name="action2Pencil"/>
+   <addaction name="action2Booster"/>
+   <addaction name="actionLaunch"/>
+  </widget>
   <action name="actionWireframe">
    <property name="checkable">
     <bool>true</bool>
@@ -185,6 +201,46 @@ QWidget:checked {
     <font>
      <pointsize>10</pointsize>
     </font>
+   </property>
+  </action>
+  <action name="action2Booster">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Rocket</string>
+   </property>
+  </action>
+  <action name="action2Pyramid">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Pyramid</string>
+   </property>
+  </action>
+  <action name="action2House">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>House</string>
+   </property>
+  </action>
+  <action name="action2Pencil">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Pencil</string>
+   </property>
+  </action>
+  <action name="actionLaunch">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Go for Launch</string>
    </property>
   </action>
  </widget>
