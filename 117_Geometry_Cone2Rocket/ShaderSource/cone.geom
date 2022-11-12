@@ -25,6 +25,9 @@ uniform float heigh_cylinder;
 
 bool is_al_draw_booster = false;
 
+
+
+
 vec4 changePos(vec4 position)
 {
     return vec4(position.x * del_b,
@@ -55,6 +58,10 @@ void sendPoint2FragShader(vec4 pos, vec3 normal)
 
 // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ main @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 void main() {
+
+
+
+
     vec4    pos_1    = changePos(gl_in[0].gl_Position);
     vec4    pos_2    = changePos(gl_in[1].gl_Position);
     vec3    c        = vec3(pos_1.x, 0.0f, pos_1.z);  // 圆锥底部圆心坐标 C(c_x, c_y, c_z)
