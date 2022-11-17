@@ -7,8 +7,8 @@
 
 #define TIMEOUT 50  // 50 毫秒更新一次
 
-const unsigned int NUM_VBO = 4;
-const unsigned int NUM_VAO = 4;
+const unsigned int NUM_VBO = 3;
+const unsigned int NUM_VAO = 3;
 
 /* 创建 VAO、VBO 对象并且赋予 ID */
 unsigned int VBOs[NUM_VBO], VAOs[NUM_VAO];
@@ -19,10 +19,12 @@ unsigned long long gl_time = 0;
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
     this->_cube = Cube(LENGTH, COLOR_CUBE);
+    this->_octahedron = Fusiform(FUSIFORM_R, 0.5, 90.0f);
     this->_light = Light(1.0f, QVector3D(1.0f, 1.0f, 1.0f),
                                QVector3D(0.3f, 0.3f, 0.3f),
                                QVector3D(0.5f, 0.5f, 0.5f),
                                QVector3D(1.0f, 1.0f, 1.0f));
+
 
     is_draw_cube = false;
     is_move_cube = false;
@@ -85,8 +87,8 @@ void FoxOpenGLWidget::initializeGL()
 
 
     // 绑定 VAO、VBO 对象
-    glBindVertexArray(VAOs[2]);
-    glBindBuffer(GL_ARRAY_BUFFER, VBOs[2]);
+    glBindVertexArray(VAOs[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(float)*_cube.vertices.size(), &_cube.vertices[0], GL_STATIC_DRAW);
 
@@ -123,6 +125,40 @@ void FoxOpenGLWidget::initializeGL()
 
 
 
+    /****************************************************** 八面体 ******************************************************/
+    // ------------------------ 着色器 ------------------------
+    _sp_octahedron.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/ShaderSource/octahedron.vert");
+    _sp_octahedron.addShaderFromSourceFile(QOpenGLShader::Geometry, ":/shaders/ShaderSource/octahedron.geom");
+    _sp_octahedron.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/ShaderSource/octahedron.frag");
+    success = _sp_octahedron.link();
+    qDebug() << "[INFO] Fusiform Shade Program _sp_octahedron" << success;
+    if (!success)
+    {
+         qDebug() << "[ERROR-Cube] " << _sp_octahedron.log();
+    }
+
+
+    // 绑定 VAO、VBO 对象
+    glBindVertexArray(VAOs[1]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*_octahedron.vertexs.size()*3, &_octahedron.vertexs[0], GL_STATIC_DRAW);
+
+    _sp_octahedron.bind();
+    aPosLocation = _sp_octahedron.attributeLocation("aPos");
+    glVertexAttribPointer(aPosLocation,     3,  GL_FLOAT,   GL_FALSE,   3 * sizeof(float),  (void*)0);
+    glEnableVertexAttribArray(aPosLocation);
+
+
+    // ------------------------ 解绑 ------------------------
+    // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);  // 注意 VAO 不参与管理 VBO
+
+
+
+
+
 
 
 
@@ -141,8 +177,8 @@ void FoxOpenGLWidget::initializeGL()
     _sp_light.setUniformValue("light_color", _light.color_specular);
 
     // 绑定 VAO、VBO 对象
-    glBindVertexArray(VAOs[3]);
-    glBindBuffer(GL_ARRAY_BUFFER, VBOs[3]);
+    glBindVertexArray(VAOs[2]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBOs[2]);
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(float)*_light.vertices.size(), &_light.vertices[0], GL_STATIC_DRAW);
 
@@ -193,7 +229,7 @@ void FoxOpenGLWidget::paintGL()
     /****************************************************** 立方体 ******************************************************/
     if (is_draw_cube)
     {
-        glBindVertexArray(VAOs[2]);
+        glBindVertexArray(VAOs[0]);
 
         _texPoly->bind(_indexPoly);  // 绑定纹理
         _texPolySpecular->bind(_indexTexPolySpecular);
@@ -204,9 +240,6 @@ void FoxOpenGLWidget::paintGL()
         _sp_cube.setUniformValue("mat_model", _cube.mat_model);
 
         /* 材质颜色 */
-//        _sp_cube.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
-//        _sp_cube.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
-//        _sp_cube.setUniformValue("material.specular",   QVector3D(0.5f, 0.5f, 0.5f));
         _sp_cube.setUniformValue("material.shininess",  32.0f);
 
         /* 光源颜色 */
@@ -222,10 +255,36 @@ void FoxOpenGLWidget::paintGL()
         glBindVertexArray(0);
     }
 
+    /****************************************************** 八面体 ******************************************************/
+
+        glBindVertexArray(VAOs[1]);
+
+        _sp_octahedron.bind();
+        _sp_octahedron.setUniformValue("mat_view", mat_view);
+        _sp_octahedron.setUniformValue("mat_projection", mat_projection);
+        _sp_octahedron.setUniformValue("mat_model", _octahedron._mat_model);
+
+                _sp_octahedron.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
+                _sp_octahedron.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
+                _sp_octahedron.setUniformValue("material.specular",   QVector3D(0.5f, 0.5f, 0.5f));
+                _sp_octahedron.setUniformValue("material.shininess",   128.0f);
+
+        /* 光源颜色 */
+        _sp_octahedron.setUniformValue("light.ambient",    _light.color_ambient);
+        _sp_octahedron.setUniformValue("light.diffuse",    _light.color_diffuse);
+        _sp_octahedron.setUniformValue("light.specular",   _light.color_specular);
+        _sp_octahedron.setUniformValue("light.shininess",  _light.color_shininess);
+
+        _sp_octahedron.setUniformValue("light_pos", _light.postion);
+        _sp_octahedron.setUniformValue("view_pos", camera_.position);
+
+
+        glDrawArrays(GL_TRIANGLES, 0, _octahedron.vertexs.size());
+        glBindVertexArray(0);
 
     /****************************************************** 光源 ******************************************************/
 
-        glBindVertexArray(VAOs[3]);
+        glBindVertexArray(VAOs[2]);
 
         _sp_light.bind();
         _sp_light.setUniformValue("mat_view", mat_view);

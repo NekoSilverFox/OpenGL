@@ -4,6 +4,9 @@
         <file>ShaderSource/cube.vert</file>
         <file>ShaderSource/light.frag</file>
         <file>ShaderSource/light.vert</file>
+        <file>ShaderSource/octahedron.frag</file>
+        <file>ShaderSource/octahedron.geom</file>
+        <file>ShaderSource/octahedron.vert</file>
     </qresource>
     <qresource prefix="/pic">
         <file>Picture/wood_box.png</file>

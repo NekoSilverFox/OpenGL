@@ -24,6 +24,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
+    fusiform.cpp \
     light.cpp \
         main.cpp \
         mainwindow.cpp \
@@ -33,6 +34,7 @@ SOURCES += \
 
 HEADERS += \
     foxmath.h \
+    fusiform.hpp \
     light.h \
         mainwindow.h \
     foxopenglwidget.h \

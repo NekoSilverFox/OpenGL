@@ -11,7 +11,7 @@
 #include "camera.hpp"
 #include "cube.hpp"
 #include "light.h"
-
+#include "fusiform.hpp"
 
 
 class FoxOpenGLWidget : public QOpenGLWidget, QOpenGLFunctions_3_3_Core
@@ -52,6 +52,10 @@ public:
     bool is_change_light_color;
 
 private:
+    /* 梭形 */
+    Fusiform _octahedron;
+    QOpenGLShaderProgram _sp_octahedron;
+
     /* 立方体 */
     Cube _cube;
     QOpenGLShaderProgram _sp_cube;
