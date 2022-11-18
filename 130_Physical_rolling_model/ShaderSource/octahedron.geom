@@ -43,5 +43,4 @@ void main() {
     sendPoint2FragShader(pos_3, normal);
 
     EndPrimitive();
-
 }

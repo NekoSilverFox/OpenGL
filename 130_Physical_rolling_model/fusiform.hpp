@@ -9,10 +9,17 @@ const float FUSIFORM_R       =   0.5;
 const float FUSIFORM_HEIGHT  =   1.0;
 const float FUSIFORM_STEP_ANGLE  =   90.0;
 
+
+enum RoleEdge
+{
+    Top,
+    Middle,
+    Bottom
+};
+
 ///
 /// \brief 梭形
 ///
-
 class Fusiform
 {
 public:
@@ -21,6 +28,10 @@ public:
 
     /* 获取绘制三角形的数量 */
     unsigned int getNumTrianglesinSphere();
+
+    bool putDown(float angle);  // 将梭形放倒
+    bool roleByEdge(RoleEdge edge, const unsigned int index_edge, const float angle);
+    unsigned int maxRoleIndex();
 
 private:
     void _genVectorVertices();
@@ -39,6 +50,15 @@ private:
     float _r;
     float _height;
     float _step_angle;  // 底的角度间隔，同时也是每旋转一次最大的角度
+
+    float _max_put_down_angle;  // 放倒需要沿着 x 轴转最多转少角度
+    float _current_put_down_angle;
+
+    RoleEdge current_edge;
+    unsigned int current_index_edge;
+
+    float _max_role_angle;  // 放倒需要沿着 x 轴转最多转少角度
+    float _current_role_angle;
 };
 
 #endif // FUSIFORM_HPP

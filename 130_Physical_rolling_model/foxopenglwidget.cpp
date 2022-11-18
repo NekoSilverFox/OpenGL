@@ -15,10 +15,13 @@ unsigned int VBOs[NUM_VBO], VAOs[NUM_VAO];
 
 unsigned long long gl_time = 0;
 
+bool is_end_put_down;
+unsigned int current_role_index = 1;
+
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
-    this->_cube = Cube(LENGTH, COLOR_CUBE);
+    this->_cube = Cube(2, COLOR_CUBE);
     this->_octahedron = Fusiform(FUSIFORM_R, 0.5, 90.0f);
     this->_light = Light(1.0f, QVector3D(1.0f, 1.0f, 1.0f),
                                QVector3D(0.3f, 0.3f, 0.3f),
@@ -264,10 +267,10 @@ void FoxOpenGLWidget::paintGL()
         _sp_octahedron.setUniformValue("mat_projection", mat_projection);
         _sp_octahedron.setUniformValue("mat_model", _octahedron._mat_model);
 
-                _sp_octahedron.setUniformValue("material.ambient",    QVector3D(1.0f, 0.5f, 0.31f));
-                _sp_octahedron.setUniformValue("material.diffuse",    QVector3D(1.0f, 0.5f, 0.31f));
-                _sp_octahedron.setUniformValue("material.specular",   QVector3D(0.5f, 0.5f, 0.5f));
-                _sp_octahedron.setUniformValue("material.shininess",   128.0f);
+        _sp_octahedron.setUniformValue("material.ambient",    QVector3D(0.84725f,     0.6995f,    0.2745f)); // 金子
+        _sp_octahedron.setUniformValue("material.diffuse",    QVector3D(0.95164f,     0.90648f,   0.32648f));
+        _sp_octahedron.setUniformValue("material.specular",   QVector3D(0.828281f,    0.855802f,  0.366065f));
+        _sp_octahedron.setUniformValue("material.shininess",   128.0f);
 
         /* 光源颜色 */
         _sp_octahedron.setUniformValue("light.ambient",    _light.color_ambient);
@@ -277,6 +280,15 @@ void FoxOpenGLWidget::paintGL()
 
         _sp_octahedron.setUniformValue("light_pos", _light.postion);
         _sp_octahedron.setUniformValue("view_pos", camera_.position);
+
+        is_end_put_down = !_octahedron.putDown(1);
+
+        if (is_end_put_down)
+        {
+            if (current_role_index == _octahedron.maxRoleIndex())
+        }
+
+
 
 
         glDrawArrays(GL_TRIANGLES, 0, _octahedron.vertexs.size());
