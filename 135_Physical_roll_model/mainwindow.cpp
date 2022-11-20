@@ -35,3 +35,9 @@ void MainWindow::on_actionLightColor_triggered()
     ui->openGLWidget->is_change_light_color = ui->actionLightColor->isChecked();
 }
 
+
+void MainWindow::on_actionRotate_triggered()
+{
+    ui->openGLWidget->is_rotate = ui->actionRotate->isChecked();
+}
+

@@ -57,6 +57,9 @@ private:
 
     float _max_put_down_angle;  // 放倒需要沿着 x 轴转最多转少角度
     float _current_put_down_angle;
+
+    float _current_rotate_angle = 0.0f;
+    int current_edge = 0;
 };
 
 #endif // FUSIFORM_HPP

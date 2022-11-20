@@ -22,7 +22,7 @@ unsigned int current_role_index = 1;
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
     this->_cube = Cube(2, COLOR_CUBE);
-    this->_octahedron = Fusiform(FUSIFORM_R, 0.5 * 2, 90.0f);
+    this->_octahedron = Fusiform(FUSIFORM_R, 0.5, 90.0f);
     this->_light = Light(1.0f, QVector3D(1.0f, 1.0f, 1.0f),
                                QVector3D(0.3f, 0.3f, 0.3f),
                                QVector3D(0.5f, 0.5f, 0.5f),
@@ -119,7 +119,7 @@ void FoxOpenGLWidget::initializeGL()
     _indexTexPolySpecular = 1;
     _sp_cube.setUniformValue("material.specular", _indexTexPolySpecular);  // 为他绑定第二个纹理单元
 
-    _cube.mat_model.translate(0.0f, -0.5f, 0.0f);
+    _cube.mat_model.translate(0.0f, -1.3f, 0.0f);
 
     // ------------------------ 解绑 ------------------------
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
@@ -230,7 +230,7 @@ void FoxOpenGLWidget::paintGL()
 
 
     /****************************************************** 立方体 ******************************************************/
-    if (is_draw_cube)
+    if (true)
     {
         glBindVertexArray(VAOs[0]);
 
@@ -282,6 +282,7 @@ void FoxOpenGLWidget::paintGL()
         _sp_octahedron.setUniformValue("view_pos", camera_.position);
 
 //        is_end_put_down = !_octahedron.putDown(1);  // 放倒八面体
+        if(is_rotate) _octahedron.roleByEdge(RoleEdge::Bottom, 1, 1);
 
 
         glDrawArrays(GL_TRIANGLES, 0, _octahedron.vertexs.size());
@@ -427,7 +428,6 @@ void FoxOpenGLWidget::updateGL()
         _light.color_diffuse  = QVector3D(0.5f, 0.5f, 0.5f);
         _light.color_specular = QVector3D(1.0f, 1.0f, 1.0f);
     }
-
 
     update();
 }

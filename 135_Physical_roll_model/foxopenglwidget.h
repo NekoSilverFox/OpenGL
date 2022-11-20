@@ -51,6 +51,8 @@ public:
 
     bool is_change_light_color;
 
+    bool is_rotate;
+
 private:
     /* 梭形 */
     Fusiform _octahedron;
