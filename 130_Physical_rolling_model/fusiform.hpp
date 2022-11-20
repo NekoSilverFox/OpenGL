@@ -32,6 +32,7 @@ public:
     bool putDown(float angle);  // 将梭形放倒
     bool roleByEdge(RoleEdge edge, const unsigned int index_edge, const float angle);
     unsigned int maxRoleIndex();
+    float maxRoleAngle();
 
 private:
     void _genVectorVertices();
@@ -46,6 +47,9 @@ private:
     std::vector<QVector3D> _edge_vectors_middle;  // 中间边缘向量
     std::vector<QVector3D> _edge_vectors_bottom;  // 顶部边缘向量
 
+    std::vector<QVector3D> _edge_vectors_bottom_1;  // 顶部边缘向量
+    std::vector<QVector3D> _edge_vectors_bottom_2;  // 顶部边缘向量
+
 
     float _r;
     float _height;
@@ -53,12 +57,6 @@ private:
 
     float _max_put_down_angle;  // 放倒需要沿着 x 轴转最多转少角度
     float _current_put_down_angle;
-
-    RoleEdge current_edge;
-    unsigned int current_index_edge;
-
-    float _max_role_angle;  // 放倒需要沿着 x 轴转最多转少角度
-    float _current_role_angle;
 };
 
 #endif // FUSIFORM_HPP

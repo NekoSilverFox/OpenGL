@@ -22,7 +22,7 @@ unsigned int current_role_index = 1;
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
     this->_cube = Cube(2, COLOR_CUBE);
-    this->_octahedron = Fusiform(FUSIFORM_R, 0.5, 90.0f);
+    this->_octahedron = Fusiform(FUSIFORM_R, 0.5 * 2, 90.0f);
     this->_light = Light(1.0f, QVector3D(1.0f, 1.0f, 1.0f),
                                QVector3D(0.3f, 0.3f, 0.3f),
                                QVector3D(0.5f, 0.5f, 0.5f),
@@ -72,9 +72,9 @@ void FoxOpenGLWidget::initializeGL()
 
 
 
-    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ \\
-    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ void FoxOpenGLWidget::initializeGL() @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ \\
-    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ \\
+    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ void FoxOpenGLWidget::initializeGL() @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
     /****************************************************** 立方体 ******************************************************/
@@ -281,14 +281,7 @@ void FoxOpenGLWidget::paintGL()
         _sp_octahedron.setUniformValue("light_pos", _light.postion);
         _sp_octahedron.setUniformValue("view_pos", camera_.position);
 
-        is_end_put_down = !_octahedron.putDown(1);
-
-        if (is_end_put_down)
-        {
-            if (current_role_index == _octahedron.maxRoleIndex())
-        }
-
-
+        is_end_put_down = !_octahedron.putDown(1);  // 放倒八面体
 
 
         glDrawArrays(GL_TRIANGLES, 0, _octahedron.vertexs.size());
