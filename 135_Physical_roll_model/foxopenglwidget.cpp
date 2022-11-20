@@ -281,7 +281,7 @@ void FoxOpenGLWidget::paintGL()
         _sp_octahedron.setUniformValue("light_pos", _light.postion);
         _sp_octahedron.setUniformValue("view_pos", camera_.position);
 
-        is_end_put_down = !_octahedron.putDown(1);  // 放倒八面体
+//        is_end_put_down = !_octahedron.putDown(1);  // 放倒八面体
 
 
         glDrawArrays(GL_TRIANGLES, 0, _octahedron.vertexs.size());

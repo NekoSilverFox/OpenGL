@@ -61,6 +61,17 @@ QMatrix4x4 rotateArbitraryLine(QVector3D v1, QVector3D v2, float angle)
     return rmatrix;
 }
 
+
+QVector3D rotateVector3D(QVector3D vertex3D, QMatrix4x4 mat_rotate)
+{
+    QVector4D vertex4D = vertex3D.toVector4D();
+    vertex4D.setW(1.0f);
+    vertex4D = mat_rotate * vertex4D;
+
+    return vertex4D.toVector3D();
+}
+
+
 Fusiform::Fusiform()
 {
     this->_r = FUSIFORM_R;
@@ -98,17 +109,25 @@ void Fusiform::_genVectorVertices()
     // 中心
     QVector3D vertex_center = QVector3D(0.0f, 0.0f, 0.0f);
 
+    QMatrix4x4 mat_rotate; mat_rotate.rotate(_max_put_down_angle, 1.0f, 0.0f, -1.0f);
+
     // 生成中央环上的顶点
     std::vector<QVector3D> tmp_vetices;
     for (float angle = 0.0f; angle <= 360; angle += _step_angle)
     {
-        tmp_vetices.push_back(QVector3D(
-                                  _r * cos(angle*M_PI/180.0f),   // x
-                                  vertex_center.y(),             // y
-                                  _r * sin(angle*M_PI/180.0f))); // z
+        QVector3D vertex3D = QVector3D(
+                    _r * cos(angle*M_PI/180.0f),   // x
+                    vertex_center.y(),             // y
+                    _r * sin(angle*M_PI/180.0f));  // z
+
+        vertex3D = rotateVector3D(vertex3D, mat_rotate);  // 【重点】因为生成的都是垂直的，所以需要通过旋转矩阵将点都旋转（相当于放倒）
+        tmp_vetices.push_back(vertex3D);
     }
 
-    // 存入顶点，及向量
+    vertex_top = rotateVector3D(vertex_top, mat_rotate);  // 【重点】因为生成的都是垂直的，所以需要通过旋转矩阵将点都旋转（相当于放倒）
+    vertex_bottom = rotateVector3D(vertex_bottom, mat_rotate);
+
+    // 存入顶点
     for (auto i = 0; i < tmp_vetices.size() - 1; i++)
     {
         vertexs.push_back(vertex_top);
