@@ -176,13 +176,28 @@ bool Fusiform::putDown(float angle)
 
 bool Fusiform::roleByEdge(RoleEdge edge, const unsigned int index_edge, const float angle)
 {
-    int i_role_edge = current_edge % 4;
-    if (_current_rotate_angle >= 90.0f)
+//    if (role_time == 5)
+//    {
+//        int i_role_edge = 2;
+//        _mat_model.rotate(1, _edge_vectors_bottom[0] - _edge_vectors_bottom[1]);
+//        return false;
+//    }
+
+    int i_role_edge = 4 - current_edge % 4;
+    if (_current_rotate_angle >= 180.0-45.0f)
     {
         _current_rotate_angle = 0.0f;
         current_edge++;
+        role_time++;
     }
-    _current_rotate_angle += edge;
+    _current_rotate_angle += abs(edge);
     qDebug() << "转轴 index：" << i_role_edge << "当前角度：" << _current_rotate_angle;
+    _mat_model.rotate(angle, _edge_vectors_bottom[i_role_edge]);
+    return true;
+}
+
+bool Fusiform::dropByEdge(const float angle)
+{
+    int i_role_edge = 2;
     _mat_model.rotate(angle, _edge_vectors_bottom[i_role_edge]);
 }

@@ -31,6 +31,7 @@ public:
 
     bool putDown(float angle);  // 将梭形放倒
     bool roleByEdge(RoleEdge edge, const unsigned int index_edge, const float angle);
+    bool dropByEdge(const float angle);
     unsigned int maxRoleIndex();
     float maxRoleAngle();
 
@@ -59,7 +60,8 @@ private:
     float _current_put_down_angle;
 
     float _current_rotate_angle = 0.0f;
-    int current_edge = 0;
+    int current_edge = 3;
+    int role_time = 0;
 };
 
 #endif // FUSIFORM_HPP
