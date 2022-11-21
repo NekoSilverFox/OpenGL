@@ -31,6 +31,7 @@ public:
 
     bool putDown(float angle);  // 将梭形放倒
     bool roleByEdge(RoleEdge edge, const unsigned int index_edge, const float angle);
+    bool dropByEdge(const float angle);
     unsigned int maxRoleIndex();
     float maxRoleAngle();
 
@@ -42,7 +43,7 @@ public:
 
     QMatrix4x4 _mat_model;
 
-private:
+//private:
     std::vector<QVector3D> _edge_vectors_top;  // 顶部边缘向量
     std::vector<QVector3D> _edge_vectors_middle;  // 中间边缘向量
     std::vector<QVector3D> _edge_vectors_bottom;  // 顶部边缘向量
@@ -57,6 +58,10 @@ private:
 
     float _max_put_down_angle;  // 放倒需要沿着 x 轴转最多转少角度
     float _current_put_down_angle;
+
+    float _current_rotate_angle = 0.0f;
+    int current_edge = 3;
+    int role_time = 0;
 };
 
 #endif // FUSIFORM_HPP

@@ -61,6 +61,17 @@ QMatrix4x4 rotateArbitraryLine(QVector3D v1, QVector3D v2, float angle)
     return rmatrix;
 }
 
+
+QVector3D rotateVector3D(QVector3D vertex3D, QMatrix4x4 mat_rotate)
+{
+    QVector4D vertex4D = vertex3D.toVector4D();
+    vertex4D.setW(1.0f);
+    vertex4D = mat_rotate * vertex4D;
+
+    return vertex4D.toVector3D();
+}
+
+
 Fusiform::Fusiform()
 {
     this->_r = FUSIFORM_R;
@@ -89,6 +100,9 @@ Fusiform::Fusiform(const float r, const float height, const float step_angle) :
 
 void Fusiform::_genVectorVertices()
 {
+    /* https://www.zhihu.com/question/52027040 */
+    QMatrix4x4 mat_rotate; mat_rotate.rotate(_max_put_down_angle + 10, 1.0f, 0.0f, 1.0f);
+
     // 最顶点
     QVector3D vertex_top = QVector3D(0.0f, _height, 0.0f);
 
@@ -98,17 +112,28 @@ void Fusiform::_genVectorVertices()
     // 中心
     QVector3D vertex_center = QVector3D(0.0f, 0.0f, 0.0f);
 
+    QVector3D delte_v = rotateVector3D(vertex_bottom, mat_rotate);  // 用于把旋转之后的向量，挪到 vertex_bottom 以 0.0 点开始
+
+
     // 生成中央环上的顶点
     std::vector<QVector3D> tmp_vetices;
     for (float angle = 0.0f; angle <= 360; angle += _step_angle)
     {
-        tmp_vetices.push_back(QVector3D(
-                                  _r * cos(angle*M_PI/180.0f),   // x
-                                  vertex_center.y(),             // y
-                                  _r * sin(angle*M_PI/180.0f))); // z
+        QVector3D vertex3D = QVector3D(
+                    _r * cos(angle*M_PI/180.0f),   // x
+                    vertex_center.y(),             // y
+                    _r * sin(angle*M_PI/180.0f));  // z
+
+        vertex3D = rotateVector3D(vertex3D, mat_rotate);  // 【重点】因为生成的都是垂直的，所以需要通过旋转矩阵将点都旋转（相当于放倒）
+        vertex3D -= delte_v;
+        tmp_vetices.push_back(vertex3D);
     }
 
-    // 存入顶点，及向量
+    vertex_top = rotateVector3D(vertex_top, mat_rotate) - delte_v;  // 【重点】因为生成的都是垂直的，所以需要通过旋转矩阵将点都旋转（相当于放倒）
+    vertex_bottom = rotateVector3D(vertex_bottom, mat_rotate) - delte_v;
+
+
+    // 存入顶点
     for (auto i = 0; i < tmp_vetices.size() - 1; i++)
     {
         vertexs.push_back(vertex_top);
@@ -125,7 +150,8 @@ void Fusiform::_genVectorVertices()
     {
         _edge_vectors_top.push_back(vertex_top - tmp_vetices[i]);
         _edge_vectors_middle.push_back(tmp_vetices[i + 1] - tmp_vetices[i + 0]);
-        _edge_vectors_bottom.push_back(vertex_bottom - tmp_vetices[i]);
+        //_edge_vectors_bottom.push_back(vertex_bottom - tmp_vetices[i]);
+        _edge_vectors_bottom.push_back(tmp_vetices[i]);
 
         _edge_vectors_bottom_1.push_back(tmp_vetices[i + 0]);
         _edge_vectors_bottom_2.push_back(tmp_vetices[i + 1]);
@@ -146,4 +172,31 @@ bool Fusiform::putDown(float angle)
     _current_put_down_angle += angle;
 
     return true;
+}
+
+bool Fusiform::roleByEdge(RoleEdge edge, const unsigned int index_edge, const float angle)
+{
+//    if (role_time == 5)
+//    {
+//        int i_role_edge = 2;
+//        _mat_model.rotate(1, _edge_vectors_bottom[0] - _edge_vectors_bottom[1]);
+//        return false;
+//    }
+
+    int i_role_edge = 4 - current_edge % 4;
+    if (_current_rotate_angle >= 180.0-45.0f)
+    {
+        _current_rotate_angle = 0.0f;
+        current_edge++;
+        role_time++;
+    }
+    _current_rotate_angle += abs(edge);
+    qDebug() << "转轴 index：" << i_role_edge << "当前角度：" << _current_rotate_angle;
+    _mat_model.rotate(angle, _edge_vectors_bottom[i_role_edge]);
+    return true;
+}
+
+bool Fusiform::dropByEdge(const float angle)
+{
+
 }

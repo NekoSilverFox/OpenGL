@@ -82,6 +82,7 @@ QWidget:checked {
    <addaction name="actionMoveCube"/>
    <addaction name="separator"/>
    <addaction name="actionLightColor"/>
+   <addaction name="actionRotate"/>
   </widget>
   <action name="actionWireframe">
    <property name="checkable">
@@ -158,6 +159,14 @@ QWidget:checked {
     <font>
      <pointsize>10</pointsize>
     </font>
+   </property>
+  </action>
+  <action name="actionRotate">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Rotate</string>
    </property>
   </action>
  </widget>
