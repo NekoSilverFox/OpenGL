@@ -198,6 +198,5 @@ bool Fusiform::roleByEdge(RoleEdge edge, const unsigned int index_edge, const fl
 
 bool Fusiform::dropByEdge(const float angle)
 {
-    int i_role_edge = 2;
-    _mat_model.rotate(angle, _edge_vectors_bottom[i_role_edge]);
+
 }

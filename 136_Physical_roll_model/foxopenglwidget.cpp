@@ -18,9 +18,6 @@ unsigned long long gl_time = 0;
 bool is_end_put_down;
 unsigned int current_role_index = 1;
 
-bool is_end_surface_rotate = false;
-
-
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
     this->_cube = Cube(2, COLOR_CUBE);
@@ -122,7 +119,7 @@ void FoxOpenGLWidget::initializeGL()
     _sp_cube.setUniformValue("material.specular", _indexTexPolySpecular);  // 为他绑定第二个纹理单元
 
 //    _cube.mat_model.translate(0.6f, -1.0f, -0.2f);
-//    _cube.mat_model.rotate(45, 0.0, 1.0, 0.0);
+    _cube.mat_model.rotate(45, 0.0, 1.0, 0.0);
     _cube.mat_model.translate(0.834f, -1.0f, -0.0f);
 
     // ------------------------ 解绑 ------------------------
@@ -155,6 +152,7 @@ void FoxOpenGLWidget::initializeGL()
     aPosLocation = _sp_octahedron.attributeLocation("aPos");
     glVertexAttribPointer(aPosLocation,     3,  GL_FLOAT,   GL_FALSE,   3 * sizeof(float),  (void*)0);
     glEnableVertexAttribArray(aPosLocation);
+
 
 _octahedron._mat_model.translate(0.5f, 0.0f, 0.0f);
     // ------------------------ 解绑 ------------------------
@@ -285,7 +283,7 @@ void FoxOpenGLWidget::paintGL()
         _sp_octahedron.setUniformValue("light_pos", _light.postion);
         _sp_octahedron.setUniformValue("view_pos", camera_.position);
 
-        if(is_rotate) _octahedron.roleByEdge(RoleEdge::Bottom, 1, -1);
+//        if(is_rotate) _octahedron.roleByEdge(RoleEdge::Bottom, 1, -1);
 
 
         glDrawArrays(GL_TRIANGLES, 0, _octahedron.vertexs.size());
@@ -404,12 +402,12 @@ void FoxOpenGLWidget::updateGL()
 
 
     /* 旋转光源 */
-    _light.postion.setX(cos(gl_time / 50.0) * 2.5);
-    _light.postion.setY(0.5);
-    _light.postion.setZ(sin(gl_time / 50.0) * 2.5);
-    _light.mat_model.setToIdentity();
-    _light.mat_model.translate(_light.postion);
-    _light.mat_model.scale(0.2);
+//    _light.postion.setX(cos(gl_time / 50.0) * 2.5);
+//    _light.postion.setY(0.5);
+//    _light.postion.setZ(sin(gl_time / 50.0) * 2.5);
+//    _light.mat_model.setToIdentity();
+//    _light.mat_model.translate(_light.postion);
+//    _light.mat_model.scale(0.2);
 
 
 

@@ -43,7 +43,7 @@ public:
 
     QMatrix4x4 _mat_model;
 
-private:
+//private:
     std::vector<QVector3D> _edge_vectors_top;  // 顶部边缘向量
     std::vector<QVector3D> _edge_vectors_middle;  // 中间边缘向量
     std::vector<QVector3D> _edge_vectors_bottom;  // 顶部边缘向量
