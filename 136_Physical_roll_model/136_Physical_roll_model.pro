@@ -24,22 +24,22 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
-    fusiform.cpp \
     light.cpp \
         main.cpp \
         mainwindow.cpp \
     foxopenglwidget.cpp \
     camera.cpp \
-    cube.cpp
+    cube.cpp \
+    octahedron.cpp
 
 HEADERS += \
-    foxmath.h \
-    fusiform.hpp \
+    foxmath.hpp \
     light.h \
         mainwindow.h \
     foxopenglwidget.h \
     camera.hpp \
-    cube.hpp
+    cube.hpp \
+    octahedron.hpp
 
 FORMS += \
         mainwindow.ui

@@ -1,13 +1,12 @@
-#ifndef FUSIFORM_HPP
-#define FUSIFORM_HPP
+#ifndef OCTAHEDRON_H
+#define OCTAHEDRON_H
 
 #include <vector>
 #include <QMatrix4x4>
 
-
-const float FUSIFORM_R       =   0.5;
-const float FUSIFORM_HEIGHT  =   1.0;
-const float FUSIFORM_STEP_ANGLE  =   90.0;
+const float OCTAHEDRON_R       =   0.5;
+const float OCTAHEDRON_HEIGHT  =   1.0;
+const float OCTAHEDRON_STEP_ANGLE  =   90.0;
 
 
 enum RoleEdge
@@ -20,11 +19,11 @@ enum RoleEdge
 ///
 /// \brief 梭形
 ///
-class Fusiform
+class Octahedron
 {
 public:
-    Fusiform();
-    Fusiform(const float r, const float height, const float step_angle);
+    Octahedron();
+    Octahedron(const float r, const float height, const float step_angle);
 
     /* 获取绘制三角形的数量 */
     unsigned int getNumTrianglesinSphere();
@@ -60,8 +59,12 @@ public:
     float _current_put_down_angle;
 
     float _current_rotate_angle = 0.0f;
-    int current_edge = 3;
+    int current_edge = 1;
     int role_time = 0;
+
+    float _current_rotate_drop_angle = 0.0f;
+
+    bool ready2drop = false;
 };
 
-#endif // FUSIFORM_HPP
+#endif // OCTAHEDRON_H

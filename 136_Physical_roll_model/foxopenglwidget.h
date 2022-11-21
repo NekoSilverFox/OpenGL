@@ -11,7 +11,7 @@
 #include "camera.hpp"
 #include "cube.hpp"
 #include "light.h"
-#include "fusiform.hpp"
+#include "octahedron.hpp"
 
 
 class FoxOpenGLWidget : public QOpenGLWidget, QOpenGLFunctions_3_3_Core
@@ -55,7 +55,7 @@ public:
 
 private:
     /* 梭形 */
-    Fusiform _octahedron;
+    Octahedron _octahedron;
     QOpenGLShaderProgram _sp_octahedron;
 
     /* 立方体 */

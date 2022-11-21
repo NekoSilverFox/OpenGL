@@ -21,7 +21,7 @@ unsigned int current_role_index = 1;
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
     this->_cube = Cube(2, COLOR_CUBE);
-    this->_octahedron = Fusiform(FUSIFORM_R, 0.5, 90.0f);
+    this->_octahedron = Octahedron(OCTAHEDRON_R, 0.5, 90.0f);
     this->_light = Light(1.0f, QVector3D(1.0f, 1.0f, 1.0f),
                                QVector3D(0.3f, 0.3f, 0.3f),
                                QVector3D(0.5f, 0.5f, 0.5f),
@@ -31,7 +31,7 @@ FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
     is_draw_cube = false;
     is_move_cube = false;
 
-    this->camera_ = Camera(QVector3D(-1.0f, 1.0f, 3.0f), QVector3D(0.0f, 1.0f, 0.0f), 50.0f, -90.0f, -20.0f);
+    this->camera_ = Camera(QVector3D(2.5f, 1.0f, 3.0f), QVector3D(0.0f, 1.0f, 0.0f), 50.0f, -90.0f, -20.0f);
 
     /* 暂时用于键盘点击事件 */
     setFocusPolicy(Qt::StrongFocus);
@@ -120,7 +120,7 @@ void FoxOpenGLWidget::initializeGL()
 
 //    _cube.mat_model.translate(0.6f, -1.0f, -0.2f);
     _cube.mat_model.rotate(45, 0.0, 1.0, 0.0);
-    _cube.mat_model.translate(0.834f, -1.0f, -0.0f);
+    _cube.mat_model.translate(0.834f + 0.16, -1.0f, -0.0f);
 
     // ------------------------ 解绑 ------------------------
     // 解绑 VAO 和 VBO，注意先解绑 VAO再解绑EBO
@@ -280,10 +280,20 @@ void FoxOpenGLWidget::paintGL()
         _sp_octahedron.setUniformValue("light.specular",   _light.color_specular);
         _sp_octahedron.setUniformValue("light.shininess",  _light.color_shininess);
 
+        is_end_put_down = _octahedron.putDown(1);
+        if(is_rotate && !is_end_put_down) _octahedron.roleByEdge(RoleEdge::Bottom, 1, -1);
+
+        if (_octahedron.ready2drop)
+        {
+            _cube.mat_model.translate(0.0, 0.02, 0.0f);
+            _light.postion += QVector3D(0.0f, 0.02f, 0.0f);
+            camera_.moveCamera(Camera_Movement::UP,  0.008);
+        }
+
+
         _sp_octahedron.setUniformValue("light_pos", _light.postion);
         _sp_octahedron.setUniformValue("view_pos", camera_.position);
 
-//        if(is_rotate) _octahedron.roleByEdge(RoleEdge::Bottom, 1, -1);
 
 
         glDrawArrays(GL_TRIANGLES, 0, _octahedron.vertexs.size());
@@ -299,6 +309,7 @@ void FoxOpenGLWidget::paintGL()
         _sp_light.setUniformValue("mat_model", _light.mat_model);
 
         _sp_light.setUniformValue("light_color", _light.color_specular);
+        _sp_light.setUniformValue("view_pos", camera_.position);
 
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
@@ -405,9 +416,9 @@ void FoxOpenGLWidget::updateGL()
 //    _light.postion.setX(cos(gl_time / 50.0) * 2.5);
 //    _light.postion.setY(0.5);
 //    _light.postion.setZ(sin(gl_time / 50.0) * 2.5);
-//    _light.mat_model.setToIdentity();
-//    _light.mat_model.translate(_light.postion);
-//    _light.mat_model.scale(0.2);
+    _light.mat_model.setToIdentity();
+      _light.mat_model.translate(_light.postion);
+    _light.mat_model.scale(0.2);
 
 
 
