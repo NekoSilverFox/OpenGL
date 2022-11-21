@@ -63,8 +63,6 @@ QWidget:checked {
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionisDraw"/>
-   <addaction name="actionDrawCube"/>
    <addaction name="actionWireframe"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -78,8 +76,6 @@ QWidget:checked {
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionMove"/>
-   <addaction name="actionMoveCube"/>
    <addaction name="separator"/>
    <addaction name="actionLightColor"/>
    <addaction name="actionRotate"/>
@@ -132,6 +128,9 @@ QWidget:checked {
    </property>
   </action>
   <action name="actionMove">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>MOVE:</string>
    </property>
@@ -139,6 +138,9 @@ QWidget:checked {
   <action name="actionMoveCube">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>Cube</string>
@@ -164,6 +166,10 @@ QWidget:checked {
   <action name="actionRotate">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/pic/Picture/start.png</normaloff>:/pic/Picture/start.png</iconset>
    </property>
    <property name="text">
     <string>Rotate</string>

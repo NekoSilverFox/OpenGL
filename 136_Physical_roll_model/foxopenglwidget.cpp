@@ -280,16 +280,18 @@ void FoxOpenGLWidget::paintGL()
         _sp_octahedron.setUniformValue("light.specular",   _light.color_specular);
         _sp_octahedron.setUniformValue("light.shininess",  _light.color_shininess);
 
-        is_end_put_down = _octahedron.putDown(1);
-        if(is_rotate && !is_end_put_down) _octahedron.roleByEdge(RoleEdge::Bottom, 1, -1);
-
-        if (_octahedron.ready2drop)
+        if (is_rotate)
         {
-            _cube.mat_model.translate(0.0, 0.02, 0.0f);
-            _light.postion += QVector3D(0.0f, 0.02f, 0.0f);
-            camera_.moveCamera(Camera_Movement::UP,  0.008);
-        }
+            is_end_put_down = _octahedron.putDown(1);
+            if(!is_end_put_down) _octahedron.roleByEdge(-1);
 
+            if (_octahedron.ready2drop)
+            {
+                _cube.mat_model.translate(0.0, 0.02, 0.0f);
+                _light.postion += QVector3D(0.0f, 0.02f, 0.0f);
+                camera_.moveCamera(Camera_Movement::UP,  0.008);  // 如果摄像机不动，设置为 0.008
+            }
+        }
 
         _sp_octahedron.setUniformValue("light_pos", _light.postion);
         _sp_octahedron.setUniformValue("view_pos", camera_.position);

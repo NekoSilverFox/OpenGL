@@ -29,8 +29,7 @@ public:
     unsigned int getNumTrianglesinSphere();
 
     bool putDown(float angle);  // 将梭形放倒
-    bool roleByEdge(RoleEdge edge, const unsigned int index_edge, const float angle);
-    bool dropByEdge(const float angle);
+    bool roleByEdge(const float angle);
     unsigned int maxRoleIndex();
     float maxRoleAngle();
 
@@ -46,10 +45,6 @@ public:
     std::vector<QVector3D> _edge_vectors_top;  // 顶部边缘向量
     std::vector<QVector3D> _edge_vectors_middle;  // 中间边缘向量
     std::vector<QVector3D> _edge_vectors_bottom;  // 顶部边缘向量
-
-    std::vector<QVector3D> _edge_vectors_bottom_1;  // 顶部边缘向量
-    std::vector<QVector3D> _edge_vectors_bottom_2;  // 顶部边缘向量
-
 
     float _r;
     float _height;

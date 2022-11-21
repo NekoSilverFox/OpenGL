@@ -146,9 +146,6 @@ void Octahedron::_genVectorVertices()
         _edge_vectors_top.push_back(tmp_vetices[i]          - vertex_top);
         _edge_vectors_middle.push_back(tmp_vetices[i + 1]   - tmp_vetices[i + 0]);
         _edge_vectors_bottom.push_back(tmp_vetices[i]       - vertex_bottom);
-
-        _edge_vectors_bottom_1.push_back(tmp_vetices[i + 0]);
-        _edge_vectors_bottom_2.push_back(tmp_vetices[i + 1]);
     }
 
 }
@@ -168,7 +165,7 @@ bool Octahedron::putDown(float angle)
     return true;
 }
 
-bool Octahedron::roleByEdge(RoleEdge edge, const unsigned int index_edge, const float angle)
+bool Octahedron::roleByEdge(const float angle)
 {
     if (_current_rotate_drop_angle >= 90)
     {
@@ -186,21 +183,16 @@ bool Octahedron::roleByEdge(RoleEdge edge, const unsigned int index_edge, const 
     }
 
     int i_role_edge = 4 - current_edge % 4;
-    if (_current_rotate_angle >= 180.0f - 40.0f)
+    if (_current_rotate_angle >= 70.0f)
     {
         _current_rotate_angle = 0.0f;
         current_edge++;
         role_time++;
     }
 
-    _current_rotate_angle += abs(edge);
+    _current_rotate_angle += abs(angle);
     _mat_model.rotate(angle, _edge_vectors_bottom[i_role_edge]);
     qDebug() << "转轴 index：" << i_role_edge << "当前角度：" << _current_rotate_angle;
 
     return true;
-}
-
-bool Octahedron::dropByEdge(const float angle)
-{
-
 }
