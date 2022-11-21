@@ -78,6 +78,7 @@ QMatrix4x4 rotateArbitraryLine(QMatrix4x4 rmatrix, QVector3D v1, QVector3D v2, f
 
     return rmatrix;
 }
+
 }
 
 

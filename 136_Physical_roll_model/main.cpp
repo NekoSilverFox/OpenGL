@@ -3,7 +3,7 @@
 #include <QSurfaceFormat>
 #include <QVector3D>
 
-#include "foxmath.h"
+#include "foxmath.hpp"
 
 
 int main(int argc, char *argv[])

@@ -1,5 +1,6 @@
-#include "fusiform.hpp"
+#include "octahedron.hpp"
 #include <math.h>
+
 
 //绕任意轴的旋转
 QMatrix4x4 rotateArbitraryLine(QVector3D v1, QVector3D v2, float angle)
@@ -60,6 +61,15 @@ QMatrix4x4 rotateArbitraryLine(QVector3D v1, QVector3D v2, float angle)
     return rmatrix;
 }
 
+/// 弧度转角度
+/// \brief sina
+/// \param range
+/// \return
+///
+float to_angle(float range)
+{
+    return range * 180.0f/M_PI;
+}
 
 QVector3D rotateVector3D(QVector3D vertex3D, QMatrix4x4 mat_rotate)
 {
@@ -71,25 +81,25 @@ QVector3D rotateVector3D(QVector3D vertex3D, QMatrix4x4 mat_rotate)
 }
 
 
-Fusiform::Fusiform()
+Octahedron::Octahedron()
 {
-    this->_r = FUSIFORM_R;
-    this->_height = FUSIFORM_HEIGHT;
-    this->_step_angle = FUSIFORM_STEP_ANGLE;
+    this->_r            = OCTAHEDRON_R;
+    this->_height       = OCTAHEDRON_HEIGHT;
+    this->_step_angle   = OCTAHEDRON_STEP_ANGLE;
 
-    _max_put_down_angle = atan2f(_height, _r) * 180.0f/M_PI;
+    _max_put_down_angle = atan2f(_height, _r) * 180.0f/M_PI + 10;
     _current_put_down_angle = 0.0f;
     _genVectorVertices();
 }
 
 
 
-Fusiform::Fusiform(const float r, const float height, const float step_angle) :
+Octahedron::Octahedron(const float r, const float height, const float step_angle) :
     _r(r),
     _height(height),
     _step_angle(step_angle)
 {
-    _max_put_down_angle = atan2f(_height, _r) * 180.0f/M_PI;
+    _max_put_down_angle = atan2f(_height, _r) * 180.0f/M_PI + 10;
     _current_put_down_angle = 0.0f;
 
     _genVectorVertices();
@@ -97,9 +107,8 @@ Fusiform::Fusiform(const float r, const float height, const float step_angle) :
 
 
 
-void Fusiform::_genVectorVertices()
+void Octahedron::_genVectorVertices()
 {
-    /* https://www.zhihu.com/question/52027040 */
     QMatrix4x4 mat_rotate; mat_rotate.rotate(_max_put_down_angle + 10, 1.0f, 0.0f, 1.0f);
 
 
@@ -137,9 +146,6 @@ void Fusiform::_genVectorVertices()
         _edge_vectors_top.push_back(tmp_vetices[i]          - vertex_top);
         _edge_vectors_middle.push_back(tmp_vetices[i + 1]   - tmp_vetices[i + 0]);
         _edge_vectors_bottom.push_back(tmp_vetices[i]       - vertex_bottom);
-
-        _edge_vectors_bottom_1.push_back(tmp_vetices[i + 0]);
-        _edge_vectors_bottom_2.push_back(tmp_vetices[i + 1]);
     }
 
 }
@@ -147,41 +153,46 @@ void Fusiform::_genVectorVertices()
 
 
 /** 放倒梭形
- * @brief Fusiform::putDown
+ * @brief Octahedron::putDown
  */
-bool Fusiform::putDown(float angle)
+bool Octahedron::putDown(float angle)
 {
     if (_current_put_down_angle >= _max_put_down_angle) return false;
 
-    _mat_model.rotate(angle, 1.0f, 0.0f, -1.0f);
+    _mat_model.rotate(angle, _edge_vectors_bottom[2] - _edge_vectors_bottom[1]);
     _current_put_down_angle += angle;
 
     return true;
 }
 
-bool Fusiform::roleByEdge(RoleEdge edge, const unsigned int index_edge, const float angle)
+bool Octahedron::roleByEdge(const float angle)
 {
-//    if (role_time == 5)
-//    {
-//        int i_role_edge = 2;
-//        _mat_model.rotate(1, _edge_vectors_bottom[0] - _edge_vectors_bottom[1]);
-//        return false;
-//    }
+    if (_current_rotate_drop_angle >= 90)
+    {
+        ready2drop = true;
+        return false;
+    }
+
+    if (role_time == 3)
+    {
+        _mat_model = rotateArbitraryLine(_edge_vectors_bottom[1], _edge_vectors_bottom[2], 1) * _mat_model;
+
+        _current_rotate_drop_angle += 1;
+
+        return false;
+    }
 
     int i_role_edge = 4 - current_edge % 4;
-    if (_current_rotate_angle >= 180.0-45.0f)
+    if (_current_rotate_angle >= 70.0f)
     {
         _current_rotate_angle = 0.0f;
         current_edge++;
         role_time++;
     }
-    _current_rotate_angle += abs(edge);
-    qDebug() << "转轴 index：" << i_role_edge << "当前角度：" << _current_rotate_angle;
+
+    _current_rotate_angle += abs(angle);
     _mat_model.rotate(angle, _edge_vectors_bottom[i_role_edge]);
+    qDebug() << "转轴 index：" << i_role_edge << "当前角度：" << _current_rotate_angle;
+
     return true;
-}
-
-bool Fusiform::dropByEdge(const float angle)
-{
-
 }
