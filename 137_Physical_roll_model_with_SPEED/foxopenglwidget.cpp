@@ -17,6 +17,7 @@ unsigned long long gl_time = 0;
 
 bool is_end_put_down;
 unsigned int current_role_index = 1;
+float speel_drop = 1;
 
 FoxOpenGLWidget::FoxOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
@@ -287,9 +288,10 @@ void FoxOpenGLWidget::paintGL()
 
             if (_octahedron.ready2drop)
             {
-                _cube.mat_model.translate(0.0, 0.02, 0.0f);
-                _light.postion += QVector3D(0.0f, 0.02f, 0.0f);
-                camera_.moveCamera(Camera_Movement::UP,  0.01);  // 如果摄像机不动，设置为 0.008
+                speel_drop += 0.1;
+                _cube.mat_model.translate(0.0, 0.02 * speel_drop, 0.0f);
+                _light.postion += QVector3D(0.0f, 0.02f * speel_drop, 0.0f);
+                camera_.moveCamera(Camera_Movement::UP,  0.008 * speel_drop);  // 如果摄像机不动，设置为 0.008
             }
         }
 
