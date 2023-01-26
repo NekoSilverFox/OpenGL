@@ -70,24 +70,35 @@
 | [040_Rotate_and_Move](https://github.com/NekoSilverFox/OpenGL/tree/main/040_Rotate_and_Move) | 使用矩阵移动和缩放                                           |
 | [045_3D](https://github.com/NekoSilverFox/OpenGL/tree/main/045_3D) | 实现 3D 立方体效果                                           |
 | [046_3D_exercise](https://github.com/NekoSilverFox/OpenGL/tree/main/046_3D_exercise) | 3D 小练习                                                    |
-|                                                              |                                                              |
-|                                                              |                                                              |
-|                                                              |                                                              |
-|                                                              |                                                              |
-|                                                              |                                                              |
-|                                                              |                                                              |
-|                                                              |                                                              |
-|                                                              |                                                              |
-|                                                              |                                                              |
-|                                                              |                                                              |
-|                                                              |                                                              |
-|                                                              |                                                              |
-|                                                              |                                                              |
-|                                                              |                                                              |
-|                                                              |                                                              |
-|                                                              |                                                              |
-|                                                              |                                                              |
-|                                                              |                                                              |
+| [047_3D_Camera](https://github.com/NekoSilverFox/OpenGL/tree/main/047_3D_Camera) |                                                              |
+| [048_3D_Move_camera](https://github.com/NekoSilverFox/OpenGL/tree/main/048_3D_Move_camera) |                                                              |
+| [049_Camera_OOP](https://github.com/NekoSilverFox/OpenGL/tree/main/049_Camera_OOP) |                                                              |
+| [055_3D_Sphere](https://github.com/NekoSilverFox/OpenGL/tree/main/055_3D_Sphere) |                                                              |
+| [056_3D_Sphere_and_Cube](https://github.com/NekoSilverFox/OpenGL/tree/main/056_3D_Sphere_and_Cube) |                                                              |
+| [057_3D_Sphere_Cube_Cone](https://github.com/NekoSilverFox/OpenGL/tree/main/057_3D_Sphere_Cube_Cone) |                                                              |
+| [057_3D_Sphere_Cube_Cone_AppleSoc](https://github.com/NekoSilverFox/OpenGL/tree/main/057_3D_Sphere_Cube_Cone_AppleSoc) |                                                              |
+| [060_Lighting_init](https://github.com/NekoSilverFox/OpenGL/tree/main/060_Lighting_init) |                                                              |
+| [060_Lighting_init_AppleSoc](https://github.com/NekoSilverFox/OpenGL/tree/main/060_Lighting_init_AppleSoc) |                                                              |
+| [061_Light_Phong](https://github.com/NekoSilverFox/OpenGL/tree/main/061_Light_Phong) |                                                              |
+| [062_Light_Phong_move_light](https://github.com/NekoSilverFox/OpenGL/tree/main/062_Light_Phong_move_light) |                                                              |
+| [065_Light_Material](https://github.com/NekoSilverFox/OpenGL/tree/main/065_Light_Material) |                                                              |
+| [066_Light_Texture_Map](https://github.com/NekoSilverFox/OpenGL/tree/main/066_Light_Texture_Map) |                                                              |
+| [067_Light_Texture_Map_exercise](https://github.com/NekoSilverFox/OpenGL/tree/main/067_Light_Texture_Map_exercise) |                                                              |
+| [068_Light_Texture_Map_All_Shape](https://github.com/NekoSilverFox/OpenGL/tree/main/068_Light_Texture_Map_All_Shape) |                                                              |
+| [103_GLSL_FrontFacing](https://github.com/NekoSilverFox/OpenGL/tree/main/103_GLSL_FrontFacing) |                                                              |
+| [110_Geometry_Shader](https://github.com/NekoSilverFox/OpenGL/tree/main/110_Geometry_Shader) |                                                              |
+| [111_Geometry_House](https://github.com/NekoSilverFox/OpenGL/tree/main/111_Geometry_House) |                                                              |
+| [112_Geometry_Bezier_2D](https://github.com/NekoSilverFox/OpenGL/tree/main/112_Geometry_Bezier_2D) |                                                              |
+| [112_Geometry_normal_ explode](https://github.com/NekoSilverFox/OpenGL/tree/main/112_Geometry_normal_ explode) |                                                              |
+| [115_Geometry_Sphere_change](https://github.com/NekoSilverFox/OpenGL/tree/main/115_Geometry_Sphere_change) |                                                              |
+| [116_Geometry_Cone_change](https://github.com/NekoSilverFox/OpenGL/tree/main/116_Geometry_Cone_change) |                                                              |
+| [117_Geometry_Cone2Rocket](https://github.com/NekoSilverFox/OpenGL/tree/main/117_Geometry_Cone2Rocket) |                                                              |
+| [117_Geometry_Cone2Rocket_Winonws](https://github.com/NekoSilverFox/OpenGL/tree/main/117_Geometry_Cone2Rocket_Winonws) |                                                              |
+| [120_Bezier_2D](https://github.com/NekoSilverFox/OpenGL/tree/main/120_Bezier_2D) |                                                              |
+| [130_Physical_putdown_model](https://github.com/NekoSilverFox/OpenGL/tree/main/130_Physical_putdown_model) |                                                              |
+| [135_Physical_roll_model_old_method](https://github.com/NekoSilverFox/OpenGL/tree/main/135_Physical_roll_model_old_method) |                                                              |
+| [136_Physical_roll_model](https://github.com/NekoSilverFox/OpenGL/tree/main/136_Physical_roll_model) |                                                              |
+| [137_Physical_roll_model_with_SPEED](https://github.com/NekoSilverFox/OpenGL/tree/main/137_Physical_roll_model_with_SPEED) |                                                              |
 
 
 
