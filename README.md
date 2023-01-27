@@ -70,35 +70,38 @@
 | [040_Rotate_and_Move](https://github.com/NekoSilverFox/OpenGL/tree/main/040_Rotate_and_Move) | 使用矩阵移动和缩放                                           |
 | [045_3D](https://github.com/NekoSilverFox/OpenGL/tree/main/045_3D) | 实现 3D 立方体效果                                           |
 | [046_3D_exercise](https://github.com/NekoSilverFox/OpenGL/tree/main/046_3D_exercise) | 3D 小练习                                                    |
-| [047_3D_Camera](https://github.com/NekoSilverFox/OpenGL/tree/main/047_3D_Camera) |                                                              |
-| [048_3D_Move_camera](https://github.com/NekoSilverFox/OpenGL/tree/main/048_3D_Move_camera) |                                                              |
-| [049_Camera_OOP](https://github.com/NekoSilverFox/OpenGL/tree/main/049_Camera_OOP) |                                                              |
-| [055_3D_Sphere](https://github.com/NekoSilverFox/OpenGL/tree/main/055_3D_Sphere) |                                                              |
-| [056_3D_Sphere_and_Cube](https://github.com/NekoSilverFox/OpenGL/tree/main/056_3D_Sphere_and_Cube) |                                                              |
-| [057_3D_Sphere_Cube_Cone](https://github.com/NekoSilverFox/OpenGL/tree/main/057_3D_Sphere_Cube_Cone) |                                                              |
-| [057_3D_Sphere_Cube_Cone_AppleSoc](https://github.com/NekoSilverFox/OpenGL/tree/main/057_3D_Sphere_Cube_Cone_AppleSoc) |                                                              |
-| [060_Lighting_init](https://github.com/NekoSilverFox/OpenGL/tree/main/060_Lighting_init) |                                                              |
-| [060_Lighting_init_AppleSoc](https://github.com/NekoSilverFox/OpenGL/tree/main/060_Lighting_init_AppleSoc) |                                                              |
-| [061_Light_Phong](https://github.com/NekoSilverFox/OpenGL/tree/main/061_Light_Phong) |                                                              |
-| [062_Light_Phong_move_light](https://github.com/NekoSilverFox/OpenGL/tree/main/062_Light_Phong_move_light) |                                                              |
-| [065_Light_Material](https://github.com/NekoSilverFox/OpenGL/tree/main/065_Light_Material) |                                                              |
-| [066_Light_Texture_Map](https://github.com/NekoSilverFox/OpenGL/tree/main/066_Light_Texture_Map) |                                                              |
-| [067_Light_Texture_Map_exercise](https://github.com/NekoSilverFox/OpenGL/tree/main/067_Light_Texture_Map_exercise) |                                                              |
-| [068_Light_Texture_Map_All_Shape](https://github.com/NekoSilverFox/OpenGL/tree/main/068_Light_Texture_Map_All_Shape) |                                                              |
-| [103_GLSL_FrontFacing](https://github.com/NekoSilverFox/OpenGL/tree/main/103_GLSL_FrontFacing) |                                                              |
-| [110_Geometry_Shader](https://github.com/NekoSilverFox/OpenGL/tree/main/110_Geometry_Shader) |                                                              |
-| [111_Geometry_House](https://github.com/NekoSilverFox/OpenGL/tree/main/111_Geometry_House) |                                                              |
-| [112_Geometry_Bezier_2D](https://github.com/NekoSilverFox/OpenGL/tree/main/112_Geometry_Bezier_2D) |                                                              |
-| [112_Geometry_normal_ explode](https://github.com/NekoSilverFox/OpenGL/tree/main/112_Geometry_normal_ explode) |                                                              |
-| [115_Geometry_Sphere_change](https://github.com/NekoSilverFox/OpenGL/tree/main/115_Geometry_Sphere_change) |                                                              |
-| [116_Geometry_Cone_change](https://github.com/NekoSilverFox/OpenGL/tree/main/116_Geometry_Cone_change) |                                                              |
-| [117_Geometry_Cone2Rocket](https://github.com/NekoSilverFox/OpenGL/tree/main/117_Geometry_Cone2Rocket) |                                                              |
-| [117_Geometry_Cone2Rocket_Winonws](https://github.com/NekoSilverFox/OpenGL/tree/main/117_Geometry_Cone2Rocket_Winonws) |                                                              |
-| [120_Bezier_2D](https://github.com/NekoSilverFox/OpenGL/tree/main/120_Bezier_2D) |                                                              |
-| [130_Physical_putdown_model](https://github.com/NekoSilverFox/OpenGL/tree/main/130_Physical_putdown_model) |                                                              |
-| [135_Physical_roll_model_old_method](https://github.com/NekoSilverFox/OpenGL/tree/main/135_Physical_roll_model_old_method) |                                                              |
-| [136_Physical_roll_model](https://github.com/NekoSilverFox/OpenGL/tree/main/136_Physical_roll_model) |                                                              |
-| [137_Physical_roll_model_with_SPEED](https://github.com/NekoSilverFox/OpenGL/tree/main/137_Physical_roll_model_with_SPEED) |                                                              |
+| [047_3D_Camera](https://github.com/NekoSilverFox/OpenGL/tree/main/047_3D_Camera) | 初步实现 3D 摄像机                                           |
+| [048_3D_Move_camera](https://github.com/NekoSilverFox/OpenGL/tree/main/048_3D_Move_camera) | 摄像机可以通过键盘鼠标移动缩放                               |
+| [049_Camera_OOP](https://github.com/NekoSilverFox/OpenGL/tree/main/049_Camera_OOP) | 封装摄像机                                                   |
+| [055_3D_Sphere](https://github.com/NekoSilverFox/OpenGL/tree/main/055_3D_Sphere) | 实现球体绘制                                                 |
+| [056_3D_Sphere_and_Cube](https://github.com/NekoSilverFox/OpenGL/tree/main/056_3D_Sphere_and_Cube) | 实现球体和立方体绘制                                         |
+| [057_3D_Sphere_Cube_Cone](https://github.com/NekoSilverFox/OpenGL/tree/main/057_3D_Sphere_Cube_Cone) | 实现球体和立方体和椎体绘制                                   |
+| [057_3D_Sphere_Cube_Cone_AppleSoc](https://github.com/NekoSilverFox/OpenGL/tree/main/057_3D_Sphere_Cube_Cone_AppleSoc) | 实现球体和立方体和椎体绘制（基于 Apple 平台的工程文件）      |
+|                                                              |                                                              |
+| [060_Lighting_init](https://github.com/NekoSilverFox/OpenGL/tree/main/060_Lighting_init) | 初步实现照明                                                 |
+| [060_Lighting_init_AppleSoc](https://github.com/NekoSilverFox/OpenGL/tree/main/060_Lighting_init_AppleSoc) | 初步实现照明（基于 Apple 平台的工程文件）                    |
+| [061_Light_Phong](https://github.com/NekoSilverFox/OpenGL/tree/main/061_Light_Phong) | 实现冯氏光照                                                 |
+| [062_Light_Phong_move_light](https://github.com/NekoSilverFox/OpenGL/tree/main/062_Light_Phong_move_light) | 实现冯氏光照模型下，光源可移动                               |
+| [065_Light_Material](https://github.com/NekoSilverFox/OpenGL/tree/main/065_Light_Material) | 实现材质效果                                                 |
+| [066_Light_Texture_Map](https://github.com/NekoSilverFox/OpenGL/tree/main/066_Light_Texture_Map) | 实现纹理贴图                                                 |
+| [067_Light_Texture_Map_exercise](https://github.com/NekoSilverFox/OpenGL/tree/main/067_Light_Texture_Map_exercise) | 纹理贴图小练习                                               |
+| [068_Light_Texture_Map_All_Shape](https://github.com/NekoSilverFox/OpenGL/tree/main/068_Light_Texture_Map_All_Shape) | 对球体和立方体和椎体都实现了贴图或者光照模型                 |
+| [103_GLSL_FrontFacing](https://github.com/NekoSilverFox/OpenGL/tree/main/103_GLSL_FrontFacing) | GLSL 说明                                                    |
+|                                                              |                                                              |
+| [110_Geometry_Shader](https://github.com/NekoSilverFox/OpenGL/tree/main/110_Geometry_Shader) | 通过几何着色器 (Geometry shader) 实现将点变为线              |
+| [111_Geometry_House](https://github.com/NekoSilverFox/OpenGL/tree/main/111_Geometry_House) | 通过几何着色器绘制小房子                                     |
+| [112_Geometry_Bezier_2D](https://github.com/NekoSilverFox/OpenGL/tree/main/112_Geometry_Bezier_2D) | 通过几何着色器实现贝叶斯曲线（工程可能不能正常运行）         |
+| [112_Geometry_normal_ explode](https://github.com/NekoSilverFox/OpenGL/tree/main/112_Geometry_normal_ explode) | 通过几何着色器实现二阶贝叶斯（工程可能不能正常运行）         |
+| [115_Geometry_Sphere_change](https://github.com/NekoSilverFox/OpenGL/tree/main/115_Geometry_Sphere_change) | 通过几何着色器实现球体形状变化                               |
+| [116_Geometry_Cone_change](https://github.com/NekoSilverFox/OpenGL/tree/main/116_Geometry_Cone_change) | 通过几何着色器实现椎体形状变化                               |
+| [117_Geometry_Cone2Rocket](https://github.com/NekoSilverFox/OpenGL/tree/main/117_Geometry_Cone2Rocket) | 通过几何着色器实现将平面变为联盟号火箭（由于 Apple 限制，工程可能不能正常运行） |
+| [117_Geometry_Cone2Rocket_Winonws](https://github.com/NekoSilverFox/OpenGL/tree/main/117_Geometry_Cone2Rocket_Winonws) | 通过几何着色器实现将平面变为联盟号火箭（要使用 Windows 运行） |
+| [120_Bezier_2D](https://github.com/NekoSilverFox/OpenGL/tree/main/120_Bezier_2D) | 贝叶斯二阶曲线（基于 OpenGL3.0 之前的老版本、非核心模式。新版本下无法运行） |
+|                                                              |                                                              |
+| [130_Physical_putdown_model](https://github.com/NekoSilverFox/OpenGL/tree/main/130_Physical_putdown_model) | 实现物体掉落模型                                             |
+| [135_Physical_roll_model_old_method](https://github.com/NekoSilverFox/OpenGL/tree/main/135_Physical_roll_model_old_method) | 物体翻滚模型（不建议参考此工程）                             |
+| [136_Physical_roll_model](https://github.com/NekoSilverFox/OpenGL/tree/main/136_Physical_roll_model) | 基于 OpenGL 实现八面体在立方体上滚动并掉落的物理过程（不带加速度） |
+| [137_Physical_roll_model_with_SPEED](https://github.com/NekoSilverFox/OpenGL/tree/main/137_Physical_roll_model_with_SPEED) | 基于 OpenGL 实现八面体在立方体上滚动并掉落的物理过程（带加速度） |
 
 
 
