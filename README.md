@@ -94,8 +94,8 @@
 | [112_Geometry_normal_ explode](https://github.com/NekoSilverFox/OpenGL/tree/main/112_Geometry_normal_ explode) | 通过几何着色器实现二阶贝叶斯（工程可能不能正常运行）         |
 | [115_Geometry_Sphere_change](https://github.com/NekoSilverFox/OpenGL/tree/main/115_Geometry_Sphere_change) | 通过几何着色器实现球体形状变化                               |
 | [116_Geometry_Cone_change](https://github.com/NekoSilverFox/OpenGL/tree/main/116_Geometry_Cone_change) | 通过几何着色器实现椎体形状变化                               |
-| [117_Geometry_Cone2Rocket](https://github.com/NekoSilverFox/OpenGL/tree/main/117_Geometry_Cone2Rocket) | 通过几何着色器实现将平面变为联盟号火箭（由于 Apple 限制，工程可能不能正常运行） |
-| [117_Geometry_Cone2Rocket_Winonws](https://github.com/NekoSilverFox/OpenGL/tree/main/117_Geometry_Cone2Rocket_Winonws) | 通过几何着色器实现将平面变为联盟号火箭（要使用 Windows 运行） |
+| [117_Geometry_Cone2Rocket](https://github.com/NekoSilverFox/OpenGL/tree/main/117_Geometry_Cone2Rocket) | 通过几何着色器实现将平面变为联盟号火箭，不带颜色变化（要使用 Windows 运行） |
+| [117_Geometry_Cone2Rocket_Winonws](https://github.com/NekoSilverFox/OpenGL/tree/main/117_Geometry_Cone2Rocket_Winonws) | 通过几何着色器实现将平面变为联盟号火箭，带有颜色变化（要使用 Windows 运行） |
 | [120_Bezier_2D](https://github.com/NekoSilverFox/OpenGL/tree/main/120_Bezier_2D) | 贝叶斯二阶曲线（基于 OpenGL3.0 之前的老版本、非核心模式。新版本下无法运行） |
 |                                                              |                                                              |
 | [130_Physical_putdown_model](https://github.com/NekoSilverFox/OpenGL/tree/main/130_Physical_putdown_model) | 实现物体掉落模型                                             |
