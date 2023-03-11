@@ -47,7 +47,7 @@
 
 | 编号                                                         | 说明                                                         |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [000 - Apple M1 配置测试](https://github.com/NekoSilverFox/OpenGL/tree/main/000 - Apple M1 配置测试) | 在 M1 Mac 下 OpenGL 的配置及运行（基于 Clang）               |
+| 000 - Apple M1 配置测试                                      | 在 M1 Mac 下 OpenGL 的配置及运行（基于 Clang）               |
 | [001_OpenGLWidget_HelloWidget](https://github.com/NekoSilverFox/OpenGL/tree/main/001_OpenGLWidget_HelloWidget) | 如果在 Qt 的环境下，使用初始化 OpenGL 控件                   |
 | [002_Triangle_VAO_VBO](https://github.com/NekoSilverFox/OpenGL/tree/main/002_Triangle_VAO_VBO) | 基于 `001` 的初始化控件后，增加使用 VAO、VBO 代码绘制三角形的代码<br />顶点和片段着色器的编写、编译、链接和使用 |
 | [003_Triangle_EBO](https://github.com/NekoSilverFox/OpenGL/tree/main/003_Triangle_EBO) | 通过 EBO（元素/索引缓冲对象）进行了 2 个三角形的绘制（绘制为 1 个矩形） |
@@ -98,7 +98,7 @@
 | [117_Geometry_Cone2Rocket_Winonws](https://github.com/NekoSilverFox/OpenGL/tree/main/117_Geometry_Cone2Rocket_Winonws) | 通过几何着色器实现将平面变为联盟号火箭，带有颜色变化（要使用 Windows 运行） |
 | [120_Bezier_2D](https://github.com/NekoSilverFox/OpenGL/tree/main/120_Bezier_2D) | 贝叶斯二阶曲线（基于 OpenGL3.0 之前的老版本、非核心模式。新版本下无法运行） |
 |                                                              |                                                              |
-| [130_Physical_putdown_model](https://github.com/NekoSilverFox/OpenGL/tree/main/130_Physical_putdown_model) | 实现物体掉落模型                                             |
+| [130_Physical_putdown_model](https://github.com/NekoSilverFox/OpenGL/tree/main/130_Physical_putdown_model) | 实现物体掉落模型<br />![demo](https://github.com/NekoSilverFox/OpenGL-physical-scrolling/raw/main/demo.gif) |
 | [135_Physical_roll_model_old_method](https://github.com/NekoSilverFox/OpenGL/tree/main/135_Physical_roll_model_old_method) | 物体翻滚模型（不建议参考此工程）                             |
 | [136_Physical_roll_model](https://github.com/NekoSilverFox/OpenGL/tree/main/136_Physical_roll_model) | 基于 OpenGL 实现八面体在立方体上滚动并掉落的物理过程（不带加速度） |
 | [137_Physical_roll_model_with_SPEED](https://github.com/NekoSilverFox/OpenGL/tree/main/137_Physical_roll_model_with_SPEED) | 基于 OpenGL 实现八面体在立方体上滚动并掉落的物理过程（带加速度） |
