@@ -91,7 +91,7 @@
 | [110_Geometry_Shader](https://github.com/NekoSilverFox/OpenGL/tree/main/110_Geometry_Shader) | 通过几何着色器 (Geometry shader) 实现将点变为线              |
 | [111_Geometry_House](https://github.com/NekoSilverFox/OpenGL/tree/main/111_Geometry_House) | 通过几何着色器绘制小房子                                     |
 | [112_Geometry_Bezier_2D](https://github.com/NekoSilverFox/OpenGL/tree/main/112_Geometry_Bezier_2D) | 通过几何着色器实现贝叶斯曲线（工程可能不能正常运行）         |
-| [112_Geometry_normal_ explode](https://github.com/NekoSilverFox/OpenGL/tree/main/112_Geometry_normal_ explode) | 通过几何着色器实现二阶贝叶斯（工程可能不能正常运行）         |
+| [112_Geometry_normal_ explode](https://github.com/NekoSilverFox/OpenGL/tree/main/112_Geometry_normal_explode) | 通过几何着色器实现二阶贝叶斯（工程可能不能正常运行）         |
 | [115_Geometry_Sphere_change](https://github.com/NekoSilverFox/OpenGL/tree/main/115_Geometry_Sphere_change) | 通过几何着色器实现球体形状变化                               |
 | [116_Geometry_Cone_change](https://github.com/NekoSilverFox/OpenGL/tree/main/116_Geometry_Cone_change) | 通过几何着色器实现椎体形状变化                               |
 | [117_Geometry_Cone2Rocket](https://github.com/NekoSilverFox/OpenGL/tree/main/117_Geometry_Cone2Rocket) | 通过几何着色器实现将平面变为联盟号火箭，不带颜色变化（要使用 Windows 运行） |
