@@ -23,8 +23,9 @@
 
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-brightgreen)](LICENSE)
-![ZYNQ](https://img.shields.io/badge/Qt-6.2+-orange)
-![SoC](https://img.shields.io/badge/OpenGL-4.5-orange)
+![Qt](https://img.shields.io/badge/Qt-6.2+-yellow)
+![OpenGL](https://img.shields.io/badge/OpenGL-4.5-orange)
+![OpenGL_mod](https://img.shields.io/badge/OpenGL-Core--profile-orange)
 
 
 <div align=left>
