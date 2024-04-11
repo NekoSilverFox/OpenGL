@@ -32,6 +32,17 @@
 <!-- 顶部至此截止 -->
 
 
+> 如果你不了解 Qt 这个框架，建议先学习：
+>
+> - 关于 Qt 无比详细教程及案例实现：[https://github.com/NekoSilverFox/Qt](https://github.com/NekoSilverFox/Qt)
+>     其中不仅涵盖了 Qt 基本控件的使用及讲解，还包含了大学和培训机构不会讲到的：插件设计及实现、基于 QTest 的静态动态、动态测试、CI/CD的使用、Qt 函数/方法注意事项等
+>
+>     
+>
+> 如果你对 OpenCV 计算机视觉感兴趣：
+>
+> - 基于 Qt & OpenCV 的案例实现及详细教程：[https://github.com/NekoSilverFox/OpenCV](https://github.com/NekoSilverFox/OpenCV)
+
 
 > “绝不能恐惧，恐惧是思维杀手。恐惧是引向毁灭的死神。我将正视恐惧，任由它穿过我的躯体。当恐惧逝去，我会洞悉它的轨迹。恐惧所过之处，万物无存，唯我独立。”
 
